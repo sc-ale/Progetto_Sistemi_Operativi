@@ -56,3 +56,21 @@ extern int emptyChild(pcb_t *p)
     return child;
 }
 
+//5. Restituisce TRUE se la lista puntata da head è vuota, FALSE altrimenti.
+int emptyProcQ(struct list_head *head) {
+  return list_empty(*head);
+}
+
+//9. Rimuove il PCB puntato da p dalla coda dei processi puntata da head. Se p non è presente nella coda, restituisce NULL. (NOTA: p può trovarsi in una posizione arbitraria della coda).
+pcb_t* outProcQ(struct list_head* head, pcb_t *p) {
+    if {!emptyProcQ(*head)} {
+        return NULL;
+    }
+}
+
+//1.Inizializza la lista pcbFree in modo da contenere tutti gli elementi della pcbFree_table. Questo metodo deve essere chiamato una volta sola in fase di inizializzazione della struttura dati.
+void initPcbs() {
+    for(i=0;i<MAXPROC;i++) {
+        list_add(struct list_head *pcbFree_table[i],struct list_head *pcbfree);
+    }
+ }
