@@ -49,6 +49,17 @@ extern insertProcQ( struct list_head *head, pcb_t*p)
 {
     list_add_tail(p->p_list, head);  
 }
+
+/* Ritorna l'elemento in testa senza rimuoverlo, se la lista è vuota ritorna NULL -- funzione 7*/
+
+pcb_t headProcQ(struct list_head *head){
+    if(emptyProcQ(head)){
+        return NULL;
+    } else{
+        return head->next;
+    }
+}
+
 /* Restituisce TRUE se il PCB puntato da p non ha figli, FALSE altrimenti -- funzione 10*/
 extern int emptyChild(pcb_t *p)
 {   
