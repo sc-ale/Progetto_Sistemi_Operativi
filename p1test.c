@@ -18,8 +18,8 @@
 
 #include <umps3/umps/libumps.h>
 #include "pcb.h"
-#include "ash.h"
-#include "ns.h"
+//#include "ash.h"
+//#include "ns.h"
 
 
 #define MAXPROC 20
