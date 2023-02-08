@@ -1,0 +1,7 @@
+.vscode/
+*.json
+*.umps
+*.o
+kernel
+Makefile
+TestAle
