@@ -207,8 +207,42 @@ int main(void) {
 
     addokbuf("insertProcQ, removeProcQ and emptyProcQ ok   \n");
     addokbuf("process queues module ok      \n");
+
+
+    addokbuf("checking process trees...\n");
+
+    if (!emptyChild(procp[2]))
+        adderrbuf("emptyChild: unexpected FALSE   ");
+
+    /* make procp[1] through procp[9] children of procp[0] */
+    addokbuf("Inserting...   \n");
+    for (i = 1; i < 10; i++) {
+        insertChild(procp[0], procp[i]);
+    }
+    addokbuf("Inserted 9 children   \n");
+
+    if (emptyChild(procp[0]))
+        adderrbuf("emptyChild: unexpected TRUE   ");
+
+    /* Check outChild */
+  
+
+    /* Check removeChild */
+    addokbuf("Removing...   \n");
+    for (i = 0; i < 7; i++) {
+        if ((q = removeChild(procp[0])) == NULL)
+            adderrbuf("removeChild: unexpected NULL   ");
+    }
+    if (removeChild(procp[0]) != NULL)
+        adderrbuf("removeChild: removes too many children   ");
+
+    if (!emptyChild(procp[0]))
+        adderrbuf("emptyChild: unexpected FALSE   ");
+
+    addokbuf("insertChild, removeChild and emptyChild ok   \n");
+    addokbuf("process tree module ok      \n");
+
+
     return 0;
 }
-
-
 

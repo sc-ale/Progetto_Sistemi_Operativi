@@ -95,21 +95,36 @@ pcb_t *outProcQ(struct list_head* head, pcb_t *p)
    return trovato;
 }
 
+/* TUTTE LE FUNZIONI SOPRA FUNZIONANO */
+
 
 /* Restituisce TRUE se il PCB puntato da p non ha figli, FALSE altrimenti */
 int emptyChild(pcb_t *p)
 {
-        return p->p_child==NULL;
+        return emptyProcQ(&p->p_child);
 }
 
 /* Inserisce il PCB puntato da p come figlio del PCB puntato da prnt */
 void insertChild(pcb_t *prnt, pcb_t *p)
 {
-        prnt->p_child=p->p_list;
+        insertProcQ(&prnt->p_child, p);
 }
 
 /* Rimuove il primo figlio del PCB puntato da p. Se p non ha figli, restituisce NULL */
 pcb_t* removeChild(pcb_t *p)
 {
-        
+        return outProcQ(&p->p_list,headProcQ(&p->p_child));
 }
+
+/* Rimuove il PCB puntato da p dalla lista dei figli del padre.
+ Se il PCB puntato da p non ha un padre, restituisce NULL, altrimenti restituisce l’elemento rimosso (cioè p). 
+ A differenza della removeChild, p può trovarsi in una posizione arbitraria 
+ (ossia non è necessariamente il primo figlio del padre)*/
+
+/* pcb_t *outChild(pcb_t *p)
+{
+        if(p->p_parent!=NULL) return NULL;
+        //dobbiamo rimuovere p che è un figlio, quindi dobbiamo staccare i puntatori ai fratelli
+        p->p_parent=NULL;
+}
+*/
