@@ -172,4 +172,43 @@ int main(void) {
     }
     addokbuf("inserted 10 elements   \n");
 
+    if (emptyProcQ(&qa))
+        adderrbuf("emptyProcQ: unexpected TRUE");
+
+    /* Check outProc and headProc */
+    if (headProcQ(&qa) != firstproc)
+        adderrbuf("headProcQ failed   ");
+    q = outProcQ(&qa, firstproc);
+    if (q == NULL || q != firstproc)
+        adderrbuf("outProcQ failed on first entry   ");
+    freePcb(q);
+    q = outProcQ(&qa, midproc);
+    if (q == NULL || q != midproc)
+        adderrbuf("outProcQ failed on middle entry   ");
+    freePcb(q);
+    if (outProcQ(&qa, procp[0]) != NULL)
+        adderrbuf("outProcQ failed on nonexistent entry   ");
+    addokbuf("outProcQ ok   \n");
+
+    /* Check if removeProc and insertProc remove in the correct order */
+    addokbuf("Removing...   \n");
+    for (i = 0; i < 8; i++) {
+        if ((q = removeProcQ(&qa)) == NULL)
+            adderrbuf("removeProcQ: unexpected NULL   ");
+        freePcb(q);
+    }
+    if (q != lastproc)
+        adderrbuf("removeProcQ: failed on last entry   ");
+    if (removeProcQ(&qa) != NULL)
+        adderrbuf("removeProcQ: removes too many entries   ");
+
+    if (!emptyProcQ(&qa))
+        adderrbuf("emptyProcQ: unexpected FALSE   ");
+
+    addokbuf("insertProcQ, removeProcQ and emptyProcQ ok   \n");
+    addokbuf("process queues module ok      \n");
+    return 0;
 }
+
+
+

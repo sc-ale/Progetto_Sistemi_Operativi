@@ -44,32 +44,27 @@ pcb_t *allocPcb()
 /* crea una lista di pcb inizializzandola come vuota*/
 void mkEmptyProcQ(struct list_head *head)
 {
-        INIT_LIST_HEAD(&head);
+        INIT_LIST_HEAD(head);
 }
 
 /* Restrituisce true se la lista puntata da head è vuota, false altrimenti*/
 int emptyProcQ(struct list_head *head)
 {
-        return list_empty(&head);
+        return list_empty(head);
 }
 
 /* Inserisce l’elemento puntato da p nella coda dei processi puntata da head */
 void insertProcQ(struct list_head *head, pcb_t* p)
 {
-        list_add(&p->p_list, &head);
+        list_add_tail(&p->p_list, head);
 }
 
 /* Restituisce l’elemento di testa di head senza rimuoverlo.
 Ritorna NULL se la coda è vuota*/
-pcb_t headProcQ(struct list_head *head)
+pcb_t *headProcQ(struct list_head *head)
 {
-        if (!emptyProcQ(&head)){
-            return list_first_entry(&head, struct pcb_t, p_list);
-        } 
-
-        else {
-            return NULL;
-        }
+        pcb_t *p = (!emptyProcQ(head)) ? list_first_entry(head,struct pcb_t, p_list) : NULL;
+        return p;
 }
 
 /* Rimuove il primo elemento dalla coda dei processi puntata da head. 
@@ -77,16 +72,9 @@ pcb_t headProcQ(struct list_head *head)
  Altrimenti ritorna il puntatore all’elemento rimosso dalla lista.*/
 pcb_t *removeProcQ(struct list_head *head)
 {
-    if (!emptyProcQ(&head)){    
-            struct pcb_t *p = NULL;
-            p = list_first_entry(&head,struct pcb_t, p_list);
-            list_del(&p->p_list);
-            return p;
-        } 
-
-        else {
-            return NULL;
-        }
+        pcb_t *p = (!emptyProcQ(head)) ? list_first_entry(head,struct pcb_t, p_list) : NULL;
+        if (!emptyProcQ(head)) list_del(&p->p_list);
+        return p;
 }
 
 /* Rimuove il PCB puntato da p dalla coda dei processi puntata da head.
@@ -94,21 +82,34 @@ pcb_t *removeProcQ(struct list_head *head)
  (NOTA: p può trovarsi in una posizione arbitraria della coda).*/
 pcb_t *outProcQ(struct list_head* head, pcb_t *p)
 {
-    int trovato = 0;
-    struct list_head *elCorrente = NULL;
-    struct pcb_t* temp = NULL;
-    list_for_each(elCorrente, &head)
+    struct list_head *corrente1, *corrente2 = NULL;
+    struct pcb_t *temp, *trovato = NULL;
+    list_for_each_safe(corrente1, corrente2, head) 
     {
-            temp = list_entry(elCorrente, struct pcb_t, p_list);
-            if (temp==p) trovato = 1;
+            temp = list_entry(corrente1, struct pcb_t, p_list);
+            if (temp==p) { 
+                trovato = temp;
+                list_del(&temp->p_list);
+            }   
     } 
+   return trovato;
+}
 
-    if(trovato) {
-            list_del(&p);
-            return p;
-    }
 
-    else {
-            return NULL;
-    }
+/* Restituisce TRUE se il PCB puntato da p non ha figli, FALSE altrimenti */
+int emptyChild(pcb_t *p)
+{
+        return p->p_child==NULL;
+}
+
+/* Inserisce il PCB puntato da p come figlio del PCB puntato da prnt */
+void insertChild(pcb_t *prnt, pcb_t *p)
+{
+        prnt->p_child=p->p_list;
+}
+
+/* Rimuove il primo figlio del PCB puntato da p. Se p non ha figli, restituisce NULL */
+pcb_t* removeChild(pcb_t *p)
+{
+        
 }
