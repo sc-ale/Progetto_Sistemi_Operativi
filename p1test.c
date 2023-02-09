@@ -147,4 +147,29 @@ int main(void) {
         freePcb(procp[i]);
     addokbuf("freed 10 entries   \n");
 
+    /* create a 10-element process queue */
+    LIST_HEAD(qa);
+    if (!emptyProcQ(&qa))
+        adderrbuf("emptyProcQ: unexpected FALSE   ");
+    addokbuf("Inserting...   \n");
+    for (i = 0; i < 10; i++) {
+        if ((q = allocPcb()) == NULL)
+            adderrbuf("allocPcb: unexpected NULL while insert   ");
+        switch (i) {
+            case 0:
+                firstproc = q;
+                break;
+            case 5:
+                midproc = q;
+                break;
+            case 9:
+                lastproc = q;
+                break;
+            default:
+                break;
+        }
+        insertProcQ(&qa, q);
+    }
+    addokbuf("inserted 10 elements   \n");
+
 }
