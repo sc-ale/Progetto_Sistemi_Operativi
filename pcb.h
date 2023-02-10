@@ -10,7 +10,7 @@ pcb_t pcbFree_table[MAXPROC];
 void initPcbs()
 {       
         for(int i=0; i<MAXPROC; i++){
-            list_add(&pcbFree_table[i].p_list, &pcbFree_h);
+                list_add(&pcbFree_table[i].p_list, &pcbFree_h);
         }
 }
 
@@ -21,23 +21,23 @@ void freePcb(pcb_t *p)
 }
 
 /* Forse bisogna controllare l'inizializzazione di cpu_time e state_t*/
+/* Restituisce NULL se la pcbFree_h è vuota. Altrimenti rimuove un elemento dalla pcbFree, 
+inizializza tutti i campi (NULL/0) e restituisce l’elemento rimosso */
 pcb_t *allocPcb()
 {
-        if(list_empty( &pcbFree_h)) {
+        if(list_empty(&pcbFree_h)) {
                 return NULL;
         }
 
         else {
-            struct pcb_t *p = NULL;
-            p=list_first_entry(&pcbFree_h,struct pcb_t, p_list);
-            list_del(&p->p_list);
-            p->p_parent=NULL;
-            p->p_child.next=NULL;
-            p->p_child.prev=NULL;
-            p->p_sib.next=NULL;
-            p->p_sib.prev=NULL;
-            p->p_semAdd=NULL;
-            return p;
+                struct pcb_t *p=list_first_entry(&pcbFree_h,struct pcb_t, p_list);
+                list_del(&p->p_list);
+                p->p_parent=p;
+                INIT_LIST_HEAD(&p->p_list);
+                INIT_LIST_HEAD(&p->p_child);
+                INIT_LIST_HEAD(&p->p_sib);
+                p->p_semAdd=NULL; /* FIX ME*/
+                return p;
         }
 }
 
@@ -99,6 +99,8 @@ pcb_t *outProcQ(struct list_head* head, pcb_t *p)
 
 
 /* Restituisce TRUE se il PCB puntato da p non ha figli, FALSE altrimenti */
+// l'errore è unexpected false, quindi stiamo dicendo che ha dei figli quando non ne ha
+// FIX ME
 int emptyChild(pcb_t *p)
 {
         return emptyProcQ(&p->p_child);
@@ -107,14 +109,28 @@ int emptyChild(pcb_t *p)
 /* Inserisce il PCB puntato da p come figlio del PCB puntato da prnt */
 void insertChild(pcb_t *prnt, pcb_t *p)
 {
-        insertProcQ(&prnt->p_child, p);
+        
+        if(emptyChild(prnt)){
+                insertProcQ(&prnt->p_child, p);
+        }
+        
+        else {
+                //voglio inserire p nella lista dei fratelli del figlio
+                pcb_t *pt_figlio = list_entry(&prnt->p_child, pcb_t, p_list);
+                //list_del(&p->p_list);
+                //list_del(&p->p_sib);
+                //list_del(&p->p_child);
+                insertProcQ(&pt_figlio->p_sib, p);
+        }
+        
 }
 
 /* Rimuove il primo figlio del PCB puntato da p. Se p non ha figli, restituisce NULL */
-pcb_t* removeChild(pcb_t *p)
-{
-        return outProcQ(&p->p_list,headProcQ(&p->p_child));
-}
+//pcb_t* removeChild(pcb_t *p)
+//{
+        //se il figlio ha un fratello allora quello deve diventare il nuovo primo figlio
+       //return outProcQ(&p->p_list,headProcQ(&p->p_child));
+//}
 
 /* Rimuove il PCB puntato da p dalla lista dei figli del padre.
  Se il PCB puntato da p non ha un padre, restituisce NULL, altrimenti restituisce l’elemento rimosso (cioè p). 
