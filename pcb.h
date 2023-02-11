@@ -21,7 +21,7 @@ void freePcb(pcb_t *p)
         list_add(&p->p_list, &pcbFree_h);
 }
 
-/* Forse bisogna controllare l'inizializzazione di cpu_time e state_t*/
+/* TEMPORANEO: Forse bisogna controllare l'inizializzazione di cpu_time e state_t*/
 /* Restituisce NULL se la pcbFree_h è vuota. Altrimenti rimuove un elemento dalla pcbFree, 
 inizializza tutti i campi (NULL/0) e restituisce l’elemento rimosso */
 pcb_t *allocPcb()
@@ -110,11 +110,6 @@ void insertChild(pcb_t *prnt, pcb_t *p)
                 /* prnt non ha figli */
                 INIT_LIST_HEAD(&p->p_child);
                 prnt->p_child.next=&p->p_child;
-                /* TEMPORANEO, ASPETTIAMO LA RISPOSTA SU TELEGRAM SE p_child.prev punta al padre */
-               /* prnt->p_child.next = &p->p_child;
-                p->p_child.next = &p->p_child;
-                p->p_child.prev=&prnt->p_child;
-                */
         }
         
         else { 
@@ -158,4 +153,4 @@ pcb_t *removeChild(pcb_t *p)
         return outChild(primoFiglio);
 }
 
-/* TUTTE LE FUNZIONI SOPRA FUNZIONANO */
+/* TEMPORANEO: TUTTE LE FUNZIONI SOPRA FUNZIONANO */
