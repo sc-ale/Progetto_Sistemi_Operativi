@@ -190,7 +190,7 @@ int main(void) {
         adderrbuf("outProcQ failed on nonexistent entry   ");
     addokbuf("outProcQ ok   \n");
 
-    /* Check if removeProc and insertProc remove in the correct order */
+     /* Check if removeProc and insertProc remove in the correct order */
     addokbuf("Removing...   \n");
     for (i = 0; i < 8; i++) {
         if ((q = removeProcQ(&qa)) == NULL)
@@ -208,7 +208,6 @@ int main(void) {
     addokbuf("insertProcQ, removeProcQ and emptyProcQ ok   \n");
     addokbuf("process queues module ok      \n");
 
-
     addokbuf("checking process trees...\n");
 
     if (!emptyChild(procp[2]))
@@ -225,10 +224,17 @@ int main(void) {
         adderrbuf("emptyChild: unexpected TRUE   ");
 
     /* Check outChild */
-  
+    q = outChild(procp[1]);
+    if (q == NULL || q != procp[1])
+        adderrbuf("outChild failed on first child   ");
+    q = outChild(procp[4]);
+    if (q == NULL || q != procp[4])
+        adderrbuf("outChild failed on middle child   ");
+    if (outChild(procp[0]) != NULL)
+        adderrbuf("outChild failed on nonexistent child   ");
+    addokbuf("outChild ok   \n");
 
     /* Check removeChild */
-
     addokbuf("Removing...   \n");
     for (i = 0; i < 7; i++) {
         if ((q = removeChild(procp[0])) == NULL)
@@ -243,6 +249,9 @@ int main(void) {
     addokbuf("insertChild, removeChild and emptyChild ok   \n");
     addokbuf("process tree module ok      \n");
 
+    for (i = 0; i < 10; i++)
+        freePcb(procp[i]);
 
     return 0;
 }
+
