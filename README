@@ -1,3 +1,7 @@
+TEMPORANEO: UNA VOLTA FINITI TUTTI I FILE (CHIARAMENTE FUNZIONANTI) DOBBIAMO DIVIDERE I FILE IN .h E .c 
+PER UN CODICE ANCORA PIU' PROFESSIONALE (dichiaraizioni in .h e corpo in .c). Andrà poi sicuramente modificato il Makefile
+
+
 Per quanto riguarda la scelta implementative delle funzioni sugli alberi
 abbiamo deciso che la lista p_child di tipo list_head sia utilizzata come una lista linearly linked, ovvero
 p_child.prev punta sempre a se stesso mentre p_child.next punta al figlio nel caso in cui ci sia, altrimenti punta a se stesso
