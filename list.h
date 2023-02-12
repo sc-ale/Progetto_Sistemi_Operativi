@@ -57,9 +57,7 @@ static inline bool __list_del_entry_valid(struct list_head *entry)
  * This is only for internal list manipulation where we know
  * the prev/next entries already!
  */
-static inline void __list_add(struct list_head *new,
-			      struct list_head *prev,
-			      struct list_head *next)
+static inline void __list_add(struct list_head *new, struct list_head *prev, struct list_head *next)
 {
 	if (!__list_add_valid(new, prev, next))
 		return;
