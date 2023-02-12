@@ -130,7 +130,7 @@ pcb_t *outChild(pcb_t *p)
                 pcb_t *padreP = p->p_parent;
                 if(padreP->p_child.next==p->p_child.prev){
                         /* p è il primo figlio*/
-                        if(list_empty(&p->p_sib)) padreP->p_child.next=padreP->p_child.prev;
+                        if(list_empty(&p->p_sib)) INIT_LIST_HEAD(&padreP->p_child);
                         
                         else { 
                                 /* p ha almeno un fratello */
