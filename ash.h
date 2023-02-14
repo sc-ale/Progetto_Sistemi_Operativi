@@ -21,14 +21,17 @@ Se non è possibile allocare un nuovo SEMD perché la lista di quelli liberi è 
 In tutti gli altri casi, restituisce FALSE*/
 int insertBlocked(int* semAdd, pcb_t* p){
     if(p->p_semAdd==NULL) {
+        /* p non è associato ad altri semafori */
         struct semd_t* corrente; 
         hash_for_each_possible(semd_h, corrente, s_link, semAdd){
+            /* semaforo già in semd_h */
             p->p_semAdd = semAdd;
             insertProcQ(&corrente->s_procq,p);
             return 0;
         }
 
         if (!list_empty(&semdFree_h)) {
+            /* allochiamo un semd libero per p e lo inseriamo in semd_h */
             semd_t* newSemd = list_first_entry(&semdFree_h,semd_t,s_freelink);
 
             newSemd->s_key = semAdd;
@@ -49,75 +52,77 @@ Se il PCB non compare in tale coda, allora restituisce NULL (condizione di error
 Altrimenti, restituisce p. Se la coda dei processi bloccati per il semaforo diventa vuota,
 rimuove il descrittore corrispondente dalla ASH e lo inserisce nella coda dei descrittori liberi*/
 pcb_t* outBlocked(pcb_t *p) {
-    semd_t *semdP;
+    semd_t *semdP=NULL;
     struct list_head *corrente, *temp = NULL;
 
     hash_for_each_possible(semd_h,semdP,s_link,p->p_semAdd) {
+        /* se entriamo nel ciclo semdP punta al semaforo che blocca il processo p */
         break;
     }
 
-    list_for_each_safe(corrente, temp, &semdP->s_procq) 
-    {
-        semd_t *temp = list_entry(corrente, semd_t, s_procq);
+    if(semdP!=NULL){
 
-        if(&temp->s_procq==&p->p_list) 
+        list_for_each_safe(corrente, temp, &semdP->s_procq) 
         {
-            //trovato p da eliminare
-            list_del_init(&temp->s_procq);
-            if (list_empty(&semdP->s_procq))
-            {
-                //coda dei semafori bloccati vuota
-                hash_del(&semdP->s_link);
-                list_add(&semdP->s_freelink,&semdFree_h);
-            }
-            return p;
-        }
-    }
-    return NULL;
-}
+            pcb_t *eliminato = list_entry(corrente, pcb_t, p_list);
 
+            if(eliminato==p) 
+            {
+                /* trovato il processo da eliminare */
+                list_del_init(&eliminato->p_list);
+                if (list_empty(&semdP->s_procq))
+                {
+                    /* la coda dei semafori bloccati è vuota quindi inseriamo semdP in semdFree_h */
+                    hash_del(&semdP->s_link);
+                    list_add(&semdP->s_freelink,&semdFree_h);
+                    p->p_semAdd = NULL;
+                }
+                return p;
+            }
+        }
+    return NULL;
+    }
+}
 
 /* Ritorna il primo PCB dalla coda dei processi bloccati (s_procq) associata 
 al SEMD della ASH con chiave semAdd. Se tale descrittore non esiste nella ASH,
 restituisce NULL. Altrimenti, restituisce l’elemento rimosso.
 Se la coda dei processi bloccati per il semaforo diventa vuota,
 rimuove il descrittore corrispondente dalla ASH e lo inserisce nella coda dei descrittori liberi (semdFree_h)*/
-
 pcb_t* removeBlocked(int *semAdd)
 {
-    //dobbiamo controllare se togliendo un pcb dalla coda questa diventa vuota
-    //usiamo removeProcQ per rimuovere il pcb dalla coda
-    //dobbiamo aggiornare la chiave di quello che eliminiamo
-   /*
-    struct semd_t *corrente;
-    struct hlist_node *temp;
-    struct pcb_t *eliminato = NULL;
+    semd_t *semdP=NULL;
 
-    hash_for_each_possible_safe(semd_h, corrente, temp, s_link, semAdd)
-    {
-        //semaforo già in hash
-        eliminato = removeProcQ(&corrente->s_procq);
-
-        if(list_empty(&corrente->s_procq)) {
-            //dobbiamo rimuovere il semd dalla ash e inserirlo in semdFree_h
-                hash_del(temp);
-                list_add(&corrente->s_freelink, &semdFree_h);
-        }
-        eliminato->p_semAdd=NULL;
+    hash_for_each_possible(semd_h,semdP,s_link,semAdd) {
+        /* se entriamo nel ciclo semdP punta al semaforo con chiave semAdd */
         break;
     }
 
-    return eliminato; 
-    */
-
-    semd_t *it, *temp;
-    struct list_head *tmp,*tmp2 = NULL;
-
-    hash_for_each_possible(semd_h,it,s_link,semAdd) {
-        break;
+    if(semdP!=NULL) {
+        /* eliminiamo il primo processo in semdP */
+        pcb_t *trovato = list_first_entry(&semdP->s_procq, pcb_t, p_list);
+        return outBlocked(trovato);
     }
-    pcb_t *trovato = list_first_entry(&it->s_procq, pcb_t, p_list);
-    return outBlocked(trovato);
-
+    return NULL;
 }
 
+/* Restituisce (senza rimuovere) il puntatore al PCB che si trova in
+ testa alla coda dei processi associata al SEMD con chiave semAdd. 
+ Ritorna NULL se il SEMD non compare nella ASH oppure se compare ma la sua coda dei processi è vuota */
+pcb_t* headBlocked(int *semAdd)
+{
+    semd_t *semdP=NULL;
+
+    hash_for_each_possible(semd_h,semdP,s_link,semAdd) {
+         /* se entriamo nel ciclo semdP punta al semaforo con chiave semAdd */
+        break;
+    }
+
+    if(semdP!=NULL) {
+        /* se la coda dei processi non è vuota ritorniamo il pcb in testa alla coda di semdP */
+        if(!list_empty(&semdP->s_procq))
+            return list_first_entry(&semdP->s_procq, pcb_t, p_list);
+    }
+
+    return NULL;
+}
