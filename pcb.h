@@ -5,8 +5,6 @@
 #include "pandos_const.h"
 #include "list.h"
 
-HIDDEN LIST_HEAD(pcbFree_h);
-HIDDEN pcb_t pcbFree_table[MAXPROC];
 
 /* Inizializzazione di pcbFree_h inserendo gli elementi in pcbFree_table*/
 void initPcbs();
