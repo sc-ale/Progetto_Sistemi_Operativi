@@ -20,62 +20,59 @@ Se il semaforo corrispondente non è presente nella ASH, alloca un nuovo SEMD da
 Se non è possibile allocare un nuovo SEMD perché la lista di quelli liberi è vuota, restituisce TRUE. 
 In tutti gli altri casi, restituisce FALSE*/
 int insertBlocked(int* semAdd, pcb_t* p){
-    struct semd_t* corrente; 
-    hash_for_each_possible(semd_h, corrente, s_link, semAdd){
-        p->p_semAdd = semAdd;
-        insertProcQ(&corrente->s_procq,p);
-        return 0;
-    }
+    if(p->p_semAdd==NULL) {
+        struct semd_t* corrente; 
+        hash_for_each_possible(semd_h, corrente, s_link, semAdd){
+            p->p_semAdd = semAdd;
+            insertProcQ(&corrente->s_procq,p);
+            return 0;
+        }
 
-    if (!list_empty(&semdFree_h)) {
-        semd_t* newSemd = list_first_entry(&semdFree_h,semd_t,s_freelink);
+        if (!list_empty(&semdFree_h)) {
+            semd_t* newSemd = list_first_entry(&semdFree_h,semd_t,s_freelink);
 
-        newSemd->s_key = semAdd;
-        mkEmptyProcQ(&newSemd->s_procq); 
-        p->p_semAdd = semAdd; 
-        insertProcQ(&newSemd->s_procq, p);
+            newSemd->s_key = semAdd;
+            mkEmptyProcQ(&newSemd->s_procq); 
+            p->p_semAdd = semAdd; 
+            insertProcQ(&newSemd->s_procq, p);
 
-        hash_add(semd_h,&newSemd->s_link, newSemd->s_key);
-        list_del(&newSemd->s_freelink);
-        return 0;
+            hash_add(semd_h,&newSemd->s_link, newSemd->s_key);
+            list_del(&newSemd->s_freelink);
+            return 0;
+        }
     }
     return 1;
 }
 
-/* outBlocked*/
+/*Rimuove il PCB puntato da p dalla coda del semaforo su cui è bloccato (indicato da p->p_semAdd). 
+Se il PCB non compare in tale coda, allora restituisce NULL (condizione di errore). 
+Altrimenti, restituisce p. Se la coda dei processi bloccati per il semaforo diventa vuota,
+rimuove il descrittore corrispondente dalla ASH e lo inserisce nella coda dei descrittori liberi*/
 pcb_t* outBlocked(pcb_t *p) {
+    semd_t *semdP;
+    struct list_head *corrente, *temp = NULL;
 
-
-    bool trovato = 0;
-    semd_t *it, *temp;
-    struct list_head *tmp,*tmp2 = NULL;
-
-
-    hash_for_each_possible(semd_h,it,s_link,p->p_semAdd) {
+    hash_for_each_possible(semd_h,semdP,s_link,p->p_semAdd) {
         break;
     }
 
-    list_for_each_safe(tmp,tmp2,&it->s_procq) 
+    list_for_each_safe(corrente, temp, &semdP->s_procq) 
     {
-        temp = list_entry(tmp, semd_t, s_procq);
+        semd_t *temp = list_entry(corrente, semd_t, s_procq);
 
         if(&temp->s_procq==&p->p_list) 
         {
-            trovato = 1;
-            list_del(&temp->s_procq);
+            //trovato p da eliminare
+            list_del_init(&temp->s_procq);
+            if (list_empty(&semdP->s_procq))
+            {
+                //coda dei semafori bloccati vuota
+                hash_del(&semdP->s_link);
+                list_add(&semdP->s_freelink,&semdFree_h);
+            }
             return p;
         }
     }
-
-    if(trovato) 
-    {
-        if (list_empty(&it->s_procq))
-        {
-            hash_del(&it->s_link);
-            list_add(&it->s_freelink,&semdFree_h);
-        }
-    }
-
     return NULL;
 }
 
