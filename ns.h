@@ -2,7 +2,6 @@
 #define NS_H
 
 #include "pandos_types.h"
-#include "list.h"
 #include "types.h"
 
 

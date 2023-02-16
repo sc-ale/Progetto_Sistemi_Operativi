@@ -22,7 +22,6 @@
 #include "ns.h"
 
 
-
 #define MAXPROC 20
 #define MAXSEM  MAXPROC
 #define MAXNS   MAXPROC
@@ -324,7 +323,7 @@ int main(void) {
     addokbuf("ASH module ok   \n");
 
 
-    /* check Namespaces */
+     /* check Namespaces */
     initNamespaces();
     addokbuf("Initialized Namespaces\n");
 

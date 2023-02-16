@@ -1,9 +1,9 @@
 #include "ns.h"
 
 
-static LIST_HEAD(type_nsFree_h[NS_TYPE_MAX]);
-static LIST_HEAD(type_nsList_h[NS_TYPE_MAX]);
-static nsd_t type_nsd[MAXPROC][NS_TYPE_MAX];
+HIDDEN struct list_head type_nsFree_h[NS_TYPE_MAX];
+HIDDEN struct list_head type_nsList_h[NS_TYPE_MAX];
+HIDDEN nsd_t type_nsd[MAXPROC][NS_TYPE_MAX];
 
 void initNamespaces()
 {

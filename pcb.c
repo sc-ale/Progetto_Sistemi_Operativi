@@ -1,7 +1,7 @@
 #include "pcb.h"
 
-static LIST_HEAD(pcbFree_h);
-static pcb_t pcbFree_table[MAXPROC];
+HIDDEN LIST_HEAD(pcbFree_h);
+HIDDEN pcb_t pcbFree_table[MAXPROC];
 
 void initPcbs()
 {       
