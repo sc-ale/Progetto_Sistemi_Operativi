@@ -46,11 +46,13 @@ int addNamespace(pcb_t *p, nsd_t *ns)
 
     //associo il namespace al processo corrente
     p->namespaces[ns->n_type]=ns;
+
     //associo il namespace ai figli del processo 
     if(!list_empty(&p->p_child)){
+        //associa a uun figlio
         pcb_t *child = list_first_entry(&p->p_child, pcb_t, p_child);
         child->namespaces[ns->n_type] = ns;
-
+        //itera e associa ai fratelli del figlio
         list_for_each_entry(child, &child->p_sib, p_sib){
             child->namespaces[ns->n_type] = ns;
         }
@@ -66,7 +68,11 @@ nsd_t *allocNamespace(int type){
     if(list_empty(&type_nsFree_h[type])){
         return NULL;
     }
+
+    //Assegna a un puntatore il ns da restituire
     nsd_t *new_nsd = list_first_entry(type_nsFree_h, nsd_t, n_link);
+
+    //Rimuovi il ns dalla lista "liberi" e assegnalo nella lista "utilizzati"
     list_del_init(&new_nsd->n_link);
     list_add(&new_nsd->n_link, &type_nsList_h[type]);
     return new_nsd;
@@ -75,6 +81,7 @@ nsd_t *allocNamespace(int type){
 
 
 void freeNamespace(nsd_t *ns){
+    //Rimuovi il ns dalla lista "utilizzati" e assegnalo nella lista "liberi"
     list_del_init(&ns->n_link);
     list_add(&ns->n_link, &type_nsFree_h[ns->n_type]);
 }
