@@ -5,3 +5,12 @@ PER UN CODICE ANCORA PIU' PROFESSIONALE (dichiaraizioni in .h e corpo in .c). An
 Per quanto riguarda la scelta implementative delle funzioni sugli alberi
 abbiamo deciso che la lista p_child di tipo list_head sia utilizzata come una lista linearly linked, ovvero
 p_child.prev punta sempre a se stesso mentre p_child.next punta al figlio nel caso in cui ci sia, altrimenti punta a se stesso
+
+Per realizzare le funzioni finalizzate alla gestione dei namespace abbiamo usufruito di due elementi di tipo list_head:
+type_nsFree_h: che è una lista che contiene tutti i namespace disponibili per essere assegnati ad un processo.
+type_nsList_h : una lista che contiene tutti i namespace già assegnati.
+L'elemento type_nsd è una matrice con dimensione i MAXPROC(i processi massimi)e j NS_TYPE_MAX(il numero massimo di tipi di namespace).
+La funzione initNamespace: viene chiamata per inizializzare le due liste citate precedentemente.
+La funzione getNamespace : Verifica che il type riguardante il namespace sia valido e che il puntatore alla struttura non sia nullo e successivamente restituisce il namespace corrispondente al processo.
+La funzione addNamespace: viene chiamata per assegnare un namespace ad un processo nel caso gli argomenti passati non siano nulli, il processo prende il nuovo namespace e verifica che la lista dei figli del processo non sia vuota assegnando al figlio il namespace e successivamente a tutti i suoi fratelli utilizzando la macro di linux list_for_each_entry.
+In generale la scelta implementativa dei namespace si basa sull'uso di liste per memorizzare i namespace e consentire una gestione effice dei namespace liberi e assegnati.

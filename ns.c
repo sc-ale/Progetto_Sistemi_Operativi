@@ -46,7 +46,7 @@ int addNamespace(pcb_t *p, nsd_t *ns)
 
     //associo il namespace al processo corrente
     p->namespaces[ns->n_type]=ns;
-    //associo il namespace ai figli del processo ricorsivamente
+    //associo il namespace ai figli del processo 
     if(!list_empty(&p->p_child)){
         pcb_t *child = list_first_entry(&p->p_child, pcb_t, p_child);
         child->namespaces[ns->n_type] = ns;
