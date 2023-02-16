@@ -1,3 +1,6 @@
+#ifndef NS_H
+#define NS_H
+
 #include <stdio.h>
 #include "pandos_types.h"
 #include "list.h"
@@ -19,3 +22,5 @@ nsd_t *allocNamespace(int type);
 
 /*Libera il namespace ns reinserendolo nella lista dei namespace liberi*/
 void freeNamespace(nsd_t *ns);
+
+#endif
