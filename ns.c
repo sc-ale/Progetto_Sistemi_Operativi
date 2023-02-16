@@ -1,9 +1,9 @@
 #include "ns.h"
 
 
-LIST_HEAD(type_nsFree_h[NS_TYPE_MAX]);
-LIST_HEAD(type_nsList_h[NS_TYPE_MAX]);
-nsd_t type_nsd[MAXPROC][NS_TYPE_MAX];
+static LIST_HEAD(type_nsFree_h[NS_TYPE_MAX]);
+static LIST_HEAD(type_nsList_h[NS_TYPE_MAX]);
+static nsd_t type_nsd[MAXPROC][NS_TYPE_MAX];
 
 void initNamespaces()
 {
@@ -50,6 +50,7 @@ int addNamespace(pcb_t *p, nsd_t *ns)
     if(!list_empty(&p->p_child)){
         pcb_t *child = list_first_entry(&p->p_child, pcb_t, p_child);
         child->namespaces[ns->n_type] = ns;
+
         list_for_each_entry(child, &child->p_sib, p_sib){
             child->namespaces[ns->n_type] = ns;
         }
@@ -66,7 +67,7 @@ nsd_t *allocNamespace(int type){
         return NULL;
     }
     nsd_t *new_nsd = list_first_entry(type_nsFree_h, nsd_t, n_link);
-    list_del(&new_nsd->n_link);
+    list_del_init(&new_nsd->n_link);
     list_add(&new_nsd->n_link, &type_nsList_h[type]);
     return new_nsd;
 }
@@ -74,6 +75,6 @@ nsd_t *allocNamespace(int type){
 
 
 void freeNamespace(nsd_t *ns){
-    list_del(&ns->n_link);
+    list_del_init(&ns->n_link);
     list_add(&ns->n_link, &type_nsFree_h[ns->n_type]);
 }

@@ -22,6 +22,7 @@
 #include "ns.h"
 
 
+
 #define MAXPROC 20
 #define MAXSEM  MAXPROC
 #define MAXNS   MAXPROC
