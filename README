@@ -4,5 +4,5 @@ Per quanto riguarda la scelta implementative delle funzioni sugli alberi
 abbiamo deciso che la lista p_child di tipo list_head sia utilizzata come una lista linearly linked, ovvero
 p_child.prev punta sempre a se stesso mentre p_child.next punta al figlio nel caso in cui ci sia, altrimenti punta a se stesso.
 
+Per quanto riguarda i namespace, nonostante nella prima fase sia stato richiesto di utilizzare solo un array di NSD con dimensione MAXPROC, abbiamo comunque creato una array bidimensionale che prende anche i vari tipi di namespace (NS_TYPE_MAX), che ovviamente in fase 1 sarà unidimensionale.
 
-In generale la scelta implementativa dei namespace si basa sull'uso di liste per memorizzare i namespace e consentire una gestione effice dei namespace liberi e assegnati.
