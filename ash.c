@@ -1,8 +1,5 @@
 #include "ash.h"
 
-HIDDEN semd_t semd_table[MAXPROC]; 
-HIDDEN LIST_HEAD(semdFree_h);
-HIDDEN DECLARE_HASHTABLE(semd_h, 5);
 
 void initASH()
 {
@@ -16,7 +13,7 @@ int insertBlocked(int* semAdd, pcb_t* p){
     if(p->p_semAdd==NULL) {
         /* p non è associato ad altri semafori */
         struct semd_t* corrente; 
-        hash_for_each_possible(semd_h, corrente, s_link, semAdd){
+        hash_for_each_possible(semd_h, corrente, s_link, (u32)semAdd){
             /* semaforo già in semd_h */
             p->p_semAdd = semAdd;
             insertProcQ(&corrente->s_procq,p);
@@ -32,7 +29,7 @@ int insertBlocked(int* semAdd, pcb_t* p){
             p->p_semAdd = semAdd; 
             insertProcQ(&newSemd->s_procq, p);
 
-            hash_add(semd_h,&newSemd->s_link, newSemd->s_key);
+            hash_add(semd_h,&newSemd->s_link, (u32)newSemd->s_key);
             list_del(&newSemd->s_freelink);
             return 0;
         }
@@ -45,7 +42,7 @@ pcb_t* outBlocked(pcb_t *p) {
     semd_t *semdP=NULL;
     struct list_head *corrente, *temp = NULL;
 
-    hash_for_each_possible(semd_h,semdP,s_link,p->p_semAdd) {
+    hash_for_each_possible(semd_h,semdP,s_link,(u32)p->p_semAdd) {
         /* se entriamo nel ciclo semdP punta al semaforo che blocca il processo p */
         break;
     }
@@ -79,7 +76,7 @@ pcb_t* removeBlocked(int *semAdd)
 {
     semd_t *semdP=NULL;
 
-    hash_for_each_possible(semd_h,semdP,s_link,semAdd) {
+    hash_for_each_possible(semd_h,semdP,s_link,(u32)semAdd) {
         /* se entriamo nel ciclo semdP punta al semaforo con chiave semAdd */
         break;
     }
@@ -97,7 +94,7 @@ pcb_t* headBlocked(int *semAdd)
 {
     semd_t *semdP=NULL;
 
-    hash_for_each_possible(semd_h,semdP,s_link,semAdd) {
+    hash_for_each_possible(semd_h,semdP,s_link,(u32)semAdd) {
          /* se entriamo nel ciclo semdP punta al semaforo con chiave semAdd */
         break;
     }

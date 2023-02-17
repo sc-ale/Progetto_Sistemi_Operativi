@@ -13,8 +13,8 @@
  *      Modified by Davide Berardi on November 23, 2022
  */
 
-#include "pandos_const.h"
-#include "pandos_types.h"
+#include <pandos_const.h>
+#include <pandos_types.h>
 
 #include <umps3/umps/libumps.h>
 #include "pcb.h"
@@ -253,7 +253,7 @@ int main(void) {
         freePcb(procp[i]);
 
 
-   /* check ASH */
+    /* check ASH */
     initASH();
     addokbuf("Initialized active semaphore hash   \n");
 
@@ -322,8 +322,7 @@ int main(void) {
     addokbuf("headBlocked and outBlocked ok   \n");
     addokbuf("ASH module ok   \n");
 
-
-     /* check Namespaces */
+    /* check Namespaces */
     initNamespaces();
     addokbuf("Initialized Namespaces\n");
 
@@ -374,8 +373,5 @@ int main(void) {
 
     addokbuf("Namespace module ok\n");
     addokbuf("So Long and Thanks for All the Fish\n");
-
     return 0;
 }
-
-

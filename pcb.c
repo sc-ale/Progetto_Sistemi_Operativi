@@ -1,8 +1,5 @@
 #include "pcb.h"
 
-HIDDEN LIST_HEAD(pcbFree_h);
-HIDDEN pcb_t pcbFree_table[MAXPROC];
-
 void initPcbs()
 {       
         for(int i=0; i<MAXPROC; i++){
@@ -31,7 +28,7 @@ pcb_t *allocPcb()
                 INIT_LIST_HEAD(&p->p_list);
                 INIT_LIST_HEAD(&p->p_child);
                 INIT_LIST_HEAD(&p->p_sib);
-                p->p_semAdd=NULL; /* FIX ME*/
+                p->p_semAdd=NULL;
                 return p;
         }
 }
@@ -114,7 +111,7 @@ pcb_t *outChild(pcb_t *p)
         if(p->p_parent!=NULL) {
                 pcb_t *padreP = p->p_parent;
                 if(padreP->p_child.next==p->p_child.prev){
-                        /* p è il primo figlio*/
+                        /* p è il primo figlio */
                         if(list_empty(&p->p_sib)) INIT_LIST_HEAD(&padreP->p_child);
                         
                         else { 
