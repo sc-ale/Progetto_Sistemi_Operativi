@@ -31,17 +31,12 @@ void initNamespaces()
 nsd_t *getNamespace(pcb_t *p, int type)
 {   
     /* verifica che il tipo assegnato sia valido*/
-    if(p==NULL || type<0 || type > NS_TYPE_LAST)
-    {
-        return NULL;
-    }
-    
-    else return p->namespaces[type];
+    return (p==NULL || type<0 || type > NS_TYPE_LAST) ? NULL : p->namespaces[type];
 }
 
 int addNamespace(pcb_t *p, nsd_t *ns)
 {
-    if(p==NULL || ns==NULL){
+    if(p==NULL || ns==NULL) {
         return FALSE;
     }
 
@@ -49,10 +44,12 @@ int addNamespace(pcb_t *p, nsd_t *ns)
     p->namespaces[ns->n_type]=ns;
 
     /* associo il namespace ai figli del processo */
-    if(!list_empty(&p->p_child)){
+    if(!list_empty(&p->p_child)) {
+
         /* associa il namespace al figlio */
         pcb_t *child = list_first_entry(&p->p_child, pcb_t, p_child);
         child->namespaces[ns->n_type] = ns;
+
         /* itera e associa ai fratelli del figlio */
         list_for_each_entry(child, &child->p_sib, p_sib){
             child->namespaces[ns->n_type] = ns;
@@ -63,10 +60,7 @@ int addNamespace(pcb_t *p, nsd_t *ns)
 
 
 nsd_t *allocNamespace(int type){
-    if(type<0 || type>NS_TYPE_LAST){
-        return NULL;
-    }
-    if(list_empty(&type_nsFree_h[type])){
+    if(type<0 || type>NS_TYPE_LAST || list_empty(&type_nsFree_h[type])) {
         return NULL;
     }
 
