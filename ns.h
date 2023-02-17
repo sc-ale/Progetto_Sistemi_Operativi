@@ -5,10 +5,9 @@
 #include "types.h"
 
 
-/**
- * Inizializza tutte le liste dei namespace liberi. Questo metodo viene invocato 
- * una volta sola durante l’inizializzazione della struttura dati
- **/
+
+/* Inizializza tutte le liste dei namespace liberi */ 
+
 void initNamespaces();
 
 /* Ritorna il namespace di tipo type associato al processo p (o NULL) */
