@@ -21,7 +21,7 @@ UMPS3_PANDOS_DIR = ./
 # Compiler options
 CFLAGS_LANG = -ffreestanding -ansi
 CFLAGS_MIPS = -mips1 -mabi=32 -mno-gpopt -EL -G 0 -mno-abicalls -fno-pic -mfp32
-CFLAGS = $(CFLAGS_LANG) $(CFLAGS_MIPS) -I$(UMPS3_INCLUDE_DIR) -I$(UMPS3_PANDOS_DIR) -O0 -std=gnu99
+CFLAGS = $(CFLAGS_LANG) $(CFLAGS_MIPS) -I$(UMPS3_INCLUDE_DIR) -I$(UMPS3_PANDOS_DIR) -Wall -O0 -std=gnu99
 
 # Linker options
 LDFLAGS = -G 0 -nostdlib -T $(UMPS3_DATA_DIR)/umpscore.ldscript -m elf32ltsmip

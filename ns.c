@@ -1,5 +1,10 @@
 #include "ns.h"
 
+/* variabili globali */
+HIDDEN struct list_head type_nsFree_h[NS_TYPE_MAX];
+HIDDEN struct list_head type_nsList_h[NS_TYPE_MAX];
+HIDDEN nsd_t type_nsd[MAXPROC][NS_TYPE_MAX];
+
 
 void initNamespaces()
 {

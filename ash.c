@@ -1,5 +1,10 @@
 #include "ash.h"
 
+/* variabili globali */
+HIDDEN semd_t semd_table[MAXPROC]; 
+HIDDEN LIST_HEAD(semdFree_h);
+HIDDEN DECLARE_HASHTABLE(semd_h, 5);
+
 
 void initASH()
 {

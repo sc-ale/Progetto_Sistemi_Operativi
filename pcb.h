@@ -5,8 +5,6 @@
 #include "pandos_const.h"
 #include "list.h"
 
-HIDDEN LIST_HEAD(pcbFree_h);
-HIDDEN pcb_t pcbFree_table[MAXPROC];
 
 /* Inizializzazione di pcbFree_h inserendo gli elementi in pcbFree_table */
 void initPcbs();
@@ -42,7 +40,6 @@ pcb_t *headProcQ(struct list_head *);
  **/
 pcb_t *removeProcQ(struct list_head *);
 
-
 /** 
  * Rimuove il PCB puntato da p dalla coda dei processi puntata da head.
  * Se p non è presente nella coda, restituisce NULL. 
@@ -53,10 +50,8 @@ pcb_t *outProcQ(struct list_head*, pcb_t *);
 /* Restituisce TRUE se il PCB puntato da p non ha figli, FALSE altrimenti */
 int emptyChild(pcb_t *);
 
-
 /* Inserisce il PCB puntato da p come figlio del PCB puntato da prnt */
 void insertChild(pcb_t *, pcb_t *);
-
 
 /** 
  * Rimuove il PCB puntato da p dalla lista dei figli del padre. 

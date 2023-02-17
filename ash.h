@@ -6,9 +6,6 @@
 #include "hashtable.h"
 #include "pcb.h"
 
-HIDDEN semd_t semd_table[MAXPROC]; 
-HIDDEN LIST_HEAD(semdFree_h);
-HIDDEN DECLARE_HASHTABLE(semd_h, 5);
 
 /* Inizializza la lista dei semdFree_h in modo da contenere tutti gli elementi della semdTable */
 void initASH();
