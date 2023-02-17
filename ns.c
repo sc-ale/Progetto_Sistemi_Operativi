@@ -65,10 +65,10 @@ nsd_t *allocNamespace(int type){
         return NULL;
     }
 
-    /* assegna a un puntatore il ns da restituire */
+    /* assegna a un puntatore il namespace da restituire */
     nsd_t *new_nsd = list_first_entry(type_nsFree_h, nsd_t, n_link);
 
-    /* rimuovi il ns dalla lista "liberi" e assegnalo nella lista "utilizzati" */
+    /* rimuove il namespace dalla lista dei liberi e lo aggiunge alla lista utilizzati */
     list_del_init(&new_nsd->n_link);
     list_add(&new_nsd->n_link, &type_nsList_h[type]);
     return new_nsd;
@@ -77,7 +77,7 @@ nsd_t *allocNamespace(int type){
 
 
 void freeNamespace(nsd_t *ns){
-    /* rimuovi il ns dalla lista "utilizzati" e assegnalo nella lista "liberi" */
+    /* rimuove ns dalla lista degli utilizzati e lo aggiunge alla lista dei liberi */
     list_del_init(&ns->n_link);
     list_add(&ns->n_link, &type_nsFree_h[ns->n_type]);
 }

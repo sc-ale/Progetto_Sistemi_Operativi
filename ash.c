@@ -14,15 +14,16 @@ void initASH()
 }
 
 
-int insertBlocked(int* semAdd, pcb_t* p){
+int insertBlocked(int* semAdd, pcb_t* p)
+{
     if(p->p_semAdd==NULL) {
         /* p non è associato ad altri semafori */
         struct semd_t* corrente; 
-        hash_for_each_possible(semd_h, corrente, s_link, (u32)semAdd){
+        hash_for_each_possible(semd_h, corrente, s_link, (u32)semAdd) {
             /* semaforo già in semd_h */
             p->p_semAdd = semAdd;
             insertProcQ(&corrente->s_procq,p);
-            return 0;
+            return FALSE;
         }
 
         if (!list_empty(&semdFree_h)) {
@@ -36,14 +37,15 @@ int insertBlocked(int* semAdd, pcb_t* p){
 
             hash_add(semd_h,&newSemd->s_link, (u32)newSemd->s_key);
             list_del(&newSemd->s_freelink);
-            return 0;
+            return FALSE;
         }
     }
-    return 1;
+    return TRUE;
 }
 
 
-pcb_t* outBlocked(pcb_t *p) {
+pcb_t* outBlocked(pcb_t *p)
+{
     semd_t *semdP=NULL;
     struct list_head *corrente, *temp = NULL;
 

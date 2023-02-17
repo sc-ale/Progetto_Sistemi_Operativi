@@ -15,7 +15,6 @@ void initPcbs()
 
 void freePcb(pcb_t *p)
 {
-        /* se inseriamo p in pcbFree_h non dovremmo staccarlo da dove era collegato ? */
         list_add(&p->p_list, &pcbFree_h);
 }
 
@@ -74,17 +73,22 @@ pcb_t *removeProcQ(struct list_head *head)
 
 pcb_t *outProcQ(struct list_head* head, pcb_t *p)
 {
-    struct list_head *corrente1, *corrente2 = NULL;
-    struct pcb_t *temp, *trovato = NULL;
-    list_for_each_safe(corrente1, corrente2, head) 
-    {
-            temp = list_entry(corrente1, struct pcb_t, p_list);
-            if (temp==p) { 
-                trovato = temp;
-                list_del(&temp->p_list);
-            }   
-    } 
-   return trovato;
+        /* utilizziamo corrente1 e corrente2 per iterare sulla lista head */
+        struct list_head *corrente1, *corrente2 = NULL;
+
+        /* utilizziamo temp per verificae se l'elemento corrente corrisponde a p 
+        e in tal caso lo salviamo in trovato */
+        struct pcb_t *temp, *trovato = NULL;
+        
+        list_for_each_safe(corrente1, corrente2, head) 
+        {
+                temp = list_entry(corrente1, struct pcb_t, p_list);
+                if (temp==p) { 
+                        trovato = temp;
+                        list_del(&temp->p_list);
+                }   
+        } 
+        return trovato;
 }
 
 
