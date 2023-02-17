@@ -5,21 +5,25 @@
 #include "types.h"
 
 
-/* Inizializza tutte le liste dei namespace liberi. Questo metodo viene invocato 
-una volta sola durante l’inizializzazione della struttura dati. */
+/**
+ * Inizializza tutte le liste dei namespace liberi. Questo metodo viene invocato 
+ * una volta sola durante l’inizializzazione della struttura dati
+ **/
 void initNamespaces();
 
-/* Ritorna il namespace di tipo type associato al processo p (o NULL).*/
+/* Ritorna il namespace di tipo type associato al processo p (o NULL) */
 nsd_t *getNamespace(pcb_t *, int);
 
-/* Associa al processo p e a tutti I suoi fiigli il namespace ns. 
-Ritorna FALSE in caso di errore, TRUE altrimenti. */
+/**
+ * Associa al processo p e a tutti I suoi fiigli il namespace ns.
+ * Ritorna FALSE in caso di errore, TRUE altrimenti
+ **/
 int addNamespace(pcb_t *, nsd_t *);
 
-/* Alloca un namespace di tipo type dalla lista corretta. */
+/* Alloca un namespace di tipo type dalla lista corretta */
 nsd_t *allocNamespace(int);
 
-/* Libera il namespace ns ri-inserendolo nella lista di namespace corretta. */
+/* Libera il namespace ns ri-inserendolo nella lista di namespace corretta */
 void freeNamespace(nsd_t *);
 
 #endif

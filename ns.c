@@ -30,7 +30,7 @@ void initNamespaces()
 
 nsd_t *getNamespace(pcb_t *p, int type)
 {   
-    /* verifica che il tipo assegnato sia valido*/
+    /* verifica che il tipo assegnato sia valido */
     return (p==NULL || type<0 || type > NS_TYPE_LAST) ? NULL : p->namespaces[type];
 }
 
