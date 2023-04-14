@@ -65,5 +65,6 @@ int main() {
     pcb_t *primoProc = allocPcb();
     insertProcQ(&readyQ, &primoProc);
     process_count+=1;
-    //mancano i file del tutor
+    //bisogna finire l'inizializzazione del processo, non ho capito :(
+
 }
