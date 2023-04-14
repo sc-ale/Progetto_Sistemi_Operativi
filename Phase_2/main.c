@@ -59,7 +59,7 @@ int main() {
     passUpVect->exception_stackPtr = (memaddr) 0x20001000; //stesso indirizzo ??
 
     //PUNTO 5 NON HO CAPITO
-    LDIT(100);     
+    LDIT(100000);     
 
     //PUNTO 6 
     pcb_t *primoProc = allocPcb();
