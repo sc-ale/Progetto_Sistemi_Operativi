@@ -65,6 +65,8 @@ int main() {
     pcb_t *primoProc = allocPcb();
     insertProcQ(&readyQ, &primoProc);
     process_count+=1;
+    primoProc->p_time = 0;
+    primoProc->p_supportStruct = NULL;
     //bisogna finire l'inizializzazione del processo, non ho capito :(
 
 }
