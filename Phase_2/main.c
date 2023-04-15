@@ -67,6 +67,15 @@ int main() {
     process_count+=1;
     primoProc->p_time = 0;
     primoProc->p_supportStruct = NULL;
+    primoProc->p_s.s_pc = (memaddr) test;
+    
+    /*
+    Questo è quello che manca del punto 6:
+    initializing the processor state that is part of the pcb. 
+    In particular this process needs to have interrupts enabled,
+    the processor Local Timer enabled, kernel-mode on, the SP set to
+    RAMTOP (i.e. use the last RAM frame for its stack).
+    */
     //bisogna finire l'inizializzazione del processo, non ho capito :(
 
 }
