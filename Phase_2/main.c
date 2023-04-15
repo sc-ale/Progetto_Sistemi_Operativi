@@ -3,6 +3,7 @@
 #include <pcb.h>
 #include <ash.h>
 #include <ns.h>
+extern void test();
 
 int process_count; /* numero processi attivi */
 int soft_block_count; /* conteggio processi bloccati per I/O o timer request*/
@@ -54,9 +55,9 @@ int main() {
 /* popolazione pass up vector */
     passupvector_t *passUpVect;
     passUpVect->tlb_refill_handler = (memaddr) uTLB_RefillHandler;
-    passUpVect->tlb_refill_stackPtr = (memaddr) 0x20001000;
-    passUpVect->exception_handler = (memaddr) FUNZIONE_DA_IMPLEMENTARE;
-    passUpVect->exception_stackPtr = (memaddr) 0x20001000; //stesso indirizzo ??
+    passUpVect->tlb_refill_stackPtr = (memaddr) KERNELSTACK;
+    passUpVect->exception_handler = (memaddr) //FUNZIONE_DA_IMPLEMENTARE;
+    passUpVect->exception_stackPtr = (memaddr) KERNELSTACK; //stesso indirizzo ??
 
     //PUNTO 5 NON HO CAPITO
     LDIT(100000);     
@@ -70,19 +71,27 @@ int main() {
 
     // Sezione 2.3 di uMPS3 spiega questo registro, non ho trovato macro o altro
     // l'unica soluzione mi sembra assegnarli in modo diretto ma guardateci anche voi
-    primoProc->p_s.s_status = 0x0800FF04;
+    primoProc->p_s.status = 0x0800FF04;
 
-    primoProc->p_s.s_pc = (memaddr) test;
-    LDST(primoProc->p_s);
+
+
+    //PC e SP settati modo 1
+    primoProc->p_s.pc_epc = (memaddr) test;
+    primoProc->p_s.gpr[24] = (memaddr) test;
+    primoProc->p_supportStruct->sup_exceptContext->stackPtr = KERNELSTACK; //da riguardare
+
+
+    // PC e SP settati modo 2
+    LDCXT(KERNELSTACK, 0x0800FF04, (memaddr) test);
+
+
+
+    LDST(&primoProc->p_s);
+
+
+
 
     /*
-    Questo è quello che manca del punto 6:
-
-    Questi tre fatti (se è giusto)
-    -interrupts enabled  -> s_status
-    -the processor Local Timer enabled -> s_status
-    -kernel-mode on -> s_status
-
     Questo manca
     -the SP set to RAMTOP (i.e. use the last RAM frame for its stack).
     */
