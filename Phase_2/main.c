@@ -67,14 +67,24 @@ int main() {
     process_count+=1;
     primoProc->p_time = 0;
     primoProc->p_supportStruct = NULL;
+
+    // Sezione 2.3 di uMPS3 spiega questo registro, non ho trovato macro o altro
+    // l'unica soluzione mi sembra assegnarli in modo diretto ma guardateci anche voi
+    primoProc->p_s.s_status = 0x0800FF04;
+
     primoProc->p_s.s_pc = (memaddr) test;
-    
+    LDST(primoProc->p_s);
+
     /*
     Questo è quello che manca del punto 6:
-    initializing the processor state that is part of the pcb. 
-    In particular this process needs to have interrupts enabled,
-    the processor Local Timer enabled, kernel-mode on, the SP set to
-    RAMTOP (i.e. use the last RAM frame for its stack).
+
+    Questi tre fatti (se è giusto)
+    -interrupts enabled  -> s_status
+    -the processor Local Timer enabled -> s_status
+    -kernel-mode on -> s_status
+
+    Questo manca
+    -the SP set to RAMTOP (i.e. use the last RAM frame for its stack).
     */
     //bisogna finire l'inizializzazione del processo, non ho capito :(
 
