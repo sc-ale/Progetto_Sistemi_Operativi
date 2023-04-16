@@ -5,6 +5,7 @@
 #include <ns.h>
 #include <scheduler.c>
 #include <initial.c>
+#include <pandos_const.h>
 
 
 void uTLB_RefillHandler () {
@@ -18,3 +19,44 @@ void uTLB_RefillHandler () {
 void foobar() {
 
 }
+
+int SYSCALL(auto a1, auto a1, auto a2, auto a3){
+    /* mi sembra orribile, non so come definirle dio cane*/
+    switch (a1)
+    {
+    case CREATEPROCESS:
+        
+        break;
+        
+    case TERMPROCESS:
+
+        break;
+    
+    case PASSEREN:
+        
+        break;
+        
+    case VERHOGEN:
+
+        break;
+    
+    case IOWAIT:
+        
+        break;
+        
+    case GETTIME:
+
+        break;
+    
+    case GETSUPPORTPTR:
+        
+        break;
+        
+    case TERMINATE:
+
+        break;
+    default:
+        break;
+    }
+}
+
