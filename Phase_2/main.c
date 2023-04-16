@@ -3,6 +3,7 @@
 #include <pcb.h>
 #include <ash.h>
 #include <ns.h>
+#include <scheduler.c>
 extern void test();
 
 int process_count; /* numero processi attivi */
@@ -23,7 +24,7 @@ void uTLB_RefillHandler () {
     setENTRYHI(0x80000000);
     setENTRYLO(0x00000000);
     TLBWR();
-    LDST ((state_PTR) 0x0FFFF000);
+    LDST((state_t *)0x0FFFF000);
 }
 
 int main() {
@@ -89,7 +90,7 @@ int main() {
     LDST(&primoProc->p_s);
 
 
-
+    scheduling();
 
     /*
     Questo manca
