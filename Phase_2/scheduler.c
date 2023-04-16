@@ -1,6 +1,6 @@
 #include <umps3/umps/libumps.h>
 #include <umps3/umps/types.h>
-#include <main.c>
+#include <initial.c>
 #include <pcb.h>
 #include <ash.h>
 #include <ns.h>

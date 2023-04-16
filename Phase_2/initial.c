@@ -4,6 +4,7 @@
 #include <ash.h>
 #include <ns.h>
 #include <scheduler.c>
+#include <exception.c>
 extern void test();
 
 int process_count; /* numero processi attivi */
@@ -19,13 +20,6 @@ int sem_tape[8];
 int sem_network[8];
 int sem_printer[8];
 int sem_terminal[16];
-
-void uTLB_RefillHandler () {
-    setENTRYHI(0x80000000);
-    setENTRYLO(0x00000000);
-    TLBWR();
-    LDST((state_t *)0x0FFFF000);
-}
 
 int main() {
 
@@ -55,9 +49,9 @@ int main() {
 
 /* popolazione pass up vector */
     passupvector_t *passUpVect;
-    passUpVect->tlb_refill_handler = (memaddr) uTLB_RefillHandler;
+    passUpVect->tlb_refill_handler = (memaddr) uTLB_RefillHandler();
     passUpVect->tlb_refill_stackPtr = (memaddr) KERNELSTACK;
-    passUpVect->exception_handler = (memaddr) //FUNZIONE_DA_IMPLEMENTARE;
+    passUpVect->exception_handler = (memaddr) foobar();
     passUpVect->exception_stackPtr = (memaddr) KERNELSTACK; //stesso indirizzo ??
 
     //PUNTO 5 NON HO CAPITO
