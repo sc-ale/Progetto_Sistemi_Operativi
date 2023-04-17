@@ -48,7 +48,10 @@ void foobar()
         break;
         
     case GETTIME:
+        SYS_Get_CPU_Time();
+        break;
 
+    case CLOCKWAIT:
         break;
     
     case GETSUPPORTPTR:
@@ -193,6 +196,11 @@ void SYS_Verhogen(int* semaddr)
     } else {
         semaddr++;
     }
+}
+
+SYS_Get_CPU_Time()
+{
+    reg_v0 = current_process->p_time;
 }
 
 
