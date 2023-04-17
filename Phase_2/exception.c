@@ -30,7 +30,7 @@ void foobar() {
         break;
         
     case TERMPROCESS:
-
+        SYS_terminate_process(reg_a1);
         break;
     
     case PASSEREN:
@@ -72,4 +72,8 @@ void SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns)
     else {
         reg_v0 = -1;
     }
+}
+
+void SYS_terminate_process(int pid){
+    
 }
