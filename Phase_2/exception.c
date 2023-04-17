@@ -34,7 +34,7 @@ void foobar() {
         break;
     
     case PASSEREN:
-        
+        SYS_Passeren(reg_a1);
         break;
         
     case VERHOGEN:
@@ -83,4 +83,15 @@ void SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns)
     else { /* non ci sono pcb liberi */
         reg_v0 = -1;
     }
+}
+
+
+
+
+
+/* Operazione di richiesta di un semaforo binario.
+ Il valore del semaforo è memorizzato nella variabile di tipo intero passata per indirizzo. 
+ L’indirizzo della variabile agisce da identificatore per il semaforo */
+void SYS_Passeren(int *semaddr) {
+
 }
