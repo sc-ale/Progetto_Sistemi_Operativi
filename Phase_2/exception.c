@@ -213,6 +213,10 @@ void SYS_Get_Process_Id(int parent)
         reg_v0 = current_process->p_pid;
     } 
     else { /* dobbiamo restituire il pid del padre, se si trovano nello stesso namespace */
-
+        /* assumiamo che il processo corrente abbia un padre (?) */
+        nsd_t* parent_pid = getNamespce(current_process->p_parent, current_process->namespaces.n_type);
+        
+        /* se current_process e il processo padre non sono nello stesso namespace restituisci 0 */ 
+        reg_v0 = (parent_pid==NULL) ? 0 : current_process->p_pid;
     }
 }
