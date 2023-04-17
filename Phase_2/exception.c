@@ -62,6 +62,8 @@ void foobar()
         SYS_Get_Process_Id(reg_a1);
         break;
 
+    case: GETCHILDREN:
+        SYS_Get_Children(int *children, int size);
     default:
         break;
     }
@@ -198,6 +200,7 @@ void SYS_Verhogen(int* semaddr)
     }
 }
 
+/* Restituisce il tempo di utilizzo del processore del processo in esecuzione*/
 SYS_Get_CPU_Time()
 {
     reg_v0 = current_process->p_time;
@@ -222,5 +225,19 @@ void SYS_Get_Process_Id(int parent)
     } 
     else { /* dobbiamo restituire il pid del padre, se si trovano nello stesso namespace */
 
+    }
+}
+
+/**/
+void SYS_Get_Children(int *children, int size){
+    int num = 0;
+    struct list_head *pos, *current = NULL;
+    nsd_t current_namespace = getNamespace(current_process, )
+    pcb_t first_child = current_process->p_child;
+    list_for_each_safe(pos, current, first_child->p_sib){
+        pcb_t* temp = list_entry(pos, struct pcb_t, p_sib);
+        children[num] = temp->
+        num++;
+        
     }
 }
