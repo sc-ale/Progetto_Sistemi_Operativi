@@ -85,6 +85,10 @@ void SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns)
     }
 }
 
+mass_Murder(pcb_t *father){
+    
+}
+
 void SYS_terminate_process(int pid){
     pcb_t *Proc2Delete;
     if(pid == 0){
@@ -98,8 +102,8 @@ void SYS_terminate_process(int pid){
         return;
     }
 
-    
-
+    mass_Murder(Proc2Delete);
+    return;
 }
 
 /* Operazione di richiesta di un semaforo binario.
