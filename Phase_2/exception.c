@@ -40,7 +40,7 @@ void foobar()
         break;
         
     case VERHOGEN:
-
+        SYS_Verhogen(reg_a1);
         break;
     
     case IOWAIT:
@@ -86,12 +86,15 @@ void SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns)
         newProc->p_pid = pid_start + 1; /* assegniamo il pid */
         newProc->p_time = 0;
 
+        //process_count=+1; /* stiamo aggiunge un nuovo processo tra quelli attivi ? */
+
         reg_v0 = newProc->p_pid;
     }
     else { /* non ci sono pcb liberi */
-        reg_v0 = -1;
+        reg_v0--;
     }
 }
+
 
 /* Termina il processo con identificativo pid e tutti suoi figli
  (e figli dei figli...) se pid è 0 allora termina il processo corrente */
@@ -138,7 +141,7 @@ void terminate_family(pcb_t *ptrn)
         pcb_t* temp = list_entry(pos, struct pcb_t, p_sib);
         terminate_children(temp);
     }
-    
+
     /* uccido ptrn */
     ptnr->p_parent = NULL;
     list_del(&ptrn->p_list);
@@ -147,12 +150,52 @@ void terminate_family(pcb_t *ptrn)
     ptrn->p_semAdd = NULL;
     ptrn->p_pid = 0;
     freePcb(ptrn);
+    
+    process_count--;
+    /* penso che dobbiamo controllare se tra i processi che eliminiamo
+     ci sono dei processi bloccati e in quel caso diminuire il soft_block_count */
 }
+
 
 /* Operazione di richiesta di un semaforo binario.
  Il valore del semaforo è memorizzato nella variabile di tipo intero passata per indirizzo. 
  L’indirizzo della variabile agisce da identificatore per il semaforo */
 void SYS_Passeren(int *semaddr) 
 {
+    /* dobbiamo usare la hash dei semafori attivi */
+    int pid_current = current_process->p_pid;
+    if(*semaddr==0) {
+        /* aggiungere current_process nella coda dei 
+         processi bloccati da una P e sospenderlo*/
+        int inserimento_avvenuto = insertBlocked(semaddr, current_process);
+        /* se inserimento_avvenuto è 1 allora non è stato possibile allocare un nuovo SEMD perché la semdFree_h è vuota */
 
+         /* chiamata allo scheduler, non so si può far direttamente così */
+        scheduling();
+    } else if( /* se la coda dei processi bloccati da V non è vuota*/(pcb_t* temp = headBlocked(semaddr))!=NULL) {
+        /* risvegliare il primo processo che si era bloccato su una V */
+        pcb_t* wakedProc = removeBlocked(semaddr);
+    } else {
+        semaddr--;
+    }
+}
+
+/* Operazione di rilascio di un semaforo binario la cui chiave è il valore puntato da semaddr */
+void SYS_Verhogen(int* semaddr)
+{
+    int pid_current = current_process->p_pid;
+    if(*semaddr==1) {
+        /* aggiungere current_process nella coda dei 
+         processi bloccati da una V e sospenderlo*/
+        int inserimento_avvenuto = insertBlocked(semaddr, current_process);
+        /* se inserimento_avvenuto è 1 allora non è stato possibile allocare un nuovo SEMD perché la semdFree_h è vuota */
+
+         /* chiamata allo scheduler, non so si può far direttamente così */
+        scheduling();
+    } else if( /* se la coda dei processi bloccati da P non è vuota*/(pcb_t* temp = headBlocked(semaddr))!=NULL) {
+        /* risvegliare il primo processo che si era bloccato su una P */
+        pcb_t* wakedProc = removeBlocked(semaddr);
+    } else {
+        semaddr++;
+    }
 }

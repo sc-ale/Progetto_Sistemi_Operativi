@@ -86,6 +86,6 @@ int main() {
     Questo manca
     -the SP set to RAMTOP (i.e. use the last RAM frame for its stack).
     */
-    //bisogna finire l'inizializzazione del processo, non ho capito :(
+    //bisogna finire l'inizializzazione del processo
 
 }
