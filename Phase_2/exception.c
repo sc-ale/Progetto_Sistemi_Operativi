@@ -132,14 +132,14 @@ void terminate_family(pcb_t *ptrn)
 {
     /* se ha dei figli richiama la funzione stessa */
     if(!emptyChild(ptrn)) {        
-        terminate_children(ptrn->p_child);   
+        terminate_family(ptrn->p_child);   
     }
 
     /* richiamo la funzione per i fratelli di ptrn */
     struct list_head *pos, *current = NULL;
     list_for_each_safe(pos, current, ptrn->p_sib) {
         pcb_t* temp = list_entry(pos, struct pcb_t, p_sib);
-        terminate_children(temp);
+        terminate_family(temp);
     }
 
     /* uccido ptrn */
