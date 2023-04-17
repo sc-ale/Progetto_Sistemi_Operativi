@@ -19,7 +19,7 @@ void uTLB_RefillHandler ()
     LDST((state_t *)0x0FFFF000);
 }
 
-
+/* CONTROLLARE LA SEZIONE 3.5.12 */
 void foobar() 
 {
     /* usare i registri grp, che sono i registri a0, ..., a3 */
@@ -200,7 +200,7 @@ void SYS_Verhogen(int* semaddr)
     }
 }
 
-/* Restituisce il tempo di utilizzo del processore del processo in esecuzione*/
+void /* Restituisce il tempo di utilizzo del processore del processo in esecuzione*/
 SYS_Get_CPU_Time()
 {
     reg_v0 = current_process->p_time;
@@ -224,7 +224,25 @@ void SYS_Get_Process_Id(int parent)
         reg_v0 = current_process->p_pid;
     } 
     else { /* dobbiamo restituire il pid del padre, se si trovano nello stesso namespace */
+        /* assumiamo che il processo corrente abbia un padre (?) */
+        nsd_t* parent_pid = getNamespace(current_process->p_parent, current_process->namespaces.n_type);
+        
+        /* se current_process e il processo padre non sono nello stesso namespace restituisci 0 */ 
+        reg_v0 = (parent_pid==NULL) ? 0 : current_process->p_pid;
+    }
+}
 
+/**/
+void SYS_Get_Children(int *children, int size){
+    int num = 0;
+    struct list_head *pos, *current = NULL;
+    nsd_t current_namespace = getNamespace(current_process, )
+    pcb_t first_child = current_process->p_child;
+    list_for_each_safe(pos, current, first_child->p_sib){
+        pcb_t* temp = list_entry(pos, struct pcb_t, p_sib);
+        children[num] = temp->
+        num++;
+        
     }
 }
 
