@@ -85,10 +85,8 @@ void SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns)
     }
 }
 
-mass_Murder(pcb_t *father){
-    
-}
-
+/* Termina il processo con identificativo pid e tutti suoi figli
+ (e figli dei figli...) se pid è 0 allora termina il processo corrente */
 void SYS_terminate_process(int pid){
     pcb_t *Proc2Delete;
     if(pid == 0){
@@ -106,6 +104,17 @@ void SYS_terminate_process(int pid){
     return;
 }
 
+/* aggiunge tutti i fratelli del figlio in freePcb_h */
+void mass_Murder(pcb_t *father){
+    struct list_head *pos, *current = NULL;
+
+    list_for_each_safe(pos, current, father->p_child->p_sib){
+        pcb_t* temp = list_entry(pos, struct pcb_t, p_sib);
+        mass_Murder(temp);
+    }
+    father-> p_pid = 0;
+    freePcb(father);  
+}
 /* Operazione di richiesta di un semaforo binario.
  Il valore del semaforo è memorizzato nella variabile di tipo intero passata per indirizzo. 
  L’indirizzo della variabile agisce da identificatore per il semaforo */
