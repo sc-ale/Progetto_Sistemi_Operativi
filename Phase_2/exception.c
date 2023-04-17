@@ -198,7 +198,7 @@ void SYS_Verhogen(int* semaddr)
     }
 }
 
-SYS_Get_CPU_Time()
+void SYS_Get_CPU_Time()
 {
     reg_v0 = current_process->p_time;
 }
