@@ -86,5 +86,18 @@ void SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns)
 }
 
 void SYS_terminate_process(int pid){
+    pcb_t *Proc2Delete;
+    if(pid == 0){
+        Proc2Delete = current_process;
+    } else{
+        for(int i=0; i<MAXPROC; i++){
+            if(pcbFree_table[i]->p_pid == pid){
+                Proc2Delete = &pcbFree_table[i];
+            }
+        }
+        return;
+    }
+
     
+
 }
