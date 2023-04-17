@@ -9,7 +9,7 @@
 
 /* come process id usiamo un intero che aumenta 
     e basta (no caso reincarazione)*/
-int pid = 0;
+int pid_start = 0;
 
 void uTLB_RefillHandler () {
     setENTRYHI(0x80000000);
@@ -77,7 +77,8 @@ void SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns)
         if (!addNamspace(&newProc, &ns)) { /* deve ereditare il ns dal padre */
             newProc->namespaces = current_process->namespace;
         }
-        reg_v0 = pid+1;
+        newProc->p_pid = pid_start + 1;
+        reg_v0 = newProc->p_pid;
     }
     else { /* non ci sono pcb liberi */
         reg_v0 = -1;
