@@ -11,7 +11,8 @@
     e basta (no caso reincarazione)*/
 int pid_start = 0;
 
-void uTLB_RefillHandler () {
+void uTLB_RefillHandler () 
+{
     setENTRYHI(0x80000000);
     setENTRYLO(0x00000000);
     TLBWR();
@@ -19,7 +20,8 @@ void uTLB_RefillHandler () {
 }
 
 
-void foobar() {
+void foobar() 
+{
     /* usare i registri grp, che sono i registri a0, ..., a3 */
     /* prendere a0 per fare lo switch*/
 
@@ -93,7 +95,8 @@ void SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns)
 
 /* Termina il processo con identificativo pid e tutti suoi figli
  (e figli dei figli...) se pid è 0 allora termina il processo corrente */
-void SYS_terminate_process(int pid){
+void SYS_terminate_process(int pid)
+{
     pcb_t *Proc2Delete;
     if(pid == 0){
         Proc2Delete = current_process;
@@ -121,9 +124,35 @@ void mass_Murder(pcb_t *father){
     father-> p_pid = 0;
     freePcb(father);  
 }
+
+void terminate_family(pcb_t *ptrn)
+{
+    /* se ha dei figli richiama la funzione stessa */
+    if(!emptyChild(ptrn)) {        
+        terminate_children(ptrn->p_child);   
+    }
+
+    /* richiamo la funzione per i fratelli di ptrn */
+    struct list_head *pos, *current = NULL;
+    list_for_each_safe(pos, current, ptrn->p_sib) {
+        pcb_t* temp = list_entry(pos, struct pcb_t, p_sib);
+        terminate_children(temp);
+    }
+    
+    /* uccido ptrn */
+    ptnr->p_parent = NULL;
+    list_del(&ptrn->p_list);
+    list_del(&ptrn->p_child);
+    list_del(&ptrn->p_sib);
+    ptrn->p_semAdd = NULL;
+    ptrn->p_pid = 0;
+    freePcb(ptrn);
+}
+
 /* Operazione di richiesta di un semaforo binario.
  Il valore del semaforo è memorizzato nella variabile di tipo intero passata per indirizzo. 
  L’indirizzo della variabile agisce da identificatore per il semaforo */
-void SYS_Passeren(int *semaddr) {
+void SYS_Passeren(int *semaddr) 
+{
 
 }
