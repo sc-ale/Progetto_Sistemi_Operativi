@@ -67,6 +67,7 @@ int main() {
     // Sezione 2.3 di uMPS3 spiega questo registro, non ho trovato macro o altro
     // l'unica soluzione mi sembra assegnarli in modo diretto ma guardateci anche voi
     primoProc->p_s.status = 0x0800FF04;
+    primoProc->p_s.status = IEPON + IMON + TEBITON;
 
 
 
