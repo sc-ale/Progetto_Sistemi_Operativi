@@ -76,6 +76,9 @@ typedef struct pcb_t {
     /* Indicator of priority; 0 - low, 1 - high */
     int p_prio;
 
+    /* process id */
+    int p_pid;
+
     /* Namespace list */
     nsd_t *namespaces[NS_TYPE_MAX];
 } pcb_t, *pcb_PTR;
