@@ -19,7 +19,7 @@ void uTLB_RefillHandler ()
     LDST((state_t *)0x0FFFF000);
 }
 
-
+/* CONTROLLARE LA SEZIONE 3.5.12 */
 void foobar() 
 {
     /* usare i registri grp, che sono i registri a0, ..., a3 */
