@@ -17,12 +17,10 @@ void uTLB_RefillHandler () {
 
 
 void foobar() {
-
-}
-
-int SYSCALL(auto a1, auto a1, auto a2, auto a3){
-    /* mi sembra orribile, non so come definirle dio cane*/
-    switch (a1)
+    /* usare i registri grp, che sono i registri a0, ..., a3 */
+    /* prendere a0 per fare lo switch*/
+    
+    switch (a0)
     {
     case CREATEPROCESS:
         
