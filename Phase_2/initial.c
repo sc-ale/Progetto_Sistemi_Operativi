@@ -66,8 +66,7 @@ int main() {
 
     // Sezione 2.3 di uMPS3 spiega questo registro, non ho trovato macro o altro
     // l'unica soluzione mi sembra assegnarli in modo diretto ma guardateci anche voi
-    primoProc->p_s.status = 0x0800FF04;
-    primoProc->p_s.status = IEPON + IMON + TEBITON;
+    primoProc->p_s.status = IEPON | IMON | TEBITON;
 
 
 
@@ -75,10 +74,6 @@ int main() {
     primoProc->p_s.pc_epc = (memaddr) test;
     primoProc->p_s.gpr[24] = (memaddr) test;
     primoProc->p_supportStruct->sup_exceptContext->stackPtr = KERNELSTACK; //da riguardare
-
-
-    // PC e SP settati modo 2
-    LDCXT(KERNELSTACK, 0x0800FF04, (memaddr) test);
 
 
 
