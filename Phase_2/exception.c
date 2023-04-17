@@ -7,6 +7,9 @@
 #include <initial.c>
 #include <pandos_const.h>
 
+/* come process id usiamo un intero che aumenta 
+    e basta (no caso reincarazione)*/
+int pid = 0;
 
 void uTLB_RefillHandler () {
     setENTRYHI(0x80000000);
@@ -19,11 +22,11 @@ void uTLB_RefillHandler () {
 void foobar() {
     /* usare i registri grp, che sono i registri a0, ..., a3 */
     /* prendere a0 per fare lo switch*/
-    
-    switch (a0)
+
+    switch (reg_a0)
     {
     case CREATEPROCESS:
-        
+        SYS_create_process(reg_a1, reg_a2, reg_a3);
         break;
         
     case TERMPROCESS:
@@ -58,3 +61,15 @@ void foobar() {
     }
 }
 
+void SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns)
+{
+    pcb_t *newProc = allocPcb();
+    if ( newProc!=0) {
+        newPorc->p_parent = current_process;
+        newProc->p_s = *statep;
+        if ( addNamspace(&newProc, &ns))
+    }
+    else {
+        reg_v0 = -1;
+    }
+}

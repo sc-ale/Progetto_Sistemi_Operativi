@@ -14,7 +14,7 @@ void initNamespaces();
 nsd_t *getNamespace(pcb_t *, int);
 
 /**
- * Associa al processo p e a tutti I suoi fiigli il namespace ns.
+ * Associa al processo p e a tutti i suoi figli il namespace ns.
  * Ritorna FALSE in caso di errore, TRUE altrimenti
  **/
 int addNamespace(pcb_t *, nsd_t *);
