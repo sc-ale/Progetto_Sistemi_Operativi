@@ -71,13 +71,14 @@ void SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns)
     pcb_t *newProc = allocPcb();
 
     if (newProc!=NULL) {
-        newPorc->p_parent = current_process;
+        insertChild(&current_process, &newProc);
         newProc->p_s = *statep;
         newProc->p_supportStruct = supportp;
         if (!addNamspace(&newProc, &ns)) { /* deve ereditare il ns dal padre */
             newProc->namespaces = current_process->namespace;
         }
         newProc->p_pid = pid_start + 1;
+        newProc->p_time = 0;
         reg_v0 = newProc->p_pid;
     }
     else { /* non ci sono pcb liberi */
