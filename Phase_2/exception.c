@@ -61,15 +61,25 @@ void foobar() {
     }
 }
 
+/* Crea un nuovo processo come figlio del chiamante. Il primo parametro contiene lo stato
+ che deve avere il processo. Se la system call ha successo il valore di ritorno (nel registro reg_v0)
+ è il pid creato altrimenti è -1. supportp e’ un puntatore alla struttura di supporto del processo.
+ Ns descrive il namespace di un determinato tipo da associare al processo, senza specificare
+il namespace (NULL) verra’ ereditato quello del padre.*/
 void SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns)
 {
     pcb_t *newProc = allocPcb();
-    if ( newProc!=0) {
+
+    if (newProc!=NULL) {
         newPorc->p_parent = current_process;
         newProc->p_s = *statep;
-        if ( addNamspace(&newProc, &ns))
+        newProc->p_supportStruct = supportp;
+        if (!addNamspace(&newProc, &ns)) { /* deve ereditare il ns dal padre */
+            newProc->namespaces = current_process->namespace;
+        }
+        reg_v0 = pid+1;
     }
-    else {
+    else { /* non ci sono pcb liberi */
         reg_v0 = -1;
     }
 }
