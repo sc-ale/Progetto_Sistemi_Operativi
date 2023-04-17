@@ -52,12 +52,13 @@ void foobar()
         break;
     
     case GETSUPPORTPTR:
-        
+        SYS_Get_Support_Data();
         break;
         
-    case TERMINATE:
+    case GETPROCESSID:
+        SYS_Get_Process_Id(reg_a1);
+        break;
 
-        break;
     default:
         break;
     }
@@ -109,24 +110,12 @@ void SYS_terminate_process(int pid)
                 Proc2Delete = &pcbFree_table[i];
             }
         }
-        return;
     }
 
-    mass_Murder(Proc2Delete);
-    return;
+    terminate_family(Proc2Delete->p_child);
+    kill_process(pid);
 }
 
-/* aggiunge tutti i fratelli del figlio in freePcb_h */
-void mass_Murder(pcb_t *father){
-    struct list_head *pos, *current = NULL;
-
-    list_for_each_safe(pos, current, father->p_child->p_sib){
-        pcb_t* temp = list_entry(pos, struct pcb_t, p_sib);
-        mass_Murder(temp);
-    }
-    father-> p_pid = 0;
-    freePcb(father);  
-}
 
 void terminate_family(pcb_t *ptrn)
 {
@@ -141,7 +130,13 @@ void terminate_family(pcb_t *ptrn)
         pcb_t* temp = list_entry(pos, struct pcb_t, p_sib);
         terminate_family(temp);
     }
+    kill_process(ptnr);
+    /* penso che dobbiamo controllare se tra i processi che eliminiamo
+     ci sono dei processi bloccati e in quel caso diminuire il soft_block_count */
+}
 
+void kill_process(pcb_t* ptnr)
+{
     /* uccido ptrn */
     ptnr->p_parent = NULL;
     list_del(&ptrn->p_list);
@@ -150,10 +145,8 @@ void terminate_family(pcb_t *ptrn)
     ptrn->p_semAdd = NULL;
     ptrn->p_pid = 0;
     freePcb(ptrn);
-    
+
     process_count--;
-    /* penso che dobbiamo controllare se tra i processi che eliminiamo
-     ci sono dei processi bloccati e in quel caso diminuire il soft_block_count */
 }
 
 
@@ -170,11 +163,12 @@ void SYS_Passeren(int *semaddr)
         int inserimento_avvenuto = insertBlocked(semaddr, current_process);
         /* se inserimento_avvenuto è 1 allora non è stato possibile allocare un nuovo SEMD perché la semdFree_h è vuota */
 
-         /* chiamata allo scheduler, non so si può far direttamente così */
+        /* chiamata allo scheduler, non so si può far direttamente così */
         scheduling();
-    } else if( /* se la coda dei processi bloccati da V non è vuota*/(pcb_t* temp = headBlocked(semaddr))!=NULL) {
+    } else if( /* se la coda dei processi bloccati da V non è vuota*/headBlocked(semaddr)!=NULL) {
         /* risvegliare il primo processo che si era bloccato su una V */
         pcb_t* wakedProc = removeBlocked(semaddr);
+        LDST(&wakeProc->p_s);
     } else {
         semaddr--;
     }
@@ -192,10 +186,33 @@ void SYS_Verhogen(int* semaddr)
 
          /* chiamata allo scheduler, non so si può far direttamente così */
         scheduling();
-    } else if( /* se la coda dei processi bloccati da P non è vuota*/(pcb_t* temp = headBlocked(semaddr))!=NULL) {
+    } else if( /* se la coda dei processi bloccati da P non è vuota*/headBlocked(semaddr)!=NULL) {
         /* risvegliare il primo processo che si era bloccato su una P */
         pcb_t* wakedProc = removeBlocked(semaddr);
+        LDST(&wakeProc->p_s);
     } else {
         semaddr++;
+    }
+}
+
+
+/* Restituisce un puntatore alla struttura di supporto del processo corrente,
+ ovvero il campo p_supportStruct del pcb_t.*/
+void SYS_Get_Support_Data()
+{
+    reg_v0 = current_process->p_supportStruct;
+}
+
+/* Restituisce l’identificatore del processo invocante se parent == 0,
+ quello del genitore del processo invocante altrimenti.
+ Se il parent non e’ nello stesso PID namespace del processo figlio,
+ questa funzione ritorna 0 (se richiesto il pid del padre)! */
+void SYS_Get_Process_Id(int parent)
+{
+    if (parent == 0) {
+        reg_v0 = current_process->p_pid;
+    } 
+    else { /* dobbiamo restituire il pid del padre, se si trovano nello stesso namespace */
+
     }
 }
