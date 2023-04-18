@@ -57,11 +57,14 @@ void passup_ordie(int index) {
     }
 }
 
+/* Per le sys 3, 5, 7 servono delle operazioni in più, sezione 3.5.13 */
 void syscall_handler() {
-    switch (current_process->p_s.reg_a0)
+    /* save exception state at the start of the BIOS DATA PAGE*/
+    
+    switch ((int)current_process->p_s.reg_a0)
     {
     case CREATEPROCESS:
-        SYS_create_process(reg_a1, reg_a2, reg_a3);
+        SYS_create_process((state_t*)current_process->p_s.reg_a1, reg_a2, reg_a3);
         break;
         
     case TERMPROCESS:
@@ -278,4 +281,18 @@ void SYS_Get_Children(int *children, int size){
         num++;
         
     }
+}
+
+/* Per determinare se il processo corrente stava eseguento in kernel o user mode,
+ dobbiamo esaminare lo Status register in the saved exception state. 
+ In particolare, dobbiamo esaminare la versione precedente del KU bit (KUp) siccome 
+ sarà avvenuta una stack push sul KU/IE stacks in the statusa register prima 
+ che lo stato di eccezione fosse salvato*/
+int Check_Kernel_mode()
+{
+    unsigned mask;
+    mask = ((1 << 1) - 1) << STATUS_KUp_BIT;
+    unsigned int bit_kernel = current_process->p_s.status & mask;
+    /* ritorna vero se il processo era in kernel mode, 0 in user mode*/
+    return (bit_kernel==0) ? TRUE : FALSE;
 }
