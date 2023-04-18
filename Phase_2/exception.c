@@ -22,13 +22,14 @@ void uTLB_RefillHandler ()
 /* CONTROLLARE LA SEZIONE 3.5.12 */
 void foobar() 
 {
-    switch (/*cause.EXCCODE*/)
+    current_process->p_s.state = (state_t *)BIOS_DATA_PAGE;
+    switch ()
     {
     case //0
         //interrupt_handler();
         break;
     case //1-3:
-        //TLB_exception_handler();    
+           
         break;
     case //4-7
         //Trap_exception_handler();
@@ -42,13 +43,22 @@ void foobar()
         break;
     }
 }
-/* 3.7 PASS UP OR DIE 
-siccome perTLB , ProgramTrap e SYSCALL > 11 bisogna effettuare PASS UP OR DIE avrebbe senso creare una funzione*/
+
+/*siccome perTLB , ProgramTrap e SYSCALL > 11 bisogna effettuare PASS UP OR DIE avrebbe senso creare una funzione*/
+//DA RIGUARDARE 3.7 
+void passup_ordie(int index) {
+    if (current_process.p_supportStruct == NULL) {
+        SYS_terminate_process();
+    }
+    else {
+        current_process.sup_exceptState[1] = (state_t*)BIOS_DATA_PAGE;
+        context_t exceptContext = current_process.sup_exceptContext[1];
+        LDCXT(exceptContext.stackPtr,exceptContext.status,exceptContext.pc);
+    }
+}
 
 void syscall_handler() {
-    /* save exception state at the start of the BIOS DATA PAGE*/
-
-    switch (reg_a0)
+    switch (current_process->p_s.reg_a0)
     {
     case CREATEPROCESS:
         SYS_create_process(reg_a1, reg_a2, reg_a3);

@@ -3,9 +3,9 @@
 #include <pcb.h>
 #include <ash.h>
 #include <ns.h>
-#include <scheduler.c>
 #include <exception.c>
 extern void test();
+extern void scheduling();
 
 int process_count; /* numero processi attivi */
 int soft_block_count; /* conteggio processi bloccati per I/O o timer request*/
@@ -66,7 +66,7 @@ int main() {
 
     // Sezione 2.3 di uMPS3 spiega questo registro, non ho trovato macro o altro
     // l'unica soluzione mi sembra assegnarli in modo diretto ma guardateci anche voi
-    primoProc->p_s.status = IEPON | IMON | TEBITON;
+    primoProc->p_s.status = (IEPON | IMON | TEBITON);
 
 
 
