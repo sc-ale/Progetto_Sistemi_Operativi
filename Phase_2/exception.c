@@ -279,17 +279,3 @@ void SYS_Get_Children(int *children, int size){
         
     }
 }
-
-/**/
-void SYS_Get_Children(int *children, int size){
-    int num = 0;
-    struct list_head *pos, *current = NULL;
-    nsd_t current_namespace = getNamespace(current_process, )
-    pcb_t first_child = current_process->p_child;
-    list_for_each_safe(pos, current, first_child->p_sib){
-        pcb_t* temp = list_entry(pos, struct pcb_t, p_sib);
-        children[num] = temp->
-        num++;
-        
-    }
-}
