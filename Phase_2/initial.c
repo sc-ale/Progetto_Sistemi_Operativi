@@ -73,7 +73,7 @@ int main() {
     //PC e SP settati modo 1
     primoProc->p_s.pc_epc = (memaddr) test;
     primoProc->p_s.gpr[24] = (memaddr) test;
-    primoProc->p_supportStruct->sup_exceptContext->stackPtr = KERNELSTACK; //da riguardare
+    primoProc->p_s.gpr[27] = KERNELSTACK; 
 
 
 
@@ -82,10 +82,5 @@ int main() {
 
     scheduling();
 
-    /*
-    Questo manca
-    -the SP set to RAMTOP (i.e. use the last RAM frame for its stack).
-    */
-    //bisogna finire l'inizializzazione del processo
 
 }
