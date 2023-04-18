@@ -22,8 +22,31 @@ void uTLB_RefillHandler ()
 /* CONTROLLARE LA SEZIONE 3.5.12 */
 void foobar() 
 {
-    /* usare i registri grp, che sono i registri a0, ..., a3 */
-    /* prendere a0 per fare lo switch*/
+    switch (/*cause.EXCCODE*/)
+    {
+    case //0
+        //interrupt_handler();
+        break;
+    case //1-3:
+        //TLB_exception_handler();    
+        break;
+    case //4-7
+        //Trap_exception_handler();
+        break;
+    case //9-12
+        //Trap_exception_handler();
+        break;
+    case //8:
+        syscall_handler();
+    default:
+        break;
+    }
+}
+/* 3.7 PASS UP OR DIE 
+siccome perTLB , ProgramTrap e SYSCALL > 11 bisogna effettuare PASS UP OR DIE avrebbe senso creare una funzione*/
+
+void syscall_handler() {
+    /* save exception state at the start of the BIOS DATA PAGE*/
 
     switch (reg_a0)
     {
