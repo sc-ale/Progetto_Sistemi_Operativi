@@ -185,7 +185,7 @@ void kill_process(pcb_t* ptnr)
     list_del(&ptrn->p_sib);
     /* forse dobbiamo eliminare il processo dalla ahs (?) */
     if(ptrn->p_semAdd != NULL){
-        
+
         ptrn->p_semAdd = NULL;
     }
     ptrn->p_pid = 0;
@@ -276,14 +276,18 @@ void SYS_Get_Process_Id(int parent)
 void SYS_Get_Children(int *children, int size){
     int num = 0;
     struct list_head *pos, *current = NULL;
-    nsd_t current_namespace = getNamespace(current_process, )
-    pcb_t first_child = current_process->p_child;
+    int current_namespace = current_process->namespaces[0].n_type
+    pcb_t *first_child = current_process->p_child;
     list_for_each_safe(pos, current, first_child->p_sib){
         pcb_t* temp = list_entry(pos, struct pcb_t, p_sib);
-        children[num] = temp->
-        num++;
-        
+        if(current_namespace == temp->namespaces[0].n_type){
+            if(num < size){
+                children[num] = temp->p_pid;
+            }
+            num++;
+        }   
     }
+    reg_v0 = num;
 }
 
 /* Per determinare se il processo corrente stava eseguento in kernel o user mode,
