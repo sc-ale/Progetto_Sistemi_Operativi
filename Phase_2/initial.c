@@ -73,8 +73,8 @@ int main() {
     //PC e SP settati modo 1
     primoProc->p_s.pc_epc = (memaddr) test;
     primoProc->p_s.reg_t9 = (memaddr) test;
-    primoProc->p_s.reg_sp = KERNELSTACK; 
-
+    RAMTOP(primoProc->p_s.reg_sp);
+    /*Macro che associa al chiamante l'inidirizzo RAMTOP*/
 
 
     LDST(&primoProc->p_s);
