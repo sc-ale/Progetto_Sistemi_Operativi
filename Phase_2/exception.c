@@ -66,7 +66,7 @@ void syscall_handler() {
         SYS_Verhogen(reg_a1);
         break;
     
-    case IOWAIT:
+    case DOIO:
         
         break;
         
@@ -108,19 +108,19 @@ void SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns)
         newProc->p_s = *statep;
         newProc->p_supportStruct = supportp;
 
-        if (!addNamespace(&newProc, &ns)) { /* deve ereditare il ns dal padre */
+        if (!addNamespace(newProc, ns)) { /* deve ereditare il ns dal padre */
             newProc->namespaces = current_process->namespace;
         }
 
         newProc->p_pid = pid_start + 1; /* assegniamo il pid */
         newProc->p_time = 0;
 
-        //process_count=+1; /* stiamo aggiunge un nuovo processo tra quelli attivi ? */
+        process_count=+1; /* stiamo aggiunge un nuovo processo tra quelli attivi ? */
 
-        reg_v0 = newProc->p_pid;
+        current_process->p_s.reg_v0 = newProc->p_pid;
     }
     else { /* non ci sono pcb liberi */
-        reg_v0--;
+        current_process->p_s.reg_v0 = -1;
     }
 }
 
@@ -133,7 +133,7 @@ void SYS_terminate_process(int pid)
     if(pid == 0){
         Proc2Delete = current_process;
     } else{
-        for(int i=0; i<MAXPROC; i++){
+        for(int i=0; i<MAXPROC; i++) {
             if(pcbFree_table[i]->p_pid == pid){
                 Proc2Delete = &pcbFree_table[i];
             }
@@ -141,7 +141,7 @@ void SYS_terminate_process(int pid)
     }
 
     terminate_family(Proc2Delete->p_child);
-    kill_process(pid);
+    kill_process(Proc2Delete);
 }
 
 
@@ -170,6 +170,7 @@ void kill_process(pcb_t* ptnr)
     list_del(&ptrn->p_list);
     list_del(&ptrn->p_child);
     list_del(&ptrn->p_sib);
+    /* forse dobbiamo eliminare il processo dalla ahs (?) */
     ptrn->p_semAdd = NULL;
     ptrn->p_pid = 0;
     freePcb(ptrn);
@@ -196,7 +197,7 @@ void SYS_Passeren(int *semaddr)
     } else if( /* se la coda dei processi bloccati da V non è vuota*/headBlocked(semaddr)!=NULL) {
         /* risvegliare il primo processo che si era bloccato su una V */
         pcb_t* wakedProc = removeBlocked(semaddr);
-        LDST(&wakeProc->p_s);
+        LDST(&wakedeProc->p_s);
     } else {
         semaddr--;
     }
@@ -226,7 +227,7 @@ void SYS_Verhogen(int* semaddr)
 void /* Restituisce il tempo di utilizzo del processore del processo in esecuzione*/
 SYS_Get_CPU_Time()
 {
-    reg_v0 = current_process->p_time;
+    current_process->p_s.reg_v0 = current_process->p_time;
 }
 
 
@@ -234,7 +235,7 @@ SYS_Get_CPU_Time()
  ovvero il campo p_supportStruct del pcb_t.*/
 void SYS_Get_Support_Data()
 {
-    reg_v0 = current_process->p_supportStruct;
+    current_process->p_s.reg_v0 = current_process->p_supportStruct;
 }
 
 /* Restituisce l’identificatore del processo invocante se parent == 0,
@@ -244,14 +245,14 @@ void SYS_Get_Support_Data()
 void SYS_Get_Process_Id(int parent)
 {
     if (parent == 0) {
-        reg_v0 = current_process->p_pid;
+        current_process->p_s.reg_v0 = current_process->p_pid;
     } 
     else { /* dobbiamo restituire il pid del padre, se si trovano nello stesso namespace */
         /* assumiamo che il processo corrente abbia un padre (?) */
         nsd_t* parent_pid = getNamespace(current_process->p_parent, current_process->namespaces.n_type);
         
         /* se current_process e il processo padre non sono nello stesso namespace restituisci 0 */ 
-        reg_v0 = (parent_pid==NULL) ? 0 : current_process->p_pid;
+        current_process->p_s.reg_v0 = (parent_pid==NULL) ? 0 : current_process->p_pid;
     }
 }
 
