@@ -184,7 +184,10 @@ void kill_process(pcb_t* ptnr)
     list_del(&ptrn->p_child);
     list_del(&ptrn->p_sib);
     /* forse dobbiamo eliminare il processo dalla ahs (?) */
-    ptrn->p_semAdd = NULL;
+    if(ptrn->p_semAdd != NULL){
+        
+        ptrn->p_semAdd = NULL;
+    }
     ptrn->p_pid = 0;
     freePcb(ptrn);
 
