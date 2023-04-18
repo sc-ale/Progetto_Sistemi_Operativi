@@ -3,9 +3,9 @@
 #include <pcb.h>
 #include <ash.h>
 #include <ns.h>
-#include <scheduler.c>
 #include <exception.c>
 extern void test();
+extern void scheduling();
 
 int process_count; /* numero processi attivi */
 int soft_block_count; /* conteggio processi bloccati per I/O o timer request*/
@@ -66,15 +66,15 @@ int main() {
 
     // Sezione 2.3 di uMPS3 spiega questo registro, non ho trovato macro o altro
     // l'unica soluzione mi sembra assegnarli in modo diretto ma guardateci anche voi
-    primoProc->p_s.status = IEPON | IMON | TEBITON;
+    primoProc->p_s.status = (IEPON | IMON | TEBITON);
 
 
 
     //PC e SP settati modo 1
     primoProc->p_s.pc_epc = (memaddr) test;
     primoProc->p_s.reg_t9 = (memaddr) test;
-    primoProc->p_s.reg_sp = KERNELSTACK; 
-
+    RAMTOP(primoProc->p_s.reg_sp);
+    /*Macro che associa al chiamante l'inidirizzo RAMTOP*/
 
 
     LDST(&primoProc->p_s);
