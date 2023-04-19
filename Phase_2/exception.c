@@ -21,23 +21,22 @@ void uTLB_RefillHandler ()
 
 /* CONTROLLARE LA SEZIONE 3.5.12 */
 void foobar() 
-{
-    current_process->p_s.state = (state_t *)BIOS_DATA_PAGE;
-    switch ()
+{   
+    switch (CAUSE_GET_EXCCODE((int)current_process->p_s.cause))
     {
-    case //0
+    case 0:
         //interrupt_handler();
         break;
-    case //1-3:
-           
+    case 1: case 2: case: 3
+        passup_ordie(PGFAULTEXCEPT);
         break;
-    case //4-7
-        //Trap_exception_handler();
+    case 4: case 5: case 6: case 7:
+        passup_ordie(GENERALEXCEPT);
         break;
-    case //9-12
-        //Trap_exception_handler();
+    case 9: case 10: case 11: case 12:
+        passup_ordie(GENERALEXCEPT);
         break;
-    case //8:
+    case 8:
         syscall_handler();
     default:
         break;
@@ -46,13 +45,14 @@ void foobar()
 
 /*siccome perTLB , ProgramTrap e SYSCALL > 11 bisogna effettuare PASS UP OR DIE avrebbe senso creare una funzione*/
 //DA RIGUARDARE 3.7 
-void passup_ordie(int index) {
+void passup_ordie(int INDEX) {
     if (current_process.p_supportStruct == NULL) {
-        SYS_terminate_process();
+        SYS_terminate_process(0);
     }
     else {
-        current_process.sup_exceptState[1] = (state_t*)BIOS_DATA_PAGE;
-        context_t exceptContext = current_process.sup_exceptContext[1];
+        state_t exceptState = current_process->p_supportStruct.sup_exceptState[INDEX];
+        context_t exceptContext = current_process->p_supportStruct.sup_exceptContext[INDEX];
+        exceptState = (state_t*)BIOS_DATA_PAGE;
         LDCXT(exceptContext.stackPtr,exceptContext.status,exceptContext.pc);
     }
 }
@@ -60,7 +60,7 @@ void passup_ordie(int index) {
 /* Per le sys 3, 5, 7 servono delle operazioni in più, sezione 3.5.13 */
 void syscall_handler() {
     /* save exception state at the start of the BIOS DATA PAGE*/
-    
+    current_process->
     switch ((int)current_process->p_s.reg_a0)
     {
     case CREATEPROCESS:

@@ -546,7 +546,7 @@ void p5mm() {
     }
 
     pFiveSupport.sup_exceptState[PGFAULTEXCEPT].status =
-        pFiveSupport.sup_exceptState[PGFAULTEXCEPT].status | KUPBITON; /* user mode on 	*/
+    pFiveSupport.sup_exceptState[PGFAULTEXCEPT].status | KUPBITON; /* user mode on 	*/
     pFiveSupport.sup_exceptState[PGFAULTEXCEPT].pc_epc = (memaddr)p5b; /* return to p5b()	*/
     pFiveSupport.sup_exceptState[PGFAULTEXCEPT].reg_t9 = (memaddr)p5b; /* return to p5b()	*/
 
