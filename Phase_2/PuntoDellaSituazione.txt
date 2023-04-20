@@ -1,0 +1,19 @@
+COSE FATTE  
+- inizializzazione
+- molte sys call (da testare, come tutto chiaramente)
+
+COSE DA SISTEMARE
+- riguare lo scheduler per il PLT
+- riguardare la sezione 3.5.12 per la questione di 
+    aggiornare il current_process con il BIOS data Page
+- riguardare la sezione 3.5.13 siccome per le sys call
+    3, 5, 7 servono delle operazioni aggiuntive
+- sistemare le inclusioni dei file, ad esempio usando
+    extern per lo scheduler in exception.c
+
+COSE DA FARE
+- interrupt handler e tutto le interrupt 
+    sezioni 3.6 in avanti
+- sys call 7 (clock wait)
+- sys call 5 DOIO
+
