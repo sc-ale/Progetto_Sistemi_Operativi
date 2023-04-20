@@ -68,19 +68,19 @@ void syscall_handler() {
         break;
         
     case TERMPROCESS:
-        SYS_terminate_process(reg_a1);
+        SYS_terminate_process((int)current_process->p_s.reg_a1);
         break;
     
     case PASSEREN:
-        SYS_Passeren(reg_a1);
+        SYS_Passeren((int*)current_process->p_s.reg_a1);
         break;
         
     case VERHOGEN:
-        SYS_Verhogen(reg_a1);
+        SYS_Verhogen((int*)current_process->p_s.reg_a1);
         break;
     
     case DOIO:
-        
+        SYS_Doio((int*)current_process->p_s.reg_a1, (int*)current_process->p_s.reg_a2)
         break;
         
     case GETTIME:
@@ -95,11 +95,11 @@ void syscall_handler() {
         break;
         
     case GETPROCESSID:
-        SYS_Get_Process_Id(reg_a1);
+        SYS_Get_Process_Id((int)current_process->p_s.reg_a1);
         break;
 
     case: GETCHILDREN:
-        SYS_Get_Children(int *children, int size);
+        SYS_Get_Children((int*)current_process->p_s.reg_a1, (int)current_process->p_s.reg_a2);
     default:
         break;
     }
