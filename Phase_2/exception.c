@@ -22,6 +22,7 @@ void uTLB_RefillHandler ()
 /* CONTROLLARE LA SEZIONE 3.5.12 */
 void foobar() 
 {   
+    /* fornisce il codice del tipo di eccezione avvenuta */
     switch (CAUSE_GET_EXCCODE((int)current_process->p_s.cause))
     {
     case 0:
@@ -296,7 +297,7 @@ void SYS_Get_Children(int *children, int size){
  sarà avvenuta una stack push sul KU/IE stacks in the statusa register prima 
  che lo stato di eccezione fosse salvato*/
 int Check_Kernel_mode()
-{
+{m 
     unsigned mask;
     mask = ((1 << 1) - 1) << STATUS_KUp_BIT;
     unsigned int bit_kernel = current_process->p_s.status & mask;
