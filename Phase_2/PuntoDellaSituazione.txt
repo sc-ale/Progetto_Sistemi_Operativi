@@ -10,6 +10,8 @@ COSE DA SISTEMARE
     3, 5, 7 servono delle operazioni aggiuntive
 - sistemare le inclusioni dei file, ad esempio usando
     extern per lo scheduler in exception.c
+- capire cosa manca nella SYS_Get_CPU_Time, leggere la
+    sezione 3.8 che parla dei vari timer
 
 COSE DA FARE
 - interrupt handler e tutto le interrupt 

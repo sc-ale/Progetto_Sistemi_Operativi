@@ -36,7 +36,7 @@ all : kernel.core.umps
 kernel.core.umps : kernel
 	umps3-elf2umps -k $<
 
-kernel : p2test.01.o crtso.o libumps.o pcb.o ash.o ns.o
+kernel : p2test.01.o crtso.o libumps.o pcb.o ash.o ns.o intial.o exception.o scheduler.o
 	$(LD) -o $@ $^ $(LDFLAGS)
 
 clean :

@@ -26,7 +26,7 @@ void foobar()
     switch (CAUSE_GET_EXCCODE((int)current_process->p_s.cause))
     {
     case 0:
-        //interrupt_handler();
+        interrupt_handler();
         break;
     case 1: case 2: case: 3
         passup_ordie(PGFAULTEXCEPT);
@@ -89,6 +89,7 @@ void syscall_handler() {
         break;
 
     case CLOCKWAIT:
+        SYS_Clockwait();
         break;
     
     case GETSUPPORTPTR:
@@ -241,12 +242,41 @@ void SYS_Verhogen(int* semaddr)
     }
 }
 
-void /* Restituisce il tempo di utilizzo del processore del processo in esecuzione*/
-SYS_Get_CPU_Time()
+
+/* Effettua un’operazione di I/O. CmdValues e’ un vettore di 2 interi
+ (per I terminali) o 4 interi (altri device).
+– La system call carica I registri di device con i valori di CmdValues
+    scrivendo il comando cmdValue nei registri cmdAddr e seguenti, 
+    e mette in pausa il processo chiamante fino a quando non si e’ conclusa.
+– L’operazione è bloccante, quindi il chiamante viene sospeso sino 
+    alla conclusione del comando. Il valore ritornato deve essere 
+    zero se ha successo, -1 in caso di errore. Il contenuto del registro di
+    status del dispositivo potra’ essere letto nel corrispondente elemento 
+    di cmdValues.
+At the completion of the I-O operation the device register values are
+copied back in the cmdValues array
+*/
+SYS_Doio(int*comdAddr, int*comdValues)
 {
+
+}
+
+/* Restituisce il tempo di utilizzo del processore del processo in esecuzione*/
+void SYS_Get_CPU_Time()
+{
+    /* Hence SYS6 should return the value in the Current Process’s p_time PLUS
+     the amount of CPU time used during the current quantum/time slice.*/
     current_process->p_s.reg_v0 = current_process->p_time;
 }
 
+/* 
+Equivalente a una Passeren sul semaforo dell’Interval Timer.
+– Blocca il processo invocante fino al prossimo tick del dispositivo.
+*/
+SYS_Clockwait()
+{
+    
+}
 
 /* Restituisce un puntatore alla struttura di supporto del processo corrente,
  ovvero il campo p_supportStruct del pcb_t.*/
@@ -297,10 +327,22 @@ void SYS_Get_Children(int *children, int size){
  sarà avvenuta una stack push sul KU/IE stacks in the statusa register prima 
  che lo stato di eccezione fosse salvato*/
 int Check_Kernel_mode()
-{m 
+{ 
     unsigned mask;
     mask = ((1 << 1) - 1) << STATUS_KUp_BIT;
     unsigned int bit_kernel = current_process->p_s.status & mask;
     /* ritorna vero se il processo era in kernel mode, 0 in user mode*/
     return (bit_kernel==0) ? TRUE : FALSE;
+}
+
+
+
+/*
+The interrupt exception handler’s first step is to determine which device
+ or timer with an outstanding interrupt is the highest priority.
+ Depending on the device, the interrupt exception handler will 
+ perform a number of tasks.*/
+void interrupt_handler()
+{
+    /* sezione 3.6.1 a 3.6.3*/
 }

@@ -16,6 +16,7 @@
  *		Modified by Davide Berardi on April 05, 2023
  */
 
+/* è come se non includesse pandos_const e pandos_types */
 #include <pandos_const.h>
 #include <pandos_types.h>
 #include <umps3/umps/libumps.h>
