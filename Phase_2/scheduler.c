@@ -4,6 +4,7 @@
 #include <pcb.h>
 #include <ash.h>
 #include <ns.h>
+#include <pandos_const.h>
 
 void scheduling(){
     while (true) {
@@ -11,7 +12,7 @@ void scheduling(){
         if (!emptyProcQ(&readyQ))
         {
             current_process = removeProcQ(&readyQ);
-            setTIMER(500);
+            setTIMER(TIMESLICE);
             LDST(&current_process->p_s);
         }
         else if(process_count==0)

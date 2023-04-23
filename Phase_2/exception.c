@@ -6,6 +6,7 @@
 #include <scheduler.c>
 #include <initial.c>
 #include <pandos_const.h>
+#include <umps3/umps/const.h>
 
 /* come process id usiamo un intero che aumenta 
     e basta (no caso reincarazione)*/
@@ -369,10 +370,40 @@ void interrupt_handler()
     /* sezione 3.6.1 a 3.6.3*/
     switch (Get_Interrupt_Line_Max_Prio())
     {
-    case /* constant-expression */:
-        /* code */
+    /* interrupt processor Local Timer */
+    case 1:
+        
         break;
     
+    /* interrupt Interval Timer */
+    case 2:
+       
+        break;
+
+    /* Disk devices */
+    case DISKINT:
+        
+        break;
+    
+    /* Flash devices */
+    case FLASHINT:
+        
+        break;
+    
+    /* Network devices*/
+    case NETWINT:
+        break;
+
+    /* Printer devices */
+    case PRNTINT:
+        
+        break;
+    
+    /* Terminal devices*/
+    case TERMINT:
+    
+        break;
+
     default:
         break;
     }
