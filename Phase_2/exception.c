@@ -335,7 +335,9 @@ int Check_Kernel_mode()
     return (bit_kernel==0) ? TRUE : FALSE;
 }
 
-/* Restituisce la linea con interrupt in attesa con massima priorità */
+/* Restituisce la linea con interrupt in attesa con massima priorità. 
+(Se nessuna linea è attiva ritorna 8 ma assumiamo che quando venga
+ chiamata ci sia almeno una linea attiva) */
 int Get_Interrupt_Line_Max_Prio (){
     unsigned int interrupt_pendig = current_process->p_s.cause & CAUSE_IP_MASK;
     /* così abbiamo solo i bit attivi da 8 a 15 del cause register */
