@@ -335,7 +335,27 @@ int Check_Kernel_mode()
     return (bit_kernel==0) ? TRUE : FALSE;
 }
 
-
+/* Restituisce la linea con interrupt in attesa con massima priorità */
+int Get_Interrupt_Line_Max_Prio (){
+    unsigned int interrupt_pendig = current_process->p_s.cause & CAUSE_IP_MASK;
+    /* così abbiamo solo i bit attivi da 8 a 15 del cause register */
+    unsigned int intpeg_linee[8];
+    for (int i=0; i<8; i++) {
+        unsigned mask = ((1<<1)-1)<<i+8;
+        intpeg_linee[i] = mask & interrupt_pending;
+    }
+    /* intpeg_linee[i] indica se la linea i-esima è attiva */
+    
+    int linea=1; /* questo perché ignoriamo la linea 0*/
+    while(linea<8) {
+        if(intpeg[linea]!=0) { 
+            break;
+        }
+        linea++;
+    }
+    /* ritorniamo la quale linea è attiva */
+    return linea;
+}
 
 /*
 The interrupt exception handler’s first step is to determine which device
@@ -345,4 +365,14 @@ The interrupt exception handler’s first step is to determine which device
 void interrupt_handler()
 {
     /* sezione 3.6.1 a 3.6.3*/
+    switch (Get_Interrupt_Line_Max_Prio())
+    {
+    case /* constant-expression */:
+        /* code */
+        break;
+    
+    default:
+        break;
+    }
+   
 }
