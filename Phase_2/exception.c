@@ -23,6 +23,9 @@ void uTLB_RefillHandler ()
 /* CONTROLLARE LA SEZIONE 3.5.12 */
 void foobar() 
 {   
+    unsigned int tempoEccezione = STCK(tempoEccezione);
+
+
     state_t *bios_State = NULL;
     bios_state = BIOSDATAPAGE;
     /* fornisce il codice del tipo di eccezione avvenuta */
@@ -67,7 +70,7 @@ void syscall_handler() {
     /* save exception state at the start of the BIOS DATA PAGE */
     /* NON assegnare il bios data page al current process, devono essere distinti, 
     accediamo al bios data page SOLO per vedere quale eccezione è*/
-    current_process->
+    
     switch ((int)current_process->p_s.reg_a0)
     {
     case CREATEPROCESS:
@@ -111,6 +114,17 @@ void syscall_handler() {
     default:
         break;
     }
+}
+
+
+void Return_Control()
+{
+LDST()
+}
+
+void Blocking_Sys()
+{
+
 }
 
 /* Crea un nuovo processo come figlio del chiamante. Il primo parametro contiene lo stato
@@ -221,7 +235,7 @@ void SYS_Passeren(int *semaddr)
     } else if( /* se la coda dei processi bloccati da V non è vuota*/headBlocked(semaddr)!=NULL) {
         /* risvegliare il primo processo che si era bloccato su una V */
         pcb_t* wakedProc = removeBlocked(semaddr);
-        LDST(&wakedeProc->p_s);
+        insertProcQ(&readyQ, wakedProc);
     } else {
         semaddr--;
     }
@@ -242,7 +256,7 @@ void SYS_Verhogen(int* semaddr)
     } else if( /* se la coda dei processi bloccati da P non è vuota*/headBlocked(semaddr)!=NULL) {
         /* risvegliare il primo processo che si era bloccato su una P */
         pcb_t* wakedProc = removeBlocked(semaddr);
-        LDST(&wakeProc->p_s);
+        insertProcQ(&readyQ, wakedProc);
     } else {
         semaddr++;
     }
@@ -420,7 +434,8 @@ void PLT_interrupt_handler() {
     /*Acknowledge the PLT interrupt by loading the timer with a new value.*/
     setTIMER(500);
 
-    /* Copy the processor state at the time of the exception (located at the start of the BIOS Data Page [Section ??-pops]) into the Current Pro- cess’s pcb (p_s). */
+    /* Copy the processor state at the time of the exception (located at the start of the BIOS Data Page [Section ??-pops])
+     into the Current Pro- cess’s pcb (p_s). */
     // GIÀ FATTO (CREDO) facendolo all'inizio modifichiamo la variabile globale quindi ha senso farlo una sola volta all'inizio
 
     /* Place the Current Process on the Ready Queue; transitioning the Current Process from the “running” state to the “ready” state. */
