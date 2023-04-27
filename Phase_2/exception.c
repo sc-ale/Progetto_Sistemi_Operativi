@@ -26,8 +26,7 @@ void foobar()
     unsigned int tempoEccezione = STCK(tempoEccezione);
 
 
-    state_t *bios_State = NULL;
-    bios_state = BIOSDATAPAGE;
+    state_t *bios_State = BIOSDATAPAGE;
     /* fornisce il codice del tipo di eccezione avvenuta */
     switch (CAUSE_GET_EXCCODE(bios_State->cause) )
     {
@@ -83,6 +82,7 @@ void syscall_handler() {
     
     case PASSEREN:
         SYS_Passeren((int*)current_process->p_s.reg_a1);
+        Blocking_Sys();
         break;
         
     case VERHOGEN:
@@ -91,6 +91,7 @@ void syscall_handler() {
     
     case DOIO:
         SYS_Doio((int*)current_process->p_s.reg_a1, (int*)current_process->p_s.reg_a2)
+        Blocking_Sys();
         break;
         
     case GETTIME:
@@ -99,6 +100,7 @@ void syscall_handler() {
 
     case CLOCKWAIT:
         SYS_Clockwait();
+        Blocking_Sys();
         break;
     
     case GETSUPPORTPTR:
@@ -114,16 +116,21 @@ void syscall_handler() {
     default:
         break;
     }
+    /* queste due linee non veranno eseguite se prima sono state seguite delle sys bloccanti */
+    state_t *bios_State = BIOSDATAPAGE;
+    LDST(bios_State);
 }
 
-
-void Return_Control()
-{
-LDST()
-}
-
+/*3.5.13*/
 void Blocking_Sys()
-{
+{ 
+    state_t *bios_State = BIOSDATAPAGE;
+    bios_State->p_s.pc_epc += WORD_SIZE; /* word_size è 4, definito in arch.h */
+    current_process->p_s = *bios_State;
+    /* aggiornamento cpu time: current_process->p_time */
+    insertBlocked(current_process->p_semAdd, current_process);
+   
+    scheluding();
 
 }
 
