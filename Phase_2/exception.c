@@ -396,7 +396,7 @@ void interrupt_handler()
     
     /* interrupt Interval Timer */
     case 2:
-       
+        IT_interrupt_handler();
         break;
 
     /* Disk devices */
@@ -439,8 +439,17 @@ void PLT_interrupt_handler() {
 
     /* Place the Current Process on the Ready Queue; transitioning the Current Process from the “running” state to the “ready” state. */
     insertProcQ(&current_process->p_list, readyQ);
-    /* credo bisogni diminuire questo counter*/
-    process_count--;
 
+    /*Call the scheduler*/
     scheduling();
+}
+
+//3.6.3
+void IT_interrupt_handler(){
+    /*Acknowledge the interrupt by loading the Interval Timer with a new value: 100 milliseconds.*/
+    LDIT(PSECOND);
+
+    /*Unblock ALL pcbs blocked on the Pseudo-clock semaphore. Hence, the semantics of this semaphore are a bit different than traditional synchronization semaphores*/
+    
+
 }
