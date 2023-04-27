@@ -55,7 +55,7 @@ int main() {
     passUpVect->exception_stackPtr = (memaddr) KERNELSTACK; //stesso indirizzo ??
 
     //PUNTO 5 NON HO CAPITO
-    LDIT(100000);     
+    LDIT(PSECOND);     
 
     //PUNTO 6 
     pcb_t *primoProc = allocPcb();
