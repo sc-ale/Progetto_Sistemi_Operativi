@@ -478,3 +478,15 @@ void V_all(){
         sem_interval_timer = 1;
     }
 }
+
+
+int Tod_clock()
+{   
+    /* Permette di calcolare un intervallo di tempo utilizzando la macro per salvare il tempo all'inizio e alla fine di un processo */
+    unsigned start,end;
+    
+    STCK(start);
+    scheduling();
+    STCK(end);
+    return (end-start);
+}
