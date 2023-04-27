@@ -19,3 +19,7 @@ COSE DA FARE
 - sys call 7 (clock wait)
 - sys call 5 DOIO
 
+
+
+Quando è necessario accedere a registri della CPU ci accediamo il bios data page,
+mentre quando dobbiamo accedere a regestri di un pcb usiamo current process

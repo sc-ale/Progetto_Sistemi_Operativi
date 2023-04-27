@@ -23,8 +23,10 @@ void uTLB_RefillHandler ()
 /* CONTROLLARE LA SEZIONE 3.5.12 */
 void foobar() 
 {   
+    state_t *bios_State = NULL;
+    bios_state = BIOSDATAPAGE;
     /* fornisce il codice del tipo di eccezione avvenuta */
-    switch (CAUSE_GET_EXCCODE((int)current_process->p_s.cause))
+    switch (CAUSE_GET_EXCCODE(bios_State->cause) )
     {
     case 0:
         interrupt_handler();
@@ -41,6 +43,7 @@ void foobar()
     case 8:
         syscall_handler();
     default:
+        /* (?) uccidere il processo chiamante (?)*/
         break;
     }
 }
@@ -61,7 +64,9 @@ void passup_ordie(int INDEX) {
 
 /* Per le sys 3, 5, 7 servono delle operazioni in più, sezione 3.5.13 */
 void syscall_handler() {
-    /* save exception state at the start of the BIOS DATA PAGE*/
+    /* save exception state at the start of the BIOS DATA PAGE */
+    /* NON assegnare il bios data page al current process, devono essere distinti, 
+    accediamo al bios data page SOLO per vedere quale eccezione è*/
     current_process->
     switch ((int)current_process->p_s.reg_a0)
     {
