@@ -64,10 +64,13 @@ void passup_ordie(int INDEX) {
 
 /* Per le sys 3, 5, 7 servono delle operazioni in più, sezione 3.5.13 */
 void syscall_handler() {
+<<<<<<< HEAD
     /* save exception state at the start of the BIOS DATA PAGE */
     /* NON assegnare il bios data page al current process, devono essere distinti, 
     accediamo al bios data page SOLO per vedere quale eccezione è*/
     current_process->
+=======
+>>>>>>> c26e4ab492e5f8a84972ab5d4ab21ee0c907ef6d
     switch ((int)current_process->p_s.reg_a0)
     {
     case CREATEPROCESS:
@@ -377,7 +380,7 @@ void interrupt_handler()
     {
     /* interrupt processor Local Timer */
     case 1:
-        
+        PLT_interrupt_handler();
         break;
     
     /* interrupt Interval Timer */
@@ -413,4 +416,20 @@ void interrupt_handler()
         break;
     }
    
+}
+
+//3.6.2
+void PLT_interrupt_handler() {
+    /*Acknowledge the PLT interrupt by loading the timer with a new value.*/
+    setTIMER(500);
+
+    /* Copy the processor state at the time of the exception (located at the start of the BIOS Data Page [Section ??-pops]) into the Current Pro- cess’s pcb (p_s). */
+    // GIÀ FATTO (CREDO) facendolo all'inizio modifichiamo la variabile globale quindi ha senso farlo una sola volta all'inizio
+
+    /* Place the Current Process on the Ready Queue; transitioning the Current Process from the “running” state to the “ready” state. */
+    insertProcQ(&current_process->p_list, readyQ);
+    /* credo bisogni diminuire questo counter*/
+    process_count--;
+
+    scheduling();
 }
