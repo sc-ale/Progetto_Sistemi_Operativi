@@ -418,10 +418,10 @@ void interrupt_handler()
 //3.6.2
 void PLT_interrupt_handler() {
     /*Acknowledge the PLT interrupt by loading the timer with a new value.*/
-    setTIMER(500);
+    setTIMER(TIMESLICE);
 
     /* Copy the processor state at the time of the exception (located at the start of the BIOS Data Page [Section ??-pops]) into the Current Pro- cess’s pcb (p_s). */
-    // GIÀ FATTO (CREDO) facendolo all'inizio modifichiamo la variabile globale quindi ha senso farlo una sola volta all'inizio
+    current_process->p_s = BIOSDATAPAGE;
 
     /* Place the Current Process on the Ready Queue; transitioning the Current Process from the “running” state to the “ready” state. */
     insertProcQ(&current_process->p_list, readyQ);
