@@ -253,7 +253,7 @@ void SYS_Verhogen(int* semaddr)
 
          /* chiamata allo scheduler, non so si può far direttamente così */
         scheduling();
-    } else if( /* se la coda dei processi bloccati da P non è vuota*/headBlocked(semaddr)!=NULL) {
+    } else if(headBlocked(semaddr)!=NULL) { /*Se la coda dei processi bloccati non è vuota*/
         /* risvegliare il primo processo che si era bloccato su una P */
         pcb_t* wakedProc = removeBlocked(semaddr);
         insertProcQ(&readyQ, wakedProc);
@@ -435,7 +435,8 @@ void PLT_interrupt_handler() {
     setTIMER(TIMESLICE);
 
     /* Copy the processor state at the time of the exception (located at the start of the BIOS Data Page [Section ??-pops]) into the Current Pro- cess’s pcb (p_s). */
-    current_process->p_s = BIOSDATAPAGE;
+    state_t *exc_state = BIOSDATAPAGE;
+    current_process->p_s = exc_state;
 
     /* Place the Current Process on the Ready Queue; transitioning the Current Process from the “running” state to the “ready” state. */
     insertProcQ(&current_process->p_list, readyQ);
@@ -450,6 +451,23 @@ void IT_interrupt_handler(){
     LDIT(PSECOND);
 
     /*Unblock ALL pcbs blocked on the Pseudo-clock semaphore. Hence, the semantics of this semaphore are a bit different than traditional synchronization semaphores*/
-    
+    V_all();
 
+    /*Return control to the Current Process: Perform a LDST on the saved exception state*/
+    state_t *exc_state = BIOSDATAPAGE;
+    LDST(exc_state);
+}
+
+void V_all(){
+    int pid_current = current_process->p_pid;
+    if(sem_interval_timer == 1) {
+         /* chiamata allo scheduler*/
+        scheduling();
+    } else {
+        while(headBlocked(sem_interval_timer)!=NULL){
+            pcb_t* wakedProc = removeBlocked(sem_interval_timer);
+            insertProcQ(&readyQ, wakedProc); 
+        }
+        sem_interval_timer = 1;
+    }
 }
