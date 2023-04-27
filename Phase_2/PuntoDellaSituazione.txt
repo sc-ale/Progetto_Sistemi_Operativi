@@ -18,6 +18,7 @@ COSE DA FARE
     sezioni 3.6 in avanti
 - sys call 7 (clock wait)
 - sys call 5 DOIO
+- fix: nel ritorno delle sys call nel registro del bios data page
 
 
 
