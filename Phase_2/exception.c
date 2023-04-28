@@ -301,8 +301,16 @@ Equivalente a una Passeren sul semaforo dell’Interval Timer.
 – Blocca il processo invocante fino al prossimo tick del dispositivo.
 */
 SYS_Clockwait()
-{
-    
+{   
+    /* aggiungere current_process nella coda dei processi bloccati da una P e sospenderlo*/
+    insertBlocked(sem_interval_timer, current_process);
+    /* se inserimento_avvenuto è 1 allora non è stato possibile allocare un nuovo SEMD perché la semdFree_h è vuota */
+
+    /* Setta il valore del semaforo a 0 */
+    sem_interval_timer = 0;
+  
+    /* System call bloccante*/
+    Blocking_Sys();
 }
 
 /* Restituisce un puntatore alla struttura di supporto del processo corrente,
