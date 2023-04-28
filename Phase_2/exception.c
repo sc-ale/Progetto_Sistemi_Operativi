@@ -471,11 +471,11 @@ void IT_interrupt_handler(){
     LDST(exc_state);
 }
 
-//3.6.1
-void Non_timer_Interrupt()
-{
+//3.6.1     
+void DISK_interrupt_handler()
+{   /* vedere arch.h */
     /* Calculate the address for this device’s device register */
-    unsigned int interrupt_dev_bit_map = 0x10000040 + 0; /*IntlineNo*/
+    unsigned int interrupt_dev_bit_map = CDEV_BITMAP_BASE + ; /*+indirizzo diverso in base al tipo di device */
     int DevNo;
     if(interrupt_dev_bit_map & DEV0ON != 0){
         DevNo = 0;

@@ -12,6 +12,10 @@ COSE DA SISTEMARE
     extern per lo scheduler in exception.c
 - capire cosa manca nella SYS_Get_CPU_Time, leggere la
     sezione 3.8 che parla dei vari timer
+- sistemare non-timer interrupt con le varie define e capire
+    i casi in cui si possono utilizzare i device in modo
+    univoco
+-sistemare il tod-clock
 
 COSE DA FARE
 - interrupt handler e tutto le interrupt 
