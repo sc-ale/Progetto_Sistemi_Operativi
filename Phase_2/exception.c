@@ -472,7 +472,7 @@ void IT_interrupt_handler(){
 }
 
 //3.6.1
-void DISK_interrupt_handler()
+void Non_timer_Interrupt()
 {
     /* Calculate the address for this device’s device register */
     unsigned int interrupt_dev_bit_map = 0x10000040 + 0; /*IntlineNo*/
