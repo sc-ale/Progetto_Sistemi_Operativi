@@ -496,11 +496,10 @@ void DISK_interrupt_handler()
     }
 
     // Forse è possibile fare una funzione comune per tutti i device, passando IntlineNo per parametro
-    /* devAddrBase contiene l'indirizzo del device register del device che ha chiamato l'interrupt*/
-    unsigned int devAddrBase = 0x10000054 + ((IntlineNo - 3) * 0x80) + (DevNo * 0x10);
-
+    
     /* Save off the status code from the device’s device register. */
-    dtpreg_t *dev_reg = (memaddr) devAddrBase;
+    /*Uso la macro per trovare l'inidirzzo di base del device con la linea di interrupt e il numero di device*/
+    dtpreg_t *dev_reg = (memaddr) DEV_REG_ADDR(IntlineNo,DevNo)->status;
 
     /* Acknowledge the outstanding interrupt. This is accomplished by writ-
         ing the acknowledge command code in the interrupting device’s device
