@@ -414,7 +414,7 @@ void interrupt_handler()
 
     /* Disk devices */
     case DISKINT:
-        
+        DISK_interrupt_handler();
         break;
     
     /* Flash devices */
@@ -469,6 +469,56 @@ void IT_interrupt_handler(){
     /*Return control to the Current Process: Perform a LDST on the saved exception state*/
     state_t *exc_state = BIOSDATAPAGE;
     LDST(exc_state);
+}
+
+//3.6.1
+void DISK_interrupt_handler()
+{
+    /* Calculate the address for this device’s device register */
+    unsigned int interrupt_dev_bit_map = 0x10000040 + 0; /*IntlineNo*/
+    int DevNo;
+    if(interrupt_dev_bit_map & DEV0ON != 0){
+        DevNo = 0;
+    } else if(interrupt_dev_bit_map & DEV1ON != 0){
+        DevNo = 1;
+    } else if(interrupt_dev_bit_map & DEV2ON != 0){
+        DevNo = 2;
+    } else if(interrupt_dev_bit_map & DEV3ON != 0){
+        DevNo = 3;
+    } else if(interrupt_dev_bit_map & DEV4ON != 0){
+        DevNo = 4;
+    } else if(interrupt_dev_bit_map & DEV5ON != 0){
+        DevNo = 5;
+    } else if(interrupt_dev_bit_map & DEV6ON != 0){
+        DevNo = 6;
+    } else if(interrupt_dev_bit_map & DEV7ON != 0){
+        DevNo = 7;
+    }
+
+    // Forse è possibile fare una funzione comune per tutti i device, passando IntlineNo per parametro
+    /* devAddrBase contiene l'indirizzo del device register del device che ha chiamato l'interrupt*/
+    unsigned int devAddrBase = 0x10000054 + ((IntlineNo - 3) * 0x80) + (DevNo * 0x10);
+
+    /* Save off the status code from the device’s device register. */
+    dtpreg_t *dev_reg = (memaddr) devAddrBase;
+
+    /* Acknowledge the outstanding interrupt. This is accomplished by writ-
+        ing the acknowledge command code in the interrupting device’s device
+        register. Alternatively, writing a new command in the interrupting
+        device’s device register will also acknowledge the interrupt.*/
+    dev_reg->command = ACK;
+    /* Perform a V operation on the Nucleus maintained semaphore associ-
+        ated with this (sub)device. This operation should unblock the process
+        (pcb) which initiated this I/O operation and then requested to wait for
+        its completion via a SYS5 operation.*/
+
+    /* Place the stored off status code in the newly unblocked pcb’s v0 register.*/
+
+    /* Insert the newly unblocked pcb on the Ready Queue, transitioning this
+        process from the “blocked” state to the “ready” state*/
+
+    /* Return control to the Current Process: Perform a LDST on the saved
+        exception state (located at the start of the BIOS Data Page */
 }
 
 void V_all(){
