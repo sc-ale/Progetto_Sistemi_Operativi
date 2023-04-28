@@ -123,13 +123,11 @@ void syscall_handler() {
 
 /*3.5.13*/
 void Blocking_Sys()
-{ 
+{
     state_t *bios_State = BIOSDATAPAGE;
     bios_State->p_s.pc_epc += WORD_SIZE; /* word_size è 4, definito in arch.h */
     current_process->p_s = *bios_State;
     /* aggiornamento cpu time: current_process->p_time */
-    insertBlocked(current_process->p_semAdd, current_process);
-   
     scheluding();
 
 }
@@ -230,7 +228,7 @@ void kill_process(pcb_t* ptnr)
 void SYS_Passeren(int *semaddr) 
 {
     /* dobbiamo usare la hash dei semafori attivi */
-    int pid_current = current_process->p_pid;
+    // int pid_current = current_process->p_pid;
     if(*semaddr==0) {
         /* aggiungere current_process nella coda dei 
          processi bloccati da una P e sospenderlo*/
@@ -239,7 +237,7 @@ void SYS_Passeren(int *semaddr)
 
         /* chiamata allo scheduler, non so si può far direttamente così */
         scheduling();
-    } else if( /* se la coda dei processi bloccati da V non è vuota*/headBlocked(semaddr)!=NULL) {
+    } else if(headBlocked(semaddr)!=NULL) { /* se la coda dei processi bloccati da V non è vuota*/
         /* risvegliare il primo processo che si era bloccato su una V */
         pcb_t* wakedProc = removeBlocked(semaddr);
         insertProcQ(&readyQ, wakedProc);
