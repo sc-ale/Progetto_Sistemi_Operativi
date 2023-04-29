@@ -472,10 +472,10 @@ void IT_interrupt_handler(){
 }
 
 //3.6.1     
-void DISK_interrupt_handler()
+void DISK_interrupt_handler(int IntlineNo)
 {   /* vedere arch.h */
     /* Calculate the address for this device’s device register */
-    unsigned int interrupt_dev_bit_map = CDEV_BITMAP_BASE + ; /*+indirizzo diverso in base al tipo di device */
+    unsigned int interrupt_dev_bit_map = CDEV_BITMAP_ADDR(IntlineNo); /*+indirizzo diverso in base al tipo di device */
     int DevNo;
     if(interrupt_dev_bit_map & DEV0ON != 0){
         DevNo = 0;
@@ -499,21 +499,39 @@ void DISK_interrupt_handler()
     
     /* Save off the status code from the device’s device register. */
     /*Uso la macro per trovare l'inidirzzo di base del device con la linea di interrupt e il numero di device*/
-    int dev_addr=DEV_REG_ADDR(IntlineNo,DevNo);
-    dtpreg_t *dev_reg = (memaddr)reg_addr->status;
+    unsigned int dev_addr=DEV_REG_ADDR(IntlineNo,DevNo);
+    /* Copia del device register*/
+    dtpreg_t dev_reg = (memaddr)dev_addr->status;
 
     /* Acknowledge the outstanding interrupt. This is accomplished by writ-
         ing the acknowledge command code in the interrupting device’s device
         register. Alternatively, writing a new command in the interrupting
         device’s device register will also acknowledge the interrupt.*/
-    dev_reg->command = ACK;
+    dev_addr->command = ACK;
+
     /* Perform a V operation on the Nucleus maintained semaphore associ-
         ated with this (sub)device. This operation should unblock the process
         (pcb) which initiated this I/O operation and then requested to wait for
         its completion via a SYS5 operation.*/
 
-    /* Place the stored off status code in the newly unblocked pcb’s v0 register.*/
+    pcb_t *blocked_process = NULL;
+    switch(IntlineNo){
+        case 3:
+            blocked_process = headBlocked(sem_disk[DevNo]);
+            SYS_Verhogen(sem_disk[DevNo]);
+        case 4:
+            blocked_process = headBlocked(sem_tape[DevNo]);
+            SYS_Verhogen(sem_tape[DevNo]);
+        case 5:
+            blocked_process = headBlocked(sem_network[DevNo]);
+            SYS_Verhogen(sem_network[DevNo]);
+        case 6:
+            blocked_process = headBlocked(sem_printer[DevNo]);
+            SYS_Verhogen(sem_printer[DevNo]);
+    }
 
+    /* Place the stored off status code in the newly unblocked pcb’s v0 register.*/
+    blocked_process->
     /* Insert the newly unblocked pcb on the Ready Queue, transitioning this
         process from the “blocked” state to the “ready” state*/
 
