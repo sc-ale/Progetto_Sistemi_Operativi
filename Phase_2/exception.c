@@ -3,6 +3,9 @@
 #include <pandos_const.h>
 #include <pandos_types.h>
 #include <umps3/umps/cp0.h>
+#include <umps3/umps/arch.h>
+
+#include <pcb.c>
 
 /* come process id usiamo un intero che aumenta 
     e basta (no caso reincarazione)*/
@@ -29,7 +32,7 @@ void foobar()
     case 0:
         interrupt_handler();
         break;
-    case 1: case 2: case: 3
+    case 1: case 2: case 3:
         passup_ordie(PGFAULTEXCEPT);
         break;
     case 4: case 5: case 6: case 7:
@@ -49,13 +52,13 @@ void foobar()
 /*siccome perTLB , ProgramTrap e SYSCALL > 11 bisogna effettuare PASS UP OR DIE avrebbe senso creare una funzione*/
 //DA RIGUARDARE 3.7 
 void passup_ordie(int INDEX) {
-    if (current_process.p_supportStruct == NULL) {
+    if (current_process->p_supportStruct == NULL) {
         SYS_terminate_process(0);
     }
     else {
-        state_t exceptState = current_process->p_supportStruct.sup_exceptState[INDEX];
-        context_t exceptContext = current_process->p_supportStruct.sup_exceptContext[INDEX];
-        exceptState = (state_t*)BIOS_DATA_PAGE;
+        state_t exceptState = current_process->p_supportStruct->sup_exceptState[INDEX];
+        context_t exceptContext = current_process->p_supportStruct->sup_exceptContext[INDEX];
+        exceptState = (state_t*)BIOSDATAPAGE; /* questa variabile è dichiarata e cambiata subito dopo ??? ripigliati*/
         LDCXT(exceptContext.stackPtr,exceptContext.status,exceptContext.pc);
     }
 }
@@ -69,7 +72,7 @@ void syscall_handler() {
     switch ((int)current_process->p_s.reg_a0)
     {
     case CREATEPROCESS:
-        SYS_create_process((state_t*)current_process->p_s.reg_a1, reg_a2, reg_a3);
+        SYS_create_process((state_t*)current_process->p_s.reg_a1, (support_t*)current_process->p_s.reg_a2, (nsd_t*)current_process->p_s.reg_a3);
         break;
         
     case TERMPROCESS:
@@ -107,7 +110,7 @@ void syscall_handler() {
         SYS_Get_Process_Id((int)current_process->p_s.reg_a1);
         break;
 
-    case: GETCHILDREN:
+    case GETCHILDREN:
         SYS_Get_Children((int*)current_process->p_s.reg_a1, (int)current_process->p_s.reg_a2);
     default:
         break;
@@ -121,7 +124,7 @@ void syscall_handler() {
 void Blocking_Sys()
 {
     state_t *bios_State = BIOSDATAPAGE;
-    bios_State->p_s.pc_epc += WORD_SIZE; /* word_size è 4, definito in arch.h */
+    bios_State->pc_epc += WORD_SIZE; /* word_size è 4, definito in arch.h */
     current_process->p_s = *bios_State;
     /* aggiornamento cpu time: current_process->p_time */
     scheluding();
@@ -145,7 +148,7 @@ void SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns)
         newProc->p_supportStruct = supportp;
 
         if (!addNamespace(newProc, ns)) { /* deve ereditare il ns dal padre */
-            newProc->namespaces = current_process->namespace;
+            newProc->namespaces[0] = current_process->namespaces[0]; // da riguardare per i namespace, l'indice non sappiamo qual è
         }
 
         newProc->p_pid = pid_start + 1; /* assegniamo il pid */
@@ -170,7 +173,7 @@ void SYS_terminate_process(int pid)
         Proc2Delete = current_process;
     } else{
         for(int i=0; i<MAXPROC; i++) {
-            if(pcbFree_table[i]->p_pid == pid){
+            if(pcbFree_table[i].p_pid == pid){
                 Proc2Delete = &pcbFree_table[i];
             }
         }
@@ -185,7 +188,8 @@ void terminate_family(pcb_t *ptrn)
     /* se ha dei figli richiama la funzione stessa */
     if(!emptyChild(ptrn)) {        
         struct list_head *pos, *current = NULL;
-        list_for_each_safe(pos, current, ptrn->p_child->p_sib) {
+        struct list_head *head = &ptrn->p_child->p_sib;
+        list_for_each_safe(pos, current, head) {
             pcb_t* temp = list_entry(pos, struct pcb_t, p_sib);
             terminate_family(temp);
         }  
