@@ -531,12 +531,14 @@ void DISK_interrupt_handler(int IntlineNo)
     }
 
     /* Place the stored off status code in the newly unblocked pcb’s v0 register.*/
-    blocked_process->
+    blocked_process->p_s.reg_v0;
     /* Insert the newly unblocked pcb on the Ready Queue, transitioning this
         process from the “blocked” state to the “ready” state*/
 
     /* Return control to the Current Process: Perform a LDST on the saved
         exception state (located at the start of the BIOS Data Page */
+    state_t *prev_state = BIOSDATAPAGE;
+    LDST(prev_state);
 }
 
 void V_all(){
