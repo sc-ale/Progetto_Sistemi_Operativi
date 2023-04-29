@@ -499,15 +499,15 @@ return linea;
 //3.6.1     
 void DISK_interrupt_handler(int IntLineNo)
 {   /* vedere arch.h */
-    int DevNo = Get_interrupt_device(IntLineNo)
+    int DevNo = Get_interrupt_device(IntLineNo);
 
     // Forse è possibile fare una funzione comune per tutti i device, passando IntLineNo per parametro
     
     /* Save off the status code from the device’s device register. */
     /*Uso la macro per trovare l'inidirzzo di base del device con la linea di interrupt e il numero di device*/
-    unsigned int dev_addr=DEV_REG_ADDR(IntLineNo,DevNo);
+    int *dev_addr=DEV_REG_ADDR(IntLineNo,DevNo);
     /* Copia del device register*/
-    dtpreg_t dev_reg = (memaddr)dev_addr->status;
+    dtpreg_t dev_reg.status = dev_addr->status;
 
     /* Acknowledge the outstanding interrupt. This is accomplished by writ-
         ing the acknowledge command code in the interrupting device’s device
@@ -523,17 +523,17 @@ void DISK_interrupt_handler(int IntLineNo)
     pcb_t *blocked_process = NULL;
     switch(IntLineNo){
         case 3:
-            blocked_process = headBlocked(sem_disk[DevNo]);
-            SYS_Verhogen(sem_disk[DevNo]);
+            blocked_process = headBlocked(&sem_disk[DevNo]);
+            SYS_Verhogen(&sem_disk[DevNo]);
         case 4:
-            blocked_process = headBlocked(sem_tape[DevNo]);
-            SYS_Verhogen(sem_tape[DevNo]);
+            blocked_process = headBlocked(&sem_tape[DevNo]);
+            SYS_Verhogen(&sem_tape[DevNo]);
         case 5:
-            blocked_process = headBlocked(sem_network[DevNo]);
-            SYS_Verhogen(sem_network[DevNo]);
+            blocked_process = headBlocked(&sem_network[DevNo]);
+            SYS_Verhogen(&sem_network[DevNo]);
         case 6:
-            blocked_process = headBlocked(sem_printer[DevNo]);
-            SYS_Verhogen(sem_printer[DevNo]);
+            blocked_process = headBlocked(&sem_printer[DevNo]);
+            SYS_Verhogen(&sem_printer[DevNo]);
     }
 
     /* Place the stored off status code in the newly unblocked pcb’s v0 register.*/
