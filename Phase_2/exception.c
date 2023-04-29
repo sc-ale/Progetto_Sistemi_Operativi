@@ -499,7 +499,8 @@ void DISK_interrupt_handler()
     
     /* Save off the status code from the device’s device register. */
     /*Uso la macro per trovare l'inidirzzo di base del device con la linea di interrupt e il numero di device*/
-    dtpreg_t *dev_reg = (memaddr) DEV_REG_ADDR(IntlineNo,DevNo)->status;
+    int dev_addr=DEV_REG_ADDR(IntlineNo,DevNo);
+    dtpreg_t *dev_reg = (memaddr)reg_addr->status;
 
     /* Acknowledge the outstanding interrupt. This is accomplished by writ-
         ing the acknowledge command code in the interrupting device’s device
