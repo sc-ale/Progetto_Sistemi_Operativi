@@ -471,35 +471,41 @@ void IT_interrupt_handler(){
     LDST(exc_state);
 }
 
-//3.6.1     
-void DISK_interrupt_handler(int IntlineNo)
-{   /* vedere arch.h */
+/* ritorna la linea del device il cui interrupt è attivo */
+int Get_interrupt_device(int intLineNo)
+{
     /* Calculate the address for this device’s device register */
-    unsigned int interrupt_dev_bit_map = CDEV_BITMAP_ADDR(IntlineNo); /*+indirizzo diverso in base al tipo di device */
-    int DevNo;
-    if(interrupt_dev_bit_map & DEV0ON != 0){
-        DevNo = 0;
-    } else if(interrupt_dev_bit_map & DEV1ON != 0){
-        DevNo = 1;
-    } else if(interrupt_dev_bit_map & DEV2ON != 0){
-        DevNo = 2;
-    } else if(interrupt_dev_bit_map & DEV3ON != 0){
-        DevNo = 3;
-    } else if(interrupt_dev_bit_map & DEV4ON != 0){
-        DevNo = 4;
-    } else if(interrupt_dev_bit_map & DEV5ON != 0){
-        DevNo = 5;
-    } else if(interrupt_dev_bit_map & DEV6ON != 0){
-        DevNo = 6;
-    } else if(interrupt_dev_bit_map & DEV7ON != 0){
-        DevNo = 7;
-    }
+    unsigned int interrupt_dev_bit_map = CDEV_BITMAP_ADDR(IntlineNo); 
+    /*+indirizzo diverso in base al tipo di device */
 
-    // Forse è possibile fare una funzione comune per tutti i device, passando IntlineNo per parametro
+    unsigned int int_linee[8];
+    for (int i=0; i<8; i++) {
+        unsigned mask = ((1<<1)-1)<<i;
+        int_linee[i] = mask & interrupt_dev_bit_map;
+    }
+    
+    /* int_linee[i] indica se la linea i-esima è attiva */
+    int linea=0;
+    while(linea<8) {
+        if(intpeg[linea]!=0) { 
+            break;
+        }
+        linea++;
+    }
+    
+return linea;
+}
+
+//3.6.1     
+void DISK_interrupt_handler(int IntLineNo)
+{   /* vedere arch.h */
+    int DevNo = Get_interrupt_device(IntLineNo)
+
+    // Forse è possibile fare una funzione comune per tutti i device, passando IntLineNo per parametro
     
     /* Save off the status code from the device’s device register. */
     /*Uso la macro per trovare l'inidirzzo di base del device con la linea di interrupt e il numero di device*/
-    unsigned int dev_addr=DEV_REG_ADDR(IntlineNo,DevNo);
+    unsigned int dev_addr=DEV_REG_ADDR(IntLineNo,DevNo);
     /* Copia del device register*/
     dtpreg_t dev_reg = (memaddr)dev_addr->status;
 
@@ -515,7 +521,7 @@ void DISK_interrupt_handler(int IntlineNo)
         its completion via a SYS5 operation.*/
 
     pcb_t *blocked_process = NULL;
-    switch(IntlineNo){
+    switch(IntLineNo){
         case 3:
             blocked_process = headBlocked(sem_disk[DevNo]);
             SYS_Verhogen(sem_disk[DevNo]);
