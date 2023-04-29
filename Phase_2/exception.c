@@ -22,7 +22,9 @@ void uTLB_RefillHandler ()
 /* CONTROLLARE LA SEZIONE 3.5.12 */
 void foobar() 
 {   
-    unsigned int tempoEccezione = STCK(tempoEccezione);
+    cpu_t momento_attuale;
+    STCK(momento_attuale);
+    current_process->p_time+=momento_attuale-current_process->istante_Lancio_Blocco;
 
 
     state_t *bios_State = BIOSDATAPAGE;

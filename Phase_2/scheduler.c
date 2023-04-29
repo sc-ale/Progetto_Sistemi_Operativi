@@ -7,6 +7,10 @@ void scheduling(){
         {
             current_process = removeProcQ(&readyQ);
             setTIMER(TIMESLICE);
+
+            STCK(current_process->istante_Lancio_Blocco); 
+            /* per salvarsi il momento in cui viene lanciato */
+            
             LDST(&current_process->p_s);
         }
         else if(process_count==0)
