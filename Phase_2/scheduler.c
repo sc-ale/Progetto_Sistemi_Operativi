@@ -1,10 +1,4 @@
-#include <umps3/umps/libumps.h>
-#include <umps3/umps/types.h>
 #include <initial.c>
-#include <pcb.h>
-#include <ash.h>
-#include <ns.h>
-#include <pandos_const.h>
 
 void scheduling(){
     while (true) {

@@ -1,9 +1,10 @@
 #include <umps3/umps/libumps.h>
 #include <umps3/umps/types.h>
+#include <pandos_types.h>
+#include <pandos_const.h>
 #include <pcb.h>
 #include <ash.h>
 #include <ns.h>
-#include <exception.c>
 extern void test();
 extern void scheduling();
 
