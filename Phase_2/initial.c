@@ -50,9 +50,9 @@ int main() {
 
 /* popolazione pass up vector */
     passupvector_t *passUpVect;
-    passUpVect->tlb_refill_handler = (memaddr) uTLB_RefillHandler();
+    passUpVect->tlb_refill_handler = (memaddr) uTLB_RefillHandler;
     passUpVect->tlb_refill_stackPtr = (memaddr) KERNELSTACK;
-    passUpVect->exception_handler = (memaddr) foobar();
+    passUpVect->exception_handler = (memaddr) foobar;
     passUpVect->exception_stackPtr = (memaddr) KERNELSTACK; //stesso indirizzo ??
 
     //PUNTO 5 NON HO CAPITO

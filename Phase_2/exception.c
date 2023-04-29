@@ -330,7 +330,7 @@ void SYS_Get_Process_Id(int parent)
     } 
     else { /* dobbiamo restituire il pid del padre, se si trovano nello stesso namespace */
         /* assumiamo che il processo corrente abbia un padre (?) */
-        nsd_t* parent_pid = getNamespace(current_process->p_parent, current_process->namespaces.n_type);
+        nsd_t* parent_pid = getNamespace(current_process->p_parent, current_process->namespaces[0]->n_type);
         
         /* se current_process e il processo padre non sono nello stesso namespace restituisci 0 */ 
         current_process->p_s.reg_v0 = (parent_pid==NULL) ? 0 : current_process->p_pid;
@@ -341,18 +341,18 @@ void SYS_Get_Process_Id(int parent)
 void SYS_Get_Children(int *children, int size){
     int num = 0;
     struct list_head *pos, *current = NULL;
-    int current_namespace = current_process->namespaces[0].n_type
-    pcb_t *first_child = current_process->p_child;
-    list_for_each_safe(pos, current, first_child->p_sib){
+    int current_namespace = current_process->namespaces[0]->n_type;
+    pcb_t *first_child = list_first_entry(&(current_process->p_child),pcb_t, p_child);
+    list_for_each_safe(pos, current, &first_child->p_sib){
         pcb_t* temp = list_entry(pos, struct pcb_t, p_sib);
-        if(current_namespace == temp->namespaces[0].n_type){
+        if(current_namespace == temp->namespaces[0]->n_type){
             if(num < size){
                 children[num] = temp->p_pid;
             }
             num++;
         }   
     }
-    reg_v0 = num;
+    current_process->p_s.reg_v0 = num;
 }
 
 /* Per determinare se il processo corrente stava eseguento in kernel o user mode,
