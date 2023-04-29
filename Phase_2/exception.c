@@ -58,7 +58,7 @@ void passup_ordie(int INDEX) {
     else {
         state_t exceptState = current_process->p_supportStruct->sup_exceptState[INDEX];
         context_t exceptContext = current_process->p_supportStruct->sup_exceptContext[INDEX];
-        exceptState = (state_t*)BIOSDATAPAGE; /* questa variabile è dichiarata e cambiata subito dopo ??? ripigliati*/
+        exceptState = (state_t*)BIOSDATAPAGE; /* questa variabile è dichiarata e cambiata subito dopo ??? */
         LDCXT(exceptContext.stackPtr,exceptContext.status,exceptContext.pc);
     }
 }
@@ -188,7 +188,8 @@ void terminate_family(pcb_t *ptrn)
     /* se ha dei figli richiama la funzione stessa */
     if(!emptyChild(ptrn)) {        
         struct list_head *pos, *current = NULL;
-        struct list_head *head = &ptrn->p_child->p_sib;
+        pcb_t* figlioPtrn = list_first_entry(&ptrn->p_child, pcb_t, p_child);
+        struct list_head *head = &figlioPtrn->p_sib;
         list_for_each_safe(pos, current, head) {
             pcb_t* temp = list_entry(pos, struct pcb_t, p_sib);
             terminate_family(temp);
