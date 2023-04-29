@@ -58,7 +58,7 @@ void passup_ordie(int INDEX) {
     else {
         state_t exceptState = current_process->p_supportStruct->sup_exceptState[INDEX];
         context_t exceptContext = current_process->p_supportStruct->sup_exceptContext[INDEX];
-        exceptState = (state_t*)BIOSDATAPAGE; /* questa variabile è dichiarata e cambiata subito dopo ??? */
+       // exceptState = (state_t*)BIOSDATAPAGE; /* questa variabile è dichiarata e cambiata subito dopo ??? */
         LDCXT(exceptContext.stackPtr,exceptContext.status,exceptContext.pc);
     }
 }

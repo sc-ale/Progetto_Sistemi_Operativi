@@ -52,7 +52,8 @@ void interrupt_handler()
 
     /* Disk devices */
     case DISKINT:
-        DISK_interrupt_handler();
+        int a;
+        DISK_interrupt_handler(a); /* passare la interrupt line*/
         break;
     
     /* Flash devices */
@@ -110,7 +111,7 @@ void IT_interrupt_handler(){
 }
 
 /* ritorna la linea del device il cui interrupt è attivo */
-int Get_interrupt_device(int intLineNo)
+int Get_interrupt_device(int IntLineNo)
 {
     /* Calculate the address for this device’s device register */
     unsigned int interrupt_dev_bit_map = CDEV_BITMAP_ADDR(IntLineNo); 
@@ -143,9 +144,10 @@ void DISK_interrupt_handler(int IntLineNo)
     
     /* Save off the status code from the device’s device register. */
     /*Uso la macro per trovare l'inidirzzo di base del device con la linea di interrupt e il numero di device*/
-    int *dev_addr=DEV_REG_ADDR(IntLineNo,DevNo);
+    dtpreg_t *dev_addr=DEV_REG_ADDR(IntLineNo,DevNo);
     /* Copia del device register*/
-    dtpreg_t dev_reg.status = dev_addr->status;
+    dtpreg_t dev_reg;
+    dev_reg.status = dev_addr->status;
 
     /* Acknowledge the outstanding interrupt. This is accomplished by writ-
         ing the acknowledge command code in the interrupting device’s device
@@ -175,7 +177,7 @@ void DISK_interrupt_handler(int IntLineNo)
     }
 
     /* Place the stored off status code in the newly unblocked pcb’s v0 register.*/
-    blocked_process->p_s.reg_v0;
+    blocked_process->p_s.reg_v0=dev_reg.status;
     /* Insert the newly unblocked pcb on the Ready Queue, transitioning this
         process from the “blocked” state to the “ready” state*/
 
