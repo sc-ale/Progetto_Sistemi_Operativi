@@ -284,9 +284,28 @@ void SYS_Verhogen(int* semaddr)
 At the completion of the I-O operation the device register values are
 copied back in the cmdValues array
 */
-SYS_Doio(int*comdAddr, int*comdValues)
+SYS_Doio(int*cmdAddr, int*cmdValues)
 {
+    /* Mappa i registri dei device da 0 a 47*/
+    int devreg = (*cmdAddr - DEV_REG_START) / DEV_REG_SIZE;
+    switch (devreg / 8)
+    {
+    case 0:
+        
+        break;
+    case 1:
 
+    case 2:
+
+    case 3:
+
+    case 4:
+
+    case 5: case 6:
+
+    default:
+        break;
+    }
 }
 
 /* Restituisce il tempo di utilizzo del processore del processo in esecuzione*/
