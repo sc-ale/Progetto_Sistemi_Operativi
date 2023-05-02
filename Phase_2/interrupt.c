@@ -52,27 +52,27 @@ void interrupt_handler()
 
     /* Disk devices */
     case DISKINT:
-        int a;
-        DISK_interrupt_handler(a); /* passare la interrupt line*/
+        general_interrupt_handler(DISKINT); /* passare la interrupt line*/
         break;
     
     /* Flash devices */
     case FLASHINT:
-        
+        general_interrupt_handler(FLASHINT); /* passare la interrupt line*/
         break;
     
     /* Network devices*/
     case NETWINT:
+        general_interrupt_handler(NETWINT); /* passare la interrupt line*/
         break;
 
     /* Printer devices */
     case PRNTINT:
-        
+        general_interrupt_handler(PRNTINT); /* passare la interrupt line*/
         break;
     
     /* Terminal devices*/
     case TERMINT:
-    
+        general_interrupt_handler(TERMINT); /* passare la interrupt line*/
         break;
 
     default:
@@ -136,7 +136,7 @@ return linea;
 }
 
 //3.6.1     
-void DISK_interrupt_handler(int IntLineNo)
+void general_interrupt_handler(int IntLineNo)
 {   /* vedere arch.h */
     int DevNo = Get_interrupt_device(IntLineNo);
 
@@ -162,22 +162,73 @@ void DISK_interrupt_handler(int IntLineNo)
 
     pcb_t *blocked_process = NULL;
     switch(IntLineNo){
-        case 3:
+        case DISKINT:
             blocked_process = headBlocked(&sem_disk[DevNo]);
             SYS_Verhogen(&sem_disk[DevNo]);
-        case 4:
+        case FLASHINT:
             blocked_process = headBlocked(&sem_tape[DevNo]);
             SYS_Verhogen(&sem_tape[DevNo]);
-        case 5:
+        case NETWINT:
             blocked_process = headBlocked(&sem_network[DevNo]);
             SYS_Verhogen(&sem_network[DevNo]);
-        case 6:
+        case PRNTINT:
             blocked_process = headBlocked(&sem_printer[DevNo]);
             SYS_Verhogen(&sem_printer[DevNo]);
+        case TERMINT:
+            blocked_process = headBlocked(&sem_terminal[DevNo]);
+            SYS_Verhogen(&sem_terminal[DevNo]);
     }
 
     /* Place the stored off status code in the newly unblocked pcb’s v0 register.*/
     blocked_process->p_s.reg_v0=dev_reg.status;
+    /* Insert the newly unblocked pcb on the Ready Queue, transitioning this
+        process from the “blocked” state to the “ready” state*/
+
+    /* Return control to the Current Process: Perform a LDST on the saved
+        exception state (located at the start of the BIOS Data Page */
+    state_t *prev_state = BIOSDATAPAGE;
+    LDST(prev_state);
+}
+
+void terminal_interrupt_handler(){
+    int DevNo = Get_interrupt_device(TERMINT);
+   
+    /* Save off the status code from the device’s device register. */
+    /*Uso la macro per trovare l'inidirzzo di base del device con la linea di interrupt e il numero di device*/
+    termreg_t *dev_addr=DEV_REG_ADDR(TERMINT,DevNo);
+    /* Copia del device register*/
+    termreg_t dev_reg;
+    dev_reg.recv_status = dev_addr->recv_status;
+    dev_reg.transm_status = dev_addr->transm_status;
+
+    /* Acknowledge the outstanding interrupt. This is accomplished by writ-
+        ing the acknowledge command code in the interrupting device’s device
+        register. Alternatively, writing a new command in the interrupting
+        device’s device register will also acknowledge the interrupt.*/
+    /* Lo status code OKCHARTRANS (5) significa che il terminale ha generato l'interrupt per trasmettere, 
+        altrimenti l'interrupt è stato generato per ricevere*/
+    /* Flag utilizzato per salvare quale delle due operazioni stiamo eseguendo*/
+    bool flag = false;
+    if(dev_reg.transm_status == OKCHARTRANS){
+        dev_addr->transm_command = ACK;
+        flag = true;
+    } else{
+        dev_addr->recv_command = ACK;
+        /*Aumenta DevNo per accedere poi ai campi di sem_interval
+            Primi 8 in trasmissione ultimi 8 in ricezione*/
+        DevNo += 8;
+    }
+
+    /* Perform a V operation on the Nucleus maintained semaphore associ-
+        ated with this (sub)device. This operation should unblock the process
+        (pcb) which initiated this I/O operation and then requested to wait for
+        its completion via a SYS5 operation.*/
+
+    pcb_t *blocked_process = headBlocked(&sem_terminal[DevNo]);
+    SYS_Verhogen(&sem_terminal[DevNo]);
+
+    /* Place the stored off status code in the newly unblocked pcb’s v0 register.*/
+    blocked_process->p_s.reg_v0= flag ? dev_reg.transm_status : dev_reg.recv_status;
     /* Insert the newly unblocked pcb on the Ready Queue, transitioning this
         process from the “blocked” state to the “ready” state*/
 
