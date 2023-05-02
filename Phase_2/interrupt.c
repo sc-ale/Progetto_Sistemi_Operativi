@@ -207,11 +207,11 @@ void terminal_interrupt_handler(){
         device’s device register will also acknowledge the interrupt.*/
     /* Lo status code OKCHARTRANS (5) significa che il terminale ha generato l'interrupt per trasmettere, 
         altrimenti l'interrupt è stato generato per ricevere*/
-    /* Flag utilizzato per salvare quale delle due operazioni stiamo eseguendo*/
-    bool flag = false;
+    /* write utilizzato per salvare quale delle due operazioni stiamo eseguendo*/
+    bool write = false;
     if(dev_reg.transm_status == OKCHARTRANS){
         dev_addr->transm_command = ACK;
-        flag = true;
+        write = true;
     } else{
         dev_addr->recv_command = ACK;
         /*Aumenta DevNo per accedere poi ai campi di sem_interval
@@ -228,7 +228,7 @@ void terminal_interrupt_handler(){
     SYS_Verhogen(&sem_terminal[DevNo]);
 
     /* Place the stored off status code in the newly unblocked pcb’s v0 register.*/
-    blocked_process->p_s.reg_v0= flag ? dev_reg.transm_status : dev_reg.recv_status;
+    blocked_process->p_s.reg_v0= write ? dev_reg.transm_status : dev_reg.recv_status;
     /* Insert the newly unblocked pcb on the Ready Queue, transitioning this
         process from the “blocked” state to the “ready” state*/
 
