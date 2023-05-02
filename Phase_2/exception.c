@@ -23,14 +23,14 @@ void uTLB_RefillHandler ()
 /* CONTROLLARE LA SEZIONE 3.5.12 */
 void foobar() 
 {   
-    current_process -> p_s = (state_t*) BIOS_DATA_PAGE;
+    current_process -> p_s = *(state_t*) BIOSDATAPAGE;
     /* fornisce il codice del tipo di eccezione avvenuta */
     switch (CAUSE_GET_EXCCODE((int)current_process->p_s.cause))
     {
     case 0:
         interrupt_handler();
         break;
-    case 1: case 2: case: 3
+    case 1: case 2: case 3:
         passup_ordie(PGFAULTEXCEPT);
         break;
     case 4: case 5: case 6: case 7:
@@ -54,7 +54,7 @@ void passup_ordie(int INDEX) {
     }
     else {
         context_t exceptContext = current_process->p_supportStruct->sup_exceptContext[INDEX];
-        current_process->p_supportStruct->sup_exceptState[INDEX].status  = (state_t*)BIOS_DATA_PAGE;
+        current_process->p_supportStruct->sup_exceptState[INDEX].status  = (state_t*)BIOSDATAPAGE;
         LDCXT(exceptContext.stackPtr,exceptContext.status,exceptContext.pc);
     }
 }
@@ -64,7 +64,7 @@ void syscall_handler() {
     switch ((int)current_process->p_s.reg_a0)
     {
     case CREATEPROCESS:
-        SYS_create_process((state_t*)current_process->p_s.reg_a1, reg_a2, reg_a3);
+        SYS_create_process((state_t*)current_process->p_s.reg_a1, (state_t*)current_process->p_s.reg_a2, (state_t*)current_process->p_s.reg_a3);
         break;
         
     case TERMPROCESS:
@@ -80,7 +80,7 @@ void syscall_handler() {
         break;
     
     case DOIO:
-        SYS_Doio((int*)current_process->p_s.reg_a1, (int*)current_process->p_s.reg_a2)
+        SYS_Doio((int*)current_process->p_s.reg_a1, (int*)current_process->p_s.reg_a2);
         break;
         
     case GETTIME:
@@ -123,7 +123,7 @@ void SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns)
         newProc->p_supportStruct = supportp;
 
         if (!addNamespace(newProc, ns)) { /* deve ereditare il ns dal padre */
-            newProc->namespaces = current_process->namespace;
+            newProc->namespaces[0] = current_process->namespaces[0]; // Inidici da ricontrollare!!
         }
 
         newProc->p_pid = pid_start + 1; /* assegniamo il pid */
@@ -214,7 +214,7 @@ void SYS_Passeren(int *semaddr)
     } else if( /* se la coda dei processi bloccati da V non è vuota*/headBlocked(semaddr)!=NULL) {
         /* risvegliare il primo processo che si era bloccato su una V */
         pcb_t* wakedProc = removeBlocked(semaddr);
-        LDST(&wakedeProc->p_s);
+        LDST(&wakedProc->p_s);
     } else {
         semaddr--;
     }
@@ -235,7 +235,7 @@ void SYS_Verhogen(int* semaddr)
     } else if( /* se la coda dei processi bloccati da P non è vuota*/headBlocked(semaddr)!=NULL) {
         /* risvegliare il primo processo che si era bloccato su una P */
         pcb_t* wakedProc = removeBlocked(semaddr);
-        LDST(&wakeProc->p_s);
+        LDST(&wakedProc->p_s);
     } else {
         semaddr++;
     }
@@ -351,94 +351,4 @@ int Check_Kernel_mode()
     unsigned int bit_kernel = current_process->p_s.status & mask;
     /* ritorna vero se il processo era in kernel mode, 0 in user mode*/
     return (bit_kernel==0) ? TRUE : FALSE;
-}
-
-/* Restituisce la linea con interrupt in attesa con massima priorità. 
-(Se nessuna linea è attiva ritorna 8 ma assumiamo che quando venga
- chiamata ci sia almeno una linea attiva) */
-int Get_Interrupt_Line_Max_Prio (){
-    unsigned int interrupt_pendig = current_process->p_s.cause & CAUSE_IP_MASK;
-    /* così abbiamo solo i bit attivi da 8 a 15 del cause register */
-    unsigned int intpeg_linee[8];
-    for (int i=0; i<8; i++) {
-        unsigned mask = ((1<<1)-1)<<i+8;
-        intpeg_linee[i] = mask & interrupt_pending;
-    }
-    /* intpeg_linee[i] indica se la linea i-esima è attiva */
-    
-    int linea=1; /* questo perché ignoriamo la linea 0*/
-    while(linea<8) {
-        if(intpeg[linea]!=0) { 
-            break;
-        }
-        linea++;
-    }
-    /* ritorniamo la quale linea è attiva */
-    return linea;
-}
-
-/*
-The interrupt exception handler’s first step is to determine which device
- or timer with an outstanding interrupt is the highest priority.
- Depending on the device, the interrupt exception handler will 
- perform a number of tasks.*/
-void interrupt_handler()
-{
-    /* sezione 3.6.1 a 3.6.3*/
-    switch (Get_Interrupt_Line_Max_Prio())
-    {
-    /* interrupt processor Local Timer */
-    case 1:
-        PLT_interrupt_handler();
-        break;
-    
-    /* interrupt Interval Timer */
-    case 2:
-       
-        break;
-
-    /* Disk devices */
-    case DISKINT:
-        
-        break;
-    
-    /* Flash devices */
-    case FLASHINT:
-        
-        break;
-    
-    /* Network devices*/
-    case NETWINT:
-        break;
-
-    /* Printer devices */
-    case PRNTINT:
-        
-        break;
-    
-    /* Terminal devices*/
-    case TERMINT:
-    
-        break;
-
-    default:
-        break;
-    }
-   
-}
-
-//3.6.2
-void PLT_interrupt_handler() {
-    /*Acknowledge the PLT interrupt by loading the timer with a new value.*/
-    setTIMER(500);
-
-    /* Copy the processor state at the time of the exception (located at the start of the BIOS Data Page [Section ??-pops]) into the Current Pro- cess’s pcb (p_s). */
-    // GIÀ FATTO (CREDO) facendolo all'inizio modifichiamo la variabile globale quindi ha senso farlo una sola volta all'inizio
-
-    /* Place the Current Process on the Ready Queue; transitioning the Current Process from the “running” state to the “ready” state. */
-    insertProcQ(&current_process->p_list, readyQ);
-    /* credo bisogni diminuire questo counter*/
-    process_count--;
-
-    scheduling();
 }
