@@ -1,12 +1,15 @@
 #include <umps3/umps/libumps.h>
 #include <umps3/umps/types.h>
-#include <Phase_2/pandos_types.h>
-#include <Phase_2/pandos_const.h>
+#include <pandos_types.h>
+#include <pandos_const.h>
 #include <pcb.h>
 #include <ash.h>
 #include <ns.h>
+
 extern void test();
 extern void scheduling();
+extern void uTLB_RefillHandler();
+extern void foobar();
 
 int process_count; /* numero processi attivi */
 int soft_block_count; /* conteggio processi bloccati per I/O o timer request*/
@@ -21,6 +24,10 @@ int sem_tape[8];
 int sem_network[8];
 int sem_printer[8];
 int sem_terminal[16];
+
+
+extern void *memcpy(void *dest, const void *src, unsigned int n);
+
 
 int main() {
 

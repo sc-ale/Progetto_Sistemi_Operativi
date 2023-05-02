@@ -12,6 +12,8 @@ COSE DA SISTEMARE
     3, 5, 7 servono delle operazioni aggiuntive
 - rifinire il tempo
 - sistemare eventualemente la DOIO
+- aggiungere i controlli e modificare il valore del soft_block_count
+- CLOCKWAIT non fa la P sullo pseudo clock (?)
 
 COSE DA FARE
 - aggiornare il PC nelle sys call per evitare loop

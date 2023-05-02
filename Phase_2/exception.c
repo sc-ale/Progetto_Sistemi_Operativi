@@ -19,6 +19,9 @@ void uTLB_RefillHandler()
     LDST((state_t *)0x0FFFF000);
 }
 
+extern void *memcpy(void *dest, const void *src, unsigned int n);
+
+
 /* CONTROLLARE LA SEZIONE 3.5.12 */
 void foobar()
 {
@@ -91,7 +94,7 @@ void syscall_handler()
 
     case PASSEREN:
         SYS_Passeren((int *)current_process->p_s.reg_a1);
-        Blocking_Sys();
+        
         break;
 
     case VERHOGEN:
@@ -100,7 +103,7 @@ void syscall_handler()
 
     case DOIO:
         SYS_Doio((int *)current_process->p_s.reg_a1, (int *)current_process->p_s.reg_a2);
-        Blocking_Sys();
+       
         break;
 
     case GETTIME:
@@ -109,7 +112,7 @@ void syscall_handler()
 
     case CLOCKWAIT:
         SYS_Clockwait();
-        Blocking_Sys();
+       
         break;
 
     case GETSUPPORTPTR:
@@ -125,20 +128,27 @@ void syscall_handler()
     default:
         break;
     }
-    /* queste due linee non veranno eseguite se prima sono state seguite delle sys bloccanti */
-    state_t *bios_State = BIOSDATAPAGE;
+    /* non veranno eseguite se prima sono state seguite delle sys bloccanti */
+    update_PC_SYS_non_bloccanti();
+}
+
+/* sezione 3.5.12 
+ aggiornamento del PC per evitare di andare in loop sulla stessa sys */
+void update_PC_SYS_non_bloccanti(){
+    state_t *bios_State = (state_t*) BIOSDATAPAGE;
+    bios_State->pc_epc += WORD_SIZE;
     LDST(bios_State);
 }
 
-/*3.5.13*/
-void Blocking_Sys()
+/* operazioni comuni per le sys bloccanti, l'inserimento nella ASL del current
+ process viene fatto all'interno delle sys*/
+void update_PC_SYS_bloccanti()
 {
-    state_t *bios_State = BIOSDATAPAGE;
+    state_t *bios_State = (state_t*) BIOSDATAPAGE;
     bios_State->pc_epc += WORD_SIZE; /* word_size è 4, definito in arch.h */
     current_process->p_s = *bios_State;
-    /* aggiornamento cpu time: current_process->p_time */
-    scheluding();
 }
+
 
 /* Crea un nuovo processo come figlio del chiamante. Il primo parametro contiene lo stato
  che deve avere il processo. Se la system call ha successo il valore di ritorno (nel registro reg_v0)
@@ -223,7 +233,7 @@ void terminate_family(pcb_t *ptrn)
 
 void kill_process(pcb_t *ptrn)
 {
-    Outchild(ptrn);
+    outChild(ptrn);
     /* uccido ptrn */
     ptrn->p_parent = NULL;
     list_del(&ptrn->p_list);
@@ -250,11 +260,13 @@ void SYS_Passeren(int *semaddr)
     // int pid_current = current_process->p_pid;
     if (*semaddr == 0)
     {
+        update_PC_SYS_bloccanti();
         /* aggiungere current_process nella coda dei
          processi bloccati da una P e sospenderlo*/
         int inserimento_avvenuto = insertBlocked(semaddr, current_process);
-        /* se inserimento_avvenuto è 1 allora non è stato possibile allocare un nuovo SEMD perché la semdFree_h è vuota */
-
+        /* se inserimento_avvenuto è 1 allora non è stato possibile allocare 
+         un nuovo SEMD perché la semdFree_h è vuota */
+        
         /* chiamata allo scheduler, non so si può far direttamente così */
         scheduling();
     }
@@ -311,6 +323,7 @@ copied back in the cmdValues array
 */
 SYS_Doio(int *cmdAddr, int *comdValues)
 {
+    /* chiamare update_PC_SYS_non_bloccanti(); */
         /* Mappa i registri dei device da 0 a 39*/
     int devreg = (*cmdAddr - DEV_REG_START) / DEV_REG_SIZE;
     switch (devreg / 8)
@@ -343,8 +356,11 @@ void SYS_Get_CPU_Time()
 Equivalente a una Passeren sul semaforo dell’Interval Timer.
 – Blocca il processo invocante fino al prossimo tick del dispositivo.
 */
-SYS_Clockwait()
+void SYS_Clockwait()
 {
+    /* System call bloccante*/
+    update_PC_SYS_bloccanti();
+
     /* aggiungere current_process nella coda dei processi bloccati da una P e sospenderlo*/
     insertBlocked(sem_interval_timer, current_process);
     /* se inserimento_avvenuto è 1 allora non è stato possibile allocare un nuovo SEMD perché la semdFree_h è vuota */
@@ -352,8 +368,7 @@ SYS_Clockwait()
     /* Setta il valore del semaforo a 0 */
     sem_interval_timer = 0;
 
-    /* System call bloccante*/
-    Blocking_Sys();
+    scheduling();
 }
 
 /* Restituisce un puntatore alla struttura di supporto del processo corrente,

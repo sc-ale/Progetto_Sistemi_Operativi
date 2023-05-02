@@ -1,5 +1,8 @@
 #include <initial.c>
 
+extern void *memcpy(void *dest, const void *src, unsigned int n);
+
+
 void scheduling(){
     while (true) {
         /* readyQ non vuota */
