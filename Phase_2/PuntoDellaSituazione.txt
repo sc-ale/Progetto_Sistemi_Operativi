@@ -1,26 +1,21 @@
 COSE FATTE  
 - inizializzazione
-- molte sys call (da testare, come tutto chiaramente)
+- scheduler
+- tutte le sys call
 - inclusioni dei file (da affinare)
+- interrupt e gestione device
+
 
 COSE DA SISTEMARE
 - riguare lo scheduler per il PLT
-- riguardare la sezione 3.5.12 per la questione di 
-    aggiornare il current_process con il BIOS data Page
 - riguardare la sezione 3.5.13 siccome per le sys call
     3, 5, 7 servono delle operazioni aggiuntive
-- capire cosa manca nella SYS_Get_CPU_Time, leggere la
-    sezione 3.8 che parla dei vari timer
-- sistemare non-timer interrupt, capire
-    i casi in cui si possono utilizzare i device in modo
-    univoco
-- sys call 7 (clock wait)
-
+- rifinire il tempo
+- sistemare eventualemente la DOIO
 
 COSE DA FARE
+- aggiornare il PC nelle sys call per evitare loop
 - accumulated cpu time
-- aggiungere terminal device alle interrupt
-- sys call 5 DOIO
 - fix: nel ritorno delle sys call nel registro del bios data page
 
 
