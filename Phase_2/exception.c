@@ -316,16 +316,25 @@ SYS_Doio(int *cmdAddr, int *comdValues)
     switch (devreg / 8)
     {
     case 0:
-        
+        int devNo = devreg % 8;
+        P_always(sem_disk[devNo]);
         break;
     case 1:
-
-    case 2:
-
+        int devNo = devreg % 8;
+        P_always(sem_tape[devNo]);
+        break;
+    case 2: 
+        int devNo = devreg % 8;
+        P_always(sem_network[devNo]);
+        break;
     case 3:
-
+        int devNo = devreg % 8;
+        P_always(sem_printer[devNo]);
+        break;
     case 4:
-
+        int devNo = devreg % 16;
+        P_always(sem_terminal[devNo]);
+        break;
     default:
         break;
     }
