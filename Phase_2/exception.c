@@ -1,11 +1,12 @@
+#include <umps3/umps/libumps.h>
+#include <umps3/umps/types.h>
+#include <pcb.h>
+#include <ash.h>
+#include <ns.h>
 #include <scheduler.c>
-#include <umps3/umps/const.h>
+#include <initial.c>
 #include <pandos_const.h>
-#include <pandos_types.h>
-#include <umps3/umps/cp0.h>
-#include <umps3/umps/arch.h>
-
-#include <pcb.c>
+#include <umps3/umps/const.h>
 
 /* come process id usiamo un intero che aumenta 
     e basta (no caso reincarazione)*/
@@ -22,19 +23,14 @@ void uTLB_RefillHandler ()
 /* CONTROLLARE LA SEZIONE 3.5.12 */
 void foobar() 
 {   
-    cpu_t momento_attuale;
-    STCK(momento_attuale);
-    current_process->p_time+=momento_attuale-current_process->istante_Lancio_Blocco;
-
-
-    state_t *bios_State = BIOSDATAPAGE;
+    current_process -> p_s = (state_t*) BIOS_DATA_PAGE;
     /* fornisce il codice del tipo di eccezione avvenuta */
-    switch (CAUSE_GET_EXCCODE(bios_State->cause) )
+    switch (CAUSE_GET_EXCCODE((int)current_process->p_s.cause))
     {
     case 0:
         interrupt_handler();
         break;
-    case 1: case 2: case 3:
+    case 1: case 2: case: 3
         passup_ordie(PGFAULTEXCEPT);
         break;
     case 4: case 5: case 6: case 7:
@@ -46,7 +42,6 @@ void foobar()
     case 8:
         syscall_handler();
     default:
-        /* (?) uccidere il processo chiamante (?)*/
         break;
     }
 }
@@ -58,23 +53,18 @@ void passup_ordie(int INDEX) {
         SYS_terminate_process(0);
     }
     else {
-        state_t exceptState = current_process->p_supportStruct->sup_exceptState[INDEX];
         context_t exceptContext = current_process->p_supportStruct->sup_exceptContext[INDEX];
-       // exceptState = (state_t*)BIOSDATAPAGE; /* questa variabile è dichiarata e cambiata subito dopo ??? */
+        current_process->p_supportStruct->sup_exceptState[INDEX].status  = (state_t*)BIOS_DATA_PAGE;
         LDCXT(exceptContext.stackPtr,exceptContext.status,exceptContext.pc);
     }
 }
 
 /* Per le sys 3, 5, 7 servono delle operazioni in più, sezione 3.5.13 */
 void syscall_handler() {
-    /* save exception state at the start of the BIOS DATA PAGE */
-    /* NON assegnare il bios data page al current process, devono essere distinti, 
-    accediamo al bios data page SOLO per vedere quale eccezione è*/
-    
     switch ((int)current_process->p_s.reg_a0)
     {
     case CREATEPROCESS:
-        SYS_create_process((state_t*)current_process->p_s.reg_a1, (support_t*)current_process->p_s.reg_a2, (nsd_t*)current_process->p_s.reg_a3);
+        SYS_create_process((state_t*)current_process->p_s.reg_a1, reg_a2, reg_a3);
         break;
         
     case TERMPROCESS:
@@ -83,7 +73,6 @@ void syscall_handler() {
     
     case PASSEREN:
         SYS_Passeren((int*)current_process->p_s.reg_a1);
-        Blocking_Sys();
         break;
         
     case VERHOGEN:
@@ -91,8 +80,7 @@ void syscall_handler() {
         break;
     
     case DOIO:
-        SYS_Doio((int*)current_process->p_s.reg_a1, (int*)current_process->p_s.reg_a2);
-        Blocking_Sys();
+        SYS_Doio((int*)current_process->p_s.reg_a1, (int*)current_process->p_s.reg_a2)
         break;
         
     case GETTIME:
@@ -101,7 +89,6 @@ void syscall_handler() {
 
     case CLOCKWAIT:
         SYS_Clockwait();
-        Blocking_Sys();
         break;
     
     case GETSUPPORTPTR:
@@ -112,25 +99,11 @@ void syscall_handler() {
         SYS_Get_Process_Id((int)current_process->p_s.reg_a1);
         break;
 
-    case GETCHILDREN:
+    case: GETCHILDREN:
         SYS_Get_Children((int*)current_process->p_s.reg_a1, (int)current_process->p_s.reg_a2);
     default:
         break;
     }
-    /* queste due linee non veranno eseguite se prima sono state seguite delle sys bloccanti */
-    state_t *bios_State = BIOSDATAPAGE;
-    LDST(bios_State);
-}
-
-/*3.5.13*/
-void Blocking_Sys()
-{
-    state_t *bios_State = BIOSDATAPAGE;
-    bios_State->pc_epc += WORD_SIZE; /* word_size è 4, definito in arch.h */
-    current_process->p_s = *bios_State;
-    /* aggiornamento cpu time: current_process->p_time */
-    scheluding();
-
 }
 
 /* Crea un nuovo processo come figlio del chiamante. Il primo parametro contiene lo stato
@@ -150,7 +123,7 @@ void SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns)
         newProc->p_supportStruct = supportp;
 
         if (!addNamespace(newProc, ns)) { /* deve ereditare il ns dal padre */
-            newProc->namespaces[0] = current_process->namespaces[0]; // da riguardare per i namespace, l'indice non sappiamo qual è
+            newProc->namespaces = current_process->namespace;
         }
 
         newProc->p_pid = pid_start + 1; /* assegniamo il pid */
@@ -175,7 +148,7 @@ void SYS_terminate_process(int pid)
         Proc2Delete = current_process;
     } else{
         for(int i=0; i<MAXPROC; i++) {
-            if(pcbFree_table[i].p_pid == pid){
+            if(pcbFree_table[i]->p_pid == pid){
                 Proc2Delete = &pcbFree_table[i];
             }
         }
@@ -190,9 +163,7 @@ void terminate_family(pcb_t *ptrn)
     /* se ha dei figli richiama la funzione stessa */
     if(!emptyChild(ptrn)) {        
         struct list_head *pos, *current = NULL;
-        pcb_t* figlioPtrn = list_first_entry(&ptrn->p_child, pcb_t, p_child);
-        struct list_head *head = &figlioPtrn->p_sib;
-        list_for_each_safe(pos, current, head) {
+        list_for_each_safe(pos, current, ptrn->p_child->p_sib) {
             pcb_t* temp = list_entry(pos, struct pcb_t, p_sib);
             terminate_family(temp);
         }  
@@ -200,16 +171,16 @@ void terminate_family(pcb_t *ptrn)
 
     /* richiamo la funzione per i fratelli di ptrn */
     
-    kill_process(ptrn);
+    kill_process(ptnr);
     /* penso che dobbiamo controllare se tra i processi che eliminiamo
      ci sono dei processi bloccati e in quel caso diminuire il soft_block_count */
 }
 
-void kill_process(pcb_t* ptrn)
+void kill_process(pcb_t* ptnr)
 {
-    Outchild(ptrn);
+    Outchild(ptnr);
     /* uccido ptrn */
-    ptrn->p_parent = NULL;
+    ptnr->p_parent = NULL;
     list_del(&ptrn->p_list);
     list_del(&ptrn->p_child);
     list_del(&ptrn->p_sib);
@@ -231,7 +202,7 @@ void kill_process(pcb_t* ptrn)
 void SYS_Passeren(int *semaddr) 
 {
     /* dobbiamo usare la hash dei semafori attivi */
-    // int pid_current = current_process->p_pid;
+    int pid_current = current_process->p_pid;
     if(*semaddr==0) {
         /* aggiungere current_process nella coda dei 
          processi bloccati da una P e sospenderlo*/
@@ -240,10 +211,10 @@ void SYS_Passeren(int *semaddr)
 
         /* chiamata allo scheduler, non so si può far direttamente così */
         scheduling();
-    } else if(headBlocked(semaddr)!=NULL) { /* se la coda dei processi bloccati da V non è vuota*/
+    } else if( /* se la coda dei processi bloccati da V non è vuota*/headBlocked(semaddr)!=NULL) {
         /* risvegliare il primo processo che si era bloccato su una V */
         pcb_t* wakedProc = removeBlocked(semaddr);
-        insertProcQ(&readyQ, wakedProc);
+        LDST(&wakedeProc->p_s);
     } else {
         semaddr--;
     }
@@ -261,10 +232,10 @@ void SYS_Verhogen(int* semaddr)
 
          /* chiamata allo scheduler, non so si può far direttamente così */
         scheduling();
-    } else if(headBlocked(semaddr)!=NULL) { /*Se la coda dei processi bloccati non è vuota*/
+    } else if( /* se la coda dei processi bloccati da P non è vuota*/headBlocked(semaddr)!=NULL) {
         /* risvegliare il primo processo che si era bloccato su una P */
         pcb_t* wakedProc = removeBlocked(semaddr);
-        insertProcQ(&readyQ, wakedProc);
+        LDST(&wakeProc->p_s);
     } else {
         semaddr++;
     }
@@ -321,16 +292,8 @@ Equivalente a una Passeren sul semaforo dell’Interval Timer.
 – Blocca il processo invocante fino al prossimo tick del dispositivo.
 */
 SYS_Clockwait()
-{   
-    /* aggiungere current_process nella coda dei processi bloccati da una P e sospenderlo*/
-    insertBlocked(sem_interval_timer, current_process);
-    /* se inserimento_avvenuto è 1 allora non è stato possibile allocare un nuovo SEMD perché la semdFree_h è vuota */
-
-    /* Setta il valore del semaforo a 0 */
-    sem_interval_timer = 0;
-  
-    /* System call bloccante*/
-    Blocking_Sys();
+{
+    
 }
 
 /* Restituisce un puntatore alla struttura di supporto del processo corrente,
@@ -351,7 +314,7 @@ void SYS_Get_Process_Id(int parent)
     } 
     else { /* dobbiamo restituire il pid del padre, se si trovano nello stesso namespace */
         /* assumiamo che il processo corrente abbia un padre (?) */
-        nsd_t* parent_pid = getNamespace(current_process->p_parent, current_process->namespaces[0]->n_type);
+        nsd_t* parent_pid = getNamespace(current_process->p_parent, current_process->namespaces.n_type);
         
         /* se current_process e il processo padre non sono nello stesso namespace restituisci 0 */ 
         current_process->p_s.reg_v0 = (parent_pid==NULL) ? 0 : current_process->p_pid;
@@ -362,18 +325,18 @@ void SYS_Get_Process_Id(int parent)
 void SYS_Get_Children(int *children, int size){
     int num = 0;
     struct list_head *pos, *current = NULL;
-    int current_namespace = current_process->namespaces[0]->n_type;
-    pcb_t *first_child = list_first_entry(&(current_process->p_child),pcb_t, p_child);
-    list_for_each_safe(pos, current, &first_child->p_sib){
+    int current_namespace = current_process->namespaces[0].n_type
+    pcb_t *first_child = current_process->p_child;
+    list_for_each_safe(pos, current, first_child->p_sib){
         pcb_t* temp = list_entry(pos, struct pcb_t, p_sib);
-        if(current_namespace == temp->namespaces[0]->n_type){
+        if(current_namespace == temp->namespaces[0].n_type){
             if(num < size){
                 children[num] = temp->p_pid;
             }
             num++;
         }   
     }
-    current_process->p_s.reg_v0 = num;
+    reg_v0 = num;
 }
 
 /* Per determinare se il processo corrente stava eseguento in kernel o user mode,
@@ -388,4 +351,94 @@ int Check_Kernel_mode()
     unsigned int bit_kernel = current_process->p_s.status & mask;
     /* ritorna vero se il processo era in kernel mode, 0 in user mode*/
     return (bit_kernel==0) ? TRUE : FALSE;
+}
+
+/* Restituisce la linea con interrupt in attesa con massima priorità. 
+(Se nessuna linea è attiva ritorna 8 ma assumiamo che quando venga
+ chiamata ci sia almeno una linea attiva) */
+int Get_Interrupt_Line_Max_Prio (){
+    unsigned int interrupt_pendig = current_process->p_s.cause & CAUSE_IP_MASK;
+    /* così abbiamo solo i bit attivi da 8 a 15 del cause register */
+    unsigned int intpeg_linee[8];
+    for (int i=0; i<8; i++) {
+        unsigned mask = ((1<<1)-1)<<i+8;
+        intpeg_linee[i] = mask & interrupt_pending;
+    }
+    /* intpeg_linee[i] indica se la linea i-esima è attiva */
+    
+    int linea=1; /* questo perché ignoriamo la linea 0*/
+    while(linea<8) {
+        if(intpeg[linea]!=0) { 
+            break;
+        }
+        linea++;
+    }
+    /* ritorniamo la quale linea è attiva */
+    return linea;
+}
+
+/*
+The interrupt exception handler’s first step is to determine which device
+ or timer with an outstanding interrupt is the highest priority.
+ Depending on the device, the interrupt exception handler will 
+ perform a number of tasks.*/
+void interrupt_handler()
+{
+    /* sezione 3.6.1 a 3.6.3*/
+    switch (Get_Interrupt_Line_Max_Prio())
+    {
+    /* interrupt processor Local Timer */
+    case 1:
+        PLT_interrupt_handler();
+        break;
+    
+    /* interrupt Interval Timer */
+    case 2:
+       
+        break;
+
+    /* Disk devices */
+    case DISKINT:
+        
+        break;
+    
+    /* Flash devices */
+    case FLASHINT:
+        
+        break;
+    
+    /* Network devices*/
+    case NETWINT:
+        break;
+
+    /* Printer devices */
+    case PRNTINT:
+        
+        break;
+    
+    /* Terminal devices*/
+    case TERMINT:
+    
+        break;
+
+    default:
+        break;
+    }
+   
+}
+
+//3.6.2
+void PLT_interrupt_handler() {
+    /*Acknowledge the PLT interrupt by loading the timer with a new value.*/
+    setTIMER(500);
+
+    /* Copy the processor state at the time of the exception (located at the start of the BIOS Data Page [Section ??-pops]) into the Current Pro- cess’s pcb (p_s). */
+    // GIÀ FATTO (CREDO) facendolo all'inizio modifichiamo la variabile globale quindi ha senso farlo una sola volta all'inizio
+
+    /* Place the Current Process on the Ready Queue; transitioning the Current Process from the “running” state to the “ready” state. */
+    insertProcQ(&current_process->p_list, readyQ);
+    /* credo bisogni diminuire questo counter*/
+    process_count--;
+
+    scheduling();
 }
