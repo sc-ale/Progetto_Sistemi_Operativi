@@ -72,7 +72,7 @@ void interrupt_handler()
     
     /* Terminal devices*/
     case TERMINT:
-        general_interrupt_handler(TERMINT); /* passare la interrupt line*/
+        terminal_interrupt_handler(TERMINT); /* passare la interrupt line*/
         break;
 
     default:

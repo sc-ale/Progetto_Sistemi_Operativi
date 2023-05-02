@@ -311,7 +311,7 @@ copied back in the cmdValues array
 */
 SYS_Doio(int *cmdAddr, int *comdValues)
 {
-        /* Mappa i registri dei device da 0 a 47*/
+        /* Mappa i registri dei device da 0 a 39*/
     int devreg = (*cmdAddr - DEV_REG_START) / DEV_REG_SIZE;
     switch (devreg / 8)
     {
@@ -325,8 +325,6 @@ SYS_Doio(int *cmdAddr, int *comdValues)
     case 3:
 
     case 4:
-
-    case 5: case 6:
 
     default:
         break;
