@@ -5,8 +5,11 @@
 #include <pcb.h>
 #include <ash.h>
 #include <ns.h>
+
 extern void test();
 extern void scheduling();
+extern void foobar();
+extern void uTLB_RefillHandler();
 
 int process_count; /* numero processi attivi */
 int soft_block_count; /* conteggio processi bloccati per I/O o timer request*/
@@ -83,5 +86,5 @@ int main() {
 
     scheduling();
 
-
+    return 0;
 }

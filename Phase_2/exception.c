@@ -309,7 +309,7 @@ void SYS_Verhogen(int *semaddr)
 At the completion of the I-O operation the device register values are
 copied back in the cmdValues array
 */
-SYS_Doio(int *cmdAddr, int *cmdValues)
+void SYS_Doio(int *cmdAddr, int *cmdValues)
 {
         /* Mappa i registri dei device da 0 a 39*/
     int devreg = (*cmdAddr - DEV_REG_START) / DEV_REG_SIZE;
@@ -380,7 +380,7 @@ void SYS_Get_CPU_Time()
 Equivalente a una Passeren sul semaforo dell’Interval Timer.
 – Blocca il processo invocante fino al prossimo tick del dispositivo.
 */
-SYS_Clockwait()
+void SYS_Clockwait()
 {
     /* aggiungere current_process nella coda dei processi bloccati da una P e sospenderlo*/
     insertBlocked(sem_interval_timer, current_process);
