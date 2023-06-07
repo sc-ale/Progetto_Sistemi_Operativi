@@ -324,35 +324,62 @@ void SYS_Verhogen(int *semaddr)
 At the completion of the I-O operation the device register values are
 copied back in the cmdValues array
 */
-SYS_Doio(int *cmdAddr, int *comdValues)
+void SYS_Doio(int *cmdAddr, int *cmdValues)
 {
     /* chiamare update_PC_SYS_non_bloccanti(); */
         /* Mappa i registri dei device da 0 a 39*/
     int devreg = (*cmdAddr - DEV_REG_START) / DEV_REG_SIZE;
-   /*
+   
     switch (devreg / 8)
     {
     case 0:
+        /*Copia i valori di cmdValues nel registro del device*/
+        for(int i=0; i<4; i++){
+            cmdAddr[i] = cmdValues[i];
+        }
+        /*Calcola il device giusto e esegui una P sul suo semaforo*/
         int devNo = devreg % 8;
+        current_process->p_s.reg_v0 = 0;
         P_always(sem_disk[devNo]);
         break;
     case 1:
+        for(int i=0; i<4; i++){
+            cmdAddr[i] = cmdValues[i];
+        }
         int devNo = devreg % 8;
+        current_process->p_s.reg_v0 = 0;
         P_always(sem_tape[devNo]);
         break;
     case 2: 
+        for(int i=0; i<4; i++){
+            cmdAddr[i] = cmdValues[i];
+        }
         int devNo = devreg % 8;
+        current_process->p_s.reg_v0 = 0;
         P_always(sem_network[devNo]);
         break;
     case 3:
+        for(int i=0; i<4; i++){
+            cmdAddr[i] = cmdValues[i];
+        }
         int devNo = devreg % 8;
+        current_process->p_s.reg_v0 = 0;
         P_always(sem_printer[devNo]);
         break;
     case 4:
-        int devNo = devreg % 16;
+        /*I resgistri dei terminali sono divisi in due (ricezione / trasmissione), 
+            facendo l'indirizzo modulo 16 capiamo se siamo all'inizio del registro (e quindi ricezione)
+            oppure a metà del registro (e quindi trasmissione)*/
+        for(int i=0; i<2; i++){
+            cmdAddr[i] = cmdValues[i];
+        }
+        is_terminal = true;
+        int devNo = *cmdAddr%16 == 0 ? devreg%8 : devreg%8 +8;
+        current_process->p_s.reg_v0 = 0;
         P_always(sem_terminal[devNo]);
         break;
     default:
+        current_process->p_s.reg_v0 = -1;
         break;
     }
     */
@@ -448,5 +475,13 @@ int Check_Kernel_mode()
     return (bit_kernel == 0) ? TRUE : FALSE;
 }
 
+void P_always(int *semaddr){
+    
+    /* aggiungere current_process nella coda dei
+        processi bloccati da una P e sospenderlo*/
+    insertBlocked(semaddr, current_process);
+    *semaddr--;
+    scheduling();
+}
 
 #endif
