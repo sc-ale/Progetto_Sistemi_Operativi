@@ -129,7 +129,7 @@ pcb_t *outChild(pcb_t *p)
                                 padreP->p_child.next=fratello->p_child.prev;
                         }
                 }
-
+                p->p_parent = NULL;
                 list_del_init(&p->p_sib);
                 return p;
         }

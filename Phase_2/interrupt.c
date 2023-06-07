@@ -1,3 +1,6 @@
+#ifndef INTERRUPT_C 
+#define INTERRUPT_C
+
 #include <scheduler.c>
 #include <umps3/umps/const.h>
 #include <umps3/umps/arch.h>
@@ -258,3 +261,4 @@ void V_all(){
     }
 }
 
+#endif

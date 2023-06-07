@@ -1,3 +1,6 @@
+#ifndef EXCEPTION_C 
+#define EXCEPTION_C
+
 #include <scheduler.c>
 #include <umps3/umps/const.h>
 #include <pandos_const.h>
@@ -326,6 +329,7 @@ SYS_Doio(int *cmdAddr, int *comdValues)
     /* chiamare update_PC_SYS_non_bloccanti(); */
         /* Mappa i registri dei device da 0 a 39*/
     int devreg = (*cmdAddr - DEV_REG_START) / DEV_REG_SIZE;
+   /*
     switch (devreg / 8)
     {
     case 0:
@@ -351,6 +355,7 @@ SYS_Doio(int *cmdAddr, int *comdValues)
     default:
         break;
     }
+    */
 }
 
 /* Restituisce il tempo di utilizzo del processore del processo in esecuzione*/
@@ -442,3 +447,6 @@ int Check_Kernel_mode()
     /* ritorna vero se il processo era in kernel mode, 0 in user mode*/
     return (bit_kernel == 0) ? TRUE : FALSE;
 }
+
+
+#endif
