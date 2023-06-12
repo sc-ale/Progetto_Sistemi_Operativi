@@ -52,7 +52,7 @@ int main() {
     }
 
 /* popolazione pass up vector */
-    passupvector_t *passUpVect;
+    passupvector_t *passUpVect = NULL;
     passUpVect->tlb_refill_handler = (memaddr) uTLB_RefillHandler;
     passUpVect->tlb_refill_stackPtr = (memaddr) KERNELSTACK;
     passUpVect->exception_handler = (memaddr) foobar;
@@ -63,7 +63,7 @@ int main() {
 
     //PUNTO 6 
     pcb_t *primoProc = allocPcb();
-    insertProcQ(&readyQ, &primoProc);
+    insertProcQ(&readyQ, primoProc);
     process_count+=1;
     primoProc->p_time = 0;
     primoProc->p_supportStruct = NULL;

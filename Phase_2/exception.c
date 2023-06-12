@@ -4,6 +4,7 @@
 #include <pandos_types.h>
 #include <umps3/umps/cp0.h>
 #include <umps3/umps/arch.h>
+#include <interrupt.c>
 
 #include <pcb.c>
 
@@ -26,7 +27,8 @@ void foobar()
     STCK(momento_attuale);
     current_process->p_time += momento_attuale - current_process->istante_Lancio_Blocco;
 
-    state_t *bios_State = BIOSDATAPAGE;
+    state_t *bios_State = (state_t*) BIOSDATAPAGE; // Da riguardare (toglie il warning)
+
     /* fornisce il codice del tipo di eccezione avvenuta */
     switch (CAUSE_GET_EXCCODE(bios_State->cause))
     {

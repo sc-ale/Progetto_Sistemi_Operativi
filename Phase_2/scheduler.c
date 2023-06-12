@@ -23,7 +23,7 @@ void scheduling(){
              to enable interrupts and either disable the PLT
             The first interrupt that occurs after entering a 
             Wait State should not be for the PLT. */
-            setSTATUS(getSTATUS() ^TEBITON | IEPON);
+            setSTATUS((getSTATUS() ^ TEBITON) | IEPON);
             /* fare qualcosa con il PLT*/
             WAIT();
         }
