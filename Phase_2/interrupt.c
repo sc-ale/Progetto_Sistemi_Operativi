@@ -1,10 +1,19 @@
+#ifndef INTERRUPT_C 
+#define INTERRUPT_C
+
 #include <scheduler.c>
 #include <umps3/umps/const.h>
 #include <umps3/umps/arch.h>
 #include <umps3/umps/cp0.h>
 
 
-
+void *memcpy(void *dest, const void *src, unsigned int n)
+{
+    for (unsigned int i = 0; i < n; i++)
+    {
+        ((char*)dest)[i] = ((char*)src)[i];
+    }
+}
 
 /* Restituisce la linea con interrupt in attesa con massima priorità. 
 (Se nessuna linea è attiva ritorna 8 ma assumiamo che quando venga
@@ -186,7 +195,7 @@ void general_interrupt_handler(int IntLineNo)
 
     /* Return control to the Current Process: Perform a LDST on the saved
         exception state (located at the start of the BIOS Data Page */
-    state_t *prev_state = BIOSDATAPAGE;
+    state_t *prev_state = (state_t*)BIOSDATAPAGE;
     LDST(prev_state);
 }
 
@@ -234,7 +243,7 @@ void terminal_interrupt_handler(){
 
     /* Return control to the Current Process: Perform a LDST on the saved
         exception state (located at the start of the BIOS Data Page */
-    state_t *prev_state = BIOSDATAPAGE;
+    state_t *prev_state = (state_t*) BIOSDATAPAGE;
     LDST(prev_state);
 }
 
@@ -252,3 +261,4 @@ void V_all(){
     }
 }
 
+#endif
