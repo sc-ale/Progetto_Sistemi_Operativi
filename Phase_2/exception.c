@@ -7,7 +7,6 @@
 #include <pandos_types.h>
 #include <umps3/umps/cp0.h>
 #include <umps3/umps/arch.h>
-#include <interrupt.c>
 
 #include <pcb.c>
 
@@ -375,7 +374,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         for(int i=0; i<2; i++){
             cmdAddr[i] = cmdValues[i];
         }
-        is_terminal = true;
+        //is_terminal = true;
         int devNo = *cmdAddr%16 == 0 ? devreg%8 : devreg%8 +8;
         current_process->p_s.reg_v0 = 0;
         P_always(sem_terminal[devNo]);
@@ -384,7 +383,6 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         current_process->p_s.reg_v0 = -1;
         break;
     }
-    */
 }
 
 /* Restituisce il tempo di utilizzo del processore del processo in esecuzione*/
