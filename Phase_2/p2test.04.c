@@ -156,7 +156,15 @@ void uTLB_RefillHandler() {
 typedef unsigned int devreg;
 #define TRANSMITTED 5
 #define CHAROFFSET  8
+#define STATUSMASK  0xFF
 char   errbuf[128]; /* contains reason for failing */
+
+
+/* This function returns the terminal transmitter status value given its address */
+devreg termstat(memaddr *stataddr) {
+    return ((*stataddr) & STATUSMASK);
+}
+
 
 unsigned int termprint(char *str, unsigned int term) {
     memaddr     *statusp;
