@@ -330,7 +330,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
     /* chiamare update_PC_SYS_non_bloccanti(); */
         /* Mappa i registri dei device da 0 a 39*/
     int devreg = (*cmdAddr - DEV_REG_START) / DEV_REG_SIZE;
-   
+    int devNo;
     switch (devreg / 8)
     {
     case 0:
@@ -339,7 +339,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
             cmdAddr[i] = cmdValues[i];
         }
         /*Calcola il device giusto e esegui una P sul suo semaforo*/
-        int devNo = devreg % 8;
+        devNo = devreg % 8;
         current_process->p_s.reg_v0 = 0;
         P_always(sem_disk[devNo]);
         break;
@@ -347,7 +347,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         for(int i=0; i<4; i++){
             cmdAddr[i] = cmdValues[i];
         }
-        int devNo = devreg % 8;
+        devNo = devreg % 8;
         current_process->p_s.reg_v0 = 0;
         P_always(sem_tape[devNo]);
         break;
@@ -355,7 +355,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         for(int i=0; i<4; i++){
             cmdAddr[i] = cmdValues[i];
         }
-        int devNo = devreg % 8;
+        devNo = devreg % 8;
         current_process->p_s.reg_v0 = 0;
         P_always(sem_network[devNo]);
         break;
@@ -363,7 +363,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         for(int i=0; i<4; i++){
             cmdAddr[i] = cmdValues[i];
         }
-        int devNo = devreg % 8;
+        devNo = devreg % 8;
         current_process->p_s.reg_v0 = 0;
         P_always(sem_printer[devNo]);
         break;
@@ -375,7 +375,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
             cmdAddr[i] = cmdValues[i];
         }
         //is_terminal = true;
-        int devNo = *cmdAddr%16 == 0 ? devreg%8 : devreg%8 +8;
+        devNo = *cmdAddr%16 == 0 ? devreg%8 : devreg%8 +8;
         current_process->p_s.reg_v0 = 0;
         P_always(sem_terminal[devNo]);
         break;
