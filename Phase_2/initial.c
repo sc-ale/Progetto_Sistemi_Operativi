@@ -13,6 +13,8 @@ extern void test();
 extern void scheduling();
 extern void uTLB_RefillHandler();
 extern void foobar();
+extern void addokbuf();
+extern void adderrbuf();
 
 int process_count; /* numero processi attivi */
 int soft_block_count; /* conteggio processi bloccati per I/O o timer request*/
@@ -28,18 +30,20 @@ int sem_network[8];
 int sem_printer[8];
 int sem_terminal[16];
 
-
 extern void *memcpy(void *dest, const void *src, unsigned int n);
 
 
 int main() {
 
+    addokbuf("inizio \n");
 /* inizializzazione strutture dati */
     initPcbs();
     initASH();
     initNamespaces();
+    addokbuf("initBene \n");
     
     mkEmptyProcQ(&readyQ);
+    addokbuf("dopo mkEmptyProcQ \n");
 
     process_count = 0;
     soft_block_count = 0;
@@ -59,14 +63,18 @@ int main() {
     }
 
 /* popolazione pass up vector */
-    passupvector_t *passUpVect = NULL;
+    addokbuf("errore");
+    passupvector_t *passUpVect;
     passUpVect->tlb_refill_handler = (memaddr) uTLB_RefillHandler;
     passUpVect->tlb_refill_stackPtr = (memaddr) KERNELSTACK;
     passUpVect->exception_handler = (memaddr) foobar;
     passUpVect->exception_stackPtr = (memaddr) KERNELSTACK; //stesso indirizzo ??
 
+    addokbuf("passUP ok \n");
     //PUNTO 5 NON HO CAPITO
     LDIT(PSECOND);     
+
+    addokbuf("LDIT ok \n");
 
     //PUNTO 6 
     pcb_t *primoProc = allocPcb();
@@ -87,9 +95,10 @@ int main() {
     RAMTOP(primoProc->p_s.reg_sp);
     /*Macro che associa al chiamante l'inidirizzo RAMTOP*/
 
-
+    addokbuf("RAM TOP OK \n");
     LDST(&primoProc->p_s);
 
+    addokbuf("LDST ok \n");
 
     scheduling();
 
