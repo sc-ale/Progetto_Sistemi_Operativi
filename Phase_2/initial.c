@@ -1,10 +1,13 @@
+#ifndef INITIAL_C
+#define INITIAL_C
+
 #include <umps3/umps/libumps.h>
 #include <umps3/umps/types.h>
 #include <pandos_types.h>
 #include <pandos_const.h>
-#include <pcb.h>
-#include <ash.h>
-#include <ns.h>
+#include "pcb.h"
+#include "ash.h"
+#include "ns.h"
 
 extern void test();
 extern void scheduling();
@@ -92,3 +95,6 @@ int main() {
 
     return 0;
 }
+
+
+#endif

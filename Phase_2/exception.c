@@ -1,27 +1,41 @@
 #ifndef EXCEPTION_C 
 #define EXCEPTION_C
 
-#include <scheduler.c>
 #include <umps3/umps/const.h>
-#include <pandos_const.h>
-#include <pandos_types.h>
 #include <umps3/umps/cp0.h>
 #include <umps3/umps/arch.h>
+#include <umps3/umps/libumps.h>
+#include <umps3/umps/types.h>
+#include <pandos_types.h>
+#include <pandos_const.h>
+#include "pcb.h"
+#include "ash.h"
+#include "ns.h"
 
-#include <pcb.c>
+
+
+extern int process_count; /* numero processi attivi */
+extern int soft_block_count; /* conteggio processi bloccati per I/O o timer request*/
+extern struct list_head readyQ;
+extern pcb_t* current_process; /* puntatore al processo in esecuzione */
+extern int sem_processor_local_timer;
+extern int sem_interval_timer;
+extern int sem_disk[8];
+extern int sem_tape[8];
+extern int sem_network[8];
+extern int sem_printer[8];
+extern int sem_terminal[16];
+extern int sem_interval_timer;
+extern void *memcpy(void *dest, const void *src, unsigned int n);
+extern void scheduling();   
+
+HIDDEN pcb_t pcbFree_table[MAXPROC];
 
 /* come process id usiamo un intero che aumenta
     e basta (no caso reincarazione)*/
 int pid_start = 0;
 
-void uTLB_RefillHandler()
-{
-    setENTRYHI(0x80000000);
-    setENTRYLO(0x00000000);
-    TLBWR();
-    LDST((state_t *)0x0FFFF000);
-}
-
+extern void uTLB_RefillHandler();
 extern void *memcpy(void *dest, const void *src, unsigned int n);
 
 
@@ -347,7 +361,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         for(int i=0; i<4; i++){
             cmdAddr[i] = cmdValues[i];
         }
-        int devNo = devreg % 8;
+        devNo = devreg % 8;
         current_process->p_s.reg_v0 = 0;
         P_always(sem_tape[devNo]);
         break;
@@ -355,7 +369,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         for(int i=0; i<4; i++){
             cmdAddr[i] = cmdValues[i];
         }
-        int devNo = devreg % 8;
+        devNo = devreg % 8;
         current_process->p_s.reg_v0 = 0;
         P_always(sem_network[devNo]);
         break;
@@ -363,19 +377,19 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         for(int i=0; i<4; i++){
             cmdAddr[i] = cmdValues[i];
         }
-        int devNo = devreg % 8;
+        devNo = devreg % 8;
         current_process->p_s.reg_v0 = 0;
         P_always(sem_printer[devNo]);
         break;
     case 4:
-        /*I resgistri dei terminali sono divisi in due (ricezione / trasmissione), 
+        /*I registri dei terminali sono divisi in due (ricezione / trasmissione), 
             facendo l'indirizzo modulo 16 capiamo se siamo all'inizio del registro (e quindi ricezione)
             oppure a metà del registro (e quindi trasmissione)*/
         for(int i=0; i<2; i++){
             cmdAddr[i] = cmdValues[i];
         }
         //is_terminal = true;
-        int devNo = *cmdAddr%16 == 0 ? devreg%8 : devreg%8 +8;
+        devNo = *cmdAddr%16 == 0 ? devreg%8 : devreg%8 +8;
         current_process->p_s.reg_v0 = 0;
         P_always(sem_terminal[devNo]);
         break;
