@@ -31,6 +31,7 @@ void *memcpy(void *dest, const void *src, unsigned int n)
     {
         ((char*)dest)[i] = ((char*)src)[i];
     }
+    return;
 }
 
 /* Restituisce la linea con interrupt in attesa con massima priorità. 
