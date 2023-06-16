@@ -8,7 +8,7 @@
  ****************************************************************************/
 
 #include <umps3/umps/types.h>
-#include "pandos_const.h"
+#include <pandos_const.h>
 #include <list.h>
 
 
@@ -20,13 +20,11 @@
 typedef signed int   cpu_t;
 typedef unsigned int memaddr;
 
-
 /* Page Table Entry descriptor */
 typedef struct pteEntry_t {
     unsigned int pte_entryHI;
     unsigned int pte_entryLO;
 } pteEntry_t;
-
 
 /* Support level context */
 typedef struct context_t {
@@ -35,15 +33,13 @@ typedef struct context_t {
     unsigned int pc;
 } context_t;
 
-
 /* Support level descriptor */
 typedef struct support_t {
-    int        sup_asid;                        /* process ID					*/
-    state_t    sup_exceptState[2];              /* old state exceptions			*/
-    context_t  sup_exceptContext[2];            /* new contexts for passing up	*/
-    pteEntry_t sup_privatePgTbl[USERPGTBLSIZE]; /* user page table				*/
+    int        sup_asid;                        /* process ID                                 */
+    state_t    sup_exceptState[2];              /* old state exceptions                       */
+    context_t  sup_exceptContext[2];            /* new contexts for passing up        */
+    pteEntry_t sup_privatePgTbl[USERPGTBLSIZE]; /* user page table                            */
 } support_t;
-
 
 typedef struct nsd_t {
     /* Namespace type */
@@ -66,11 +62,6 @@ typedef struct pcb_t {
     /* process status information */
     state_t p_s;    /* processor state */
     cpu_t   p_time; /* cpu time used by proc */
-    
-    /* AGGIUNTA PER TENERE TRACCIA DI QUANDO UN PROCESSO
-     VIENE LANCIATO DALLO SCHEDULER O 
-     QUANDO VIENE SOLLEVATO UN INTERRUPT*/
-    cpu_t istante_Lancio_Blocco;
 
     /* Pointer to the semaphore the process is currently blocked on */
     int *p_semAdd;
@@ -78,16 +69,12 @@ typedef struct pcb_t {
     /* Pointer to the support struct */
     support_t *p_supportStruct;
 
-    /* Indicator of priority; 0 - low, 1 - high */
-    int p_prio;
-
-    /* process id */
-    int p_pid;
-
     /* Namespace list */
     nsd_t *namespaces[NS_TYPE_MAX];
-} pcb_t, *pcb_PTR;
 
+    /* Process ID */
+    int p_pid;
+} pcb_t, *pcb_PTR;
 
 
 /* semaphore descriptor (SEMD) data structure */
