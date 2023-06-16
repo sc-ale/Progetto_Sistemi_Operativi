@@ -153,6 +153,70 @@ void uTLB_RefillHandler() {
     LDST((state_t *)0x0FFFF000);
 }
 
+typedef unsigned int devreg;
+#define TRANSMITTED 5
+#define CHAROFFSET  8
+char   errbuf[128]; /* contains reason for failing */
+
+unsigned int termprint(char *str, unsigned int term) {
+    memaddr     *statusp;
+    memaddr     *commandp;
+    devreg       stat;
+    devreg       cmd;
+    unsigned int error = FALSE;
+
+    if (term < DEVPERINT) {
+        /* terminal is correct */
+        /* compute device register field addresses */
+        statusp  = (devreg *)(TERM0ADDR + (term * DEVREGSIZE) + (TRANSTATUS * DEVREGLEN));
+        commandp = (devreg *)(TERM0ADDR + (term * DEVREGSIZE) + (TRANCOMMAND * DEVREGLEN));
+
+        /* test device status */
+        stat = termstat(statusp);
+        if (stat == READY || stat == TRANSMITTED) {
+            /* device is available */
+
+            /* print cycle */
+            while (*str != EOS && !error) {
+                cmd       = (*str << CHAROFFSET) | PRINTCHR;
+                *commandp = cmd;
+
+                /* busy waiting */
+                stat = termstat(statusp);
+                while (stat == BUSY)
+                    stat = termstat(statusp);
+
+                /* end of wait */
+                if (stat != TRANSMITTED)
+                    error = TRUE;
+                else
+                    /* move to next char */
+                    str++;
+            }
+        } else
+            /* device is not available */
+            error = TRUE;
+    } else
+        /* wrong terminal device number */
+        error = TRUE;
+
+    return (!error);
+}
+
+
+void adderrbuf(char *strp) {
+    char *ep    = errbuf;
+    char *tstrp = strp;
+
+    while ((*ep++ = *strp++) != '\0')
+        ;
+
+    termprint(tstrp, 0);
+
+    PANIC();
+}
+
+
 
 /*********************************************************************/
 /*                                                                   */
