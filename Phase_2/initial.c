@@ -64,7 +64,7 @@ int main() {
 
 /* popolazione pass up vector */
     addokbuf("errore");
-    passupvector_t *passUpVect;
+    passupvector_t *passUpVect = 0x0FFFF900;
     passUpVect->tlb_refill_handler = (memaddr) uTLB_RefillHandler;
     passUpVect->tlb_refill_stackPtr = (memaddr) KERNELSTACK;
     passUpVect->exception_handler = (memaddr) foobar;
