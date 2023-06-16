@@ -25,7 +25,6 @@ extern int sem_tape[8];
 extern int sem_network[8];
 extern int sem_printer[8];
 extern int sem_terminal[16];
-extern int sem_interval_timer;
 extern void *memcpy(void *dest, const void *src, unsigned int n);
 extern void scheduling();   
 
