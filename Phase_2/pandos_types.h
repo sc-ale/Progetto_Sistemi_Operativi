@@ -66,6 +66,11 @@ typedef struct pcb_t {
     /* Pointer to the semaphore the process is currently blocked on */
     int *p_semAdd;
 
+    /* Aggiunta per tenere traccia di quando un processo
+        viene lanciato dallo scheduler o quando viene 
+        sollevato un interrupt */
+    cpu_t istante_Lancio_Blocco;
+
     /* Pointer to the support struct */
     support_t *p_supportStruct;
 
