@@ -1,36 +1,28 @@
 #ifndef INITIAL_C
 #define INITIAL_C
-
-#include <umps3/umps/libumps.h>
-#include <umps3/umps/types.h>
-#include <pandos_types.h>
-#include <pandos_const.h>
-#include "pcb.h"
-#include "ash.h"
-#include "ns.h"
-
-extern void test();
-extern void scheduling();
-extern void uTLB_RefillHandler();
-extern void foobar();
-extern void addokbuf();
-extern void adderrbuf();
+#include "initial.h"
 
 int process_count; /* numero processi attivi */
+
 int soft_block_count; /* conteggio processi bloccati per I/O o timer request*/
 
-LIST_HEAD(readyQ); /* lista processi ready */
+struct list_head readyQ; /* lista processi ready */
+
 pcb_t* current_process; /* puntatore al processo in esecuzione */
 
 int sem_processor_local_timer;
-int sem_interval_timer;
-int sem_disk[8];
-int sem_tape[8];
-int sem_network[8];
-int sem_printer[8];
-int sem_terminal[16];
 
-extern void *memcpy(void *dest, const void *src, unsigned int n);
+int sem_interval_timer;
+
+int sem_disk[8];
+
+int sem_tape[8];
+
+int sem_network[8];
+
+int sem_printer[8];
+
+int sem_terminal[16];
 
 
 int main() {

@@ -1,6 +1,7 @@
 #ifndef EXCEPTION_C 
 #define EXCEPTION_C
-
+#include "exception.h"
+/*
 #include <umps3/umps/const.h>
 #include <umps3/umps/cp0.h>
 #include <umps3/umps/arch.h>
@@ -13,11 +14,10 @@
 #include "ns.h"
 
 
-
-extern int process_count; /* numero processi attivi */
-extern int soft_block_count; /* conteggio processi bloccati per I/O o timer request*/
+extern int process_count; 
+extern int soft_block_count; 
 extern struct list_head readyQ;
-extern pcb_t* current_process; /* puntatore al processo in esecuzione */
+extern pcb_t* current_process; 
 extern int sem_processor_local_timer;
 extern int sem_interval_timer;
 extern int sem_disk[8];
@@ -29,14 +29,15 @@ extern int sem_interval_timer;
 extern void *memcpy(void *dest, const void *src, unsigned int n);
 extern void scheduling();   
 
+
 HIDDEN pcb_t pcbFree_table[MAXPROC];
 
-/* come process id usiamo un intero che aumenta
-    e basta (no caso reincarazione)*/
+
 int pid_start = 0;
 
 extern void uTLB_RefillHandler();
 extern void *memcpy(void *dest, const void *src, unsigned int n);
+*/
 
 
 /* CONTROLLARE LA SEZIONE 3.5.12 */
