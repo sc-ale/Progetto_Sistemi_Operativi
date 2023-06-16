@@ -157,8 +157,9 @@ typedef unsigned int devreg;
 #define TRANSMITTED 5
 #define CHAROFFSET  8
 #define STATUSMASK  0xFF
+char   okbuf[2048]; /* sequence of progress messages */
 char   errbuf[128]; /* contains reason for failing */
-
+char  *mp = okbuf;
 
 /* This function returns the terminal transmitter status value given its address */
 devreg termstat(memaddr *stataddr) {
@@ -211,6 +212,15 @@ unsigned int termprint(char *str, unsigned int term) {
     return (!error);
 }
 
+/* This function placess the specified character string in okbuf and
+ *	causes the string to be written out to terminal0 */
+void addokbuf(char *strp) {
+    char *tstrp = strp;
+    while ((*mp++ = *strp++) != '\0')
+        ;
+    mp--;
+    termprint(tstrp, 0);
+}
 
 void adderrbuf(char *strp) {
     char *ep    = errbuf;
