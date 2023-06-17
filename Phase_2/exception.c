@@ -100,7 +100,12 @@ void syscall_handler()
     /* NON assegnare il bios data page al current process, devono essere distinti,
     accediamo al bios data page SOLO per vedere quale eccezione è*/
 
-    switch ((int)current_process->p_s.reg_a0)
+    //(int)current_process->p_s.reg_a0
+
+    state_t *bios_State = (state_t*) BIOSDATAPAGE; // Da riguardare (toglie il warning)
+
+
+    switch (bios_State->reg_a0)
     {
     case CREATEPROCESS:
         SYS_create_process((state_t *)current_process->p_s.reg_a1, (support_t *)current_process->p_s.reg_a2, (nsd_t *)current_process->p_s.reg_a3);
