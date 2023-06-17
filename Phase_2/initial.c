@@ -5,48 +5,34 @@
 /* dichiarazione variabili globali */
 // fase 1
 int process_count; /* numero processi attivi */
-
 int soft_block_count; /* conteggio processi bloccati per I/O o timer request*/
 
 struct list_head readyQ; /* lista processi ready */
-
 pcb_t* current_process; /* puntatore al processo in esecuzione */
 
 int sem_processor_local_timer;
-
 int sem_interval_timer;
-
 int sem_disk[8];
-
 int sem_tape[8];
-
 int sem_network[8];
-
 int sem_printer[8];
-
 int sem_terminal[16];
 
 
 int main() {
-    
-    addokbuf("inizio del main \n");
-
 /* popolazione pass up vector */
 // fase 2
-    passupvector_t *passUpVect = (memaddr) PASSUPVECTOR;
+    passupvector_t *passUpVect = (passupvector_t*) PASSUPVECTOR;
     passUpVect->tlb_refill_handler = (memaddr) uTLB_RefillHandler;
     passUpVect->tlb_refill_stackPtr = (memaddr) KERNELSTACK;
     passUpVect->exception_handler = (memaddr) foobar;
-    passUpVect->exception_stackPtr = (memaddr) KERNELSTACK; //stesso indirizzo ??
+    passUpVect->exception_stackPtr = (memaddr) KERNELSTACK; 
 
-    addokbuf("init passUpVect ok \n");
-    
 /* inizializzazione strutture dati prima fase */
 // fase 3
     initPcbs();
     initASH();
     initNamespaces();
-    addokbuf("init Pcb, ASH, NS ok \n");
 
 /* inizializzazione variabili del kenel */
 //fase 4
@@ -67,11 +53,9 @@ int main() {
         sem_terminal[i]=0;
         sem_terminal[8+i]=0;
     }
-    addokbuf("int variabili kernel ok \n");
 
 /* load the interval timer with 100 ms*/
     LDIT(PSECOND);     
-    addokbuf("LDIT ok \n");
 
 /* instanziare un solo processo e metterlo nella readyQ,
  incrementare il proc Counter, inizializzare il processor state */
@@ -85,20 +69,15 @@ int main() {
 
     // Sezione 2.3 di uMPS3 spiega questo registro, non ho trovato macro o altro
     // l'unica soluzione mi sembra assegnarli in modo diretto ma guardateci anche voi
-    primoProc->p_s.status = (IEPON | IMON | TEBITON);
+    primoProc->p_s.status |= (IEPON | IMON | TEBITON);
 
     //PC e SP settati modo 1
     primoProc->p_s.pc_epc = (memaddr) test;
     primoProc->p_s.reg_t9 = (memaddr) test;
     /* Macro che associa al chiamante l'inidirizzo RAMTOP */
     RAMTOP(primoProc->p_s.reg_sp);
-    addokbuf("init primoProc ok \n");
-
-    LDST(&primoProc->p_s);
-    addokbuf("LDST PrimoProc ok \n");
 
 /* chiamata dello scheduler */
-// fase 7
     scheduling();
 
     return 0;
