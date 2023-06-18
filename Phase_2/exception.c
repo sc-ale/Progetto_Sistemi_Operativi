@@ -350,9 +350,11 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         /* Mappa i registri dei device da 0 a 39*/
     int devreg = (*cmdAddr - DEV_REG_START) / DEV_REG_SIZE;
     int devNo;
+    aaaBreakTest();
     switch (devreg / 8)
     {
     case 0:
+    aaaBreakTest();
         /*Copia i valori di cmdValues nel registro del device*/
         for(int i=0; i<4; i++){
             cmdAddr[i] = cmdValues[i];
