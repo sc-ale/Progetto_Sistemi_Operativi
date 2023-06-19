@@ -25,7 +25,7 @@ void PLT_interrupt_handler();
 void IT_interrupt_handler();
 
 /* ritorna la linea del device il cui interrupt è attivo */
-int Get_interrupt_device(int );
+int Get_interrupt_device(int ); 
 
 void general_interrupt_handler(int );
 

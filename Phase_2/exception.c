@@ -416,7 +416,6 @@ void SYS_Get_Process_Id(int parent)
     if (parent == 0)
     {
         bios_State->reg_v0 = current_process->p_pid;
-        bios_State->reg_v0 = current_process->p_pid;
     }
     else
     { /* dobbiamo restituire il pid del padre, se si trovano nello stesso namespace */
@@ -424,7 +423,6 @@ void SYS_Get_Process_Id(int parent)
         nsd_t *parent_pid = getNamespace(current_process->p_parent, current_process->namespaces[0]->n_type);
 
         /* se current_process e il processo padre non sono nello stesso namespace restituisci 0 */
-        bios_State->reg_v0 = (parent_pid == NULL) ? 0 : current_process->p_pid;
         bios_State->reg_v0 = (parent_pid == NULL) ? 0 : current_process->p_pid;
     }
 }
@@ -448,7 +446,6 @@ void SYS_Get_Children(int *children, int size)
             num++;
         }
     }
-    bios_State->reg_v0 = num;
     bios_State->reg_v0 = num;
 }
 
