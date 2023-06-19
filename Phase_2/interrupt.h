@@ -6,6 +6,8 @@
 #include "scheduler.h"
 
 
+extern state_t *bios_State;
+
 
 void *memcpy(void *, const void *, unsigned int );
 

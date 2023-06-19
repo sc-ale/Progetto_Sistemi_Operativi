@@ -46,8 +46,6 @@ void foobar()
     STCK(momento_attuale);
     current_process->p_time += momento_attuale - current_process->istante_Lancio_Blocco;
 
-    state_t *bios_State = (state_t*) BIOSDATAPAGE; // Da riguardare (toglie il warning)
-
     /* fornisce il codice del tipo di eccezione avvenuta */
     switch (CAUSE_GET_EXCCODE(bios_State->cause))
     {
@@ -101,8 +99,6 @@ void syscall_handler()
     accediamo al bios data page SOLO per vedere quale eccezione è*/
 
     //(int)current_process->p_s.reg_a0
-
-    state_t *bios_State = (state_t*) BIOSDATAPAGE; // Da riguardare (toglie il warning)
 
 
     switch (bios_State->reg_a0)
@@ -158,7 +154,6 @@ void syscall_handler()
 /* sezione 3.5.12 
  aggiornamento del PC per evitare di andare in loop sulla stessa sys */
 void update_PC_SYS_non_bloccanti(){
-    state_t *bios_State = (state_t*) BIOSDATAPAGE;
     bios_State->pc_epc += WORD_SIZE;
     LDST(bios_State);
 }
@@ -167,7 +162,6 @@ void update_PC_SYS_non_bloccanti(){
  process viene fatto all'interno delle sys*/
 void update_PC_SYS_bloccanti()
 {
-    state_t *bios_State = (state_t*) BIOSDATAPAGE;
     bios_State->pc_epc += WORD_SIZE; /* word_size è 4, definito in arch.h */
     current_process->p_s = *bios_State;
 }
@@ -200,11 +194,11 @@ void SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns)
 
         process_count = +1; /* stiamo aggiunge un nuovo processo tra quelli attivi ? */
 
-        current_process->p_s.reg_v0 = newProc->p_pid;
+        bios_State->reg_v0 = newProc->p_pid;
     }
     else
     { /* non ci sono pcb liberi */
-        current_process->p_s.reg_v0 = -1;
+        bios_State->reg_v0 = -1;
     }
 }
 
@@ -365,7 +359,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         }
         /*Calcola il device giusto e esegui una P sul suo semaforo*/
         devNo = devreg % 8;
-        current_process->p_s.reg_v0 = 0;
+        bios_State->reg_v0 = 0;
         P_always(sem_disk[devNo]);
         break;
     case 1:
@@ -373,7 +367,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
             cmdAddr[i] = cmdValues[i];
         }
         devNo = devreg % 8;
-        current_process->p_s.reg_v0 = 0;
+        bios_State->reg_v0 = 0;
         P_always(sem_tape[devNo]);
         break;
     case 2: 
@@ -381,7 +375,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
             cmdAddr[i] = cmdValues[i];
         }
         devNo = devreg % 8;
-        current_process->p_s.reg_v0 = 0;
+        bios_State->reg_v0 = 0;
         P_always(sem_network[devNo]);
         break;
     case 3:
@@ -389,7 +383,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
             cmdAddr[i] = cmdValues[i];
         }
         devNo = devreg % 8;
-        current_process->p_s.reg_v0 = 0;
+        bios_State->reg_v0 = 0;
         P_always(sem_printer[devNo]);
         break;
     case 4:
@@ -401,12 +395,12 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         }
         //is_terminal = true;
         devNo = *cmdAddr%16 == 0 ? devreg%8 : devreg%8 +8;
-        current_process->p_s.reg_v0 = 0;
+        bios_State->reg_v0 = 0;
         P_always(sem_terminal[devNo]);
         break;
     default:
         aaaBreakTest();
-        current_process->p_s.reg_v0 = -1;
+        bios_State->reg_v0 = -1;
         break;
     }
 }
@@ -416,7 +410,7 @@ void SYS_Get_CPU_Time()
 {
     /* Hence SYS6 should return the value in the Current Process’s p_time PLUS
      the amount of CPU time used during the current quantum/time slice.*/
-    current_process->p_s.reg_v0 = current_process->p_time;
+    bios_State->reg_v0 = current_process->p_time;
 }
 
 /*
@@ -442,7 +436,7 @@ void SYS_Clockwait()
  ovvero il campo p_supportStruct del pcb_t.*/
 void SYS_Get_Support_Data()
 {
-    current_process->p_s.reg_v0 = current_process->p_supportStruct;
+    bios_State->reg_v0 = current_process->p_supportStruct;
 }
 
 /* Restituisce l’identificatore del processo invocante se parent == 0,
@@ -453,7 +447,7 @@ void SYS_Get_Process_Id(int parent)
 {
     if (parent == 0)
     {
-        current_process->p_s.reg_v0 = current_process->p_pid;
+        bios_State->reg_v0 = current_process->p_pid;
     }
     else
     { /* dobbiamo restituire il pid del padre, se si trovano nello stesso namespace */
@@ -461,7 +455,7 @@ void SYS_Get_Process_Id(int parent)
         nsd_t *parent_pid = getNamespace(current_process->p_parent, current_process->namespaces[0]->n_type);
 
         /* se current_process e il processo padre non sono nello stesso namespace restituisci 0 */
-        current_process->p_s.reg_v0 = (parent_pid == NULL) ? 0 : current_process->p_pid;
+        bios_State->reg_v0 = (parent_pid == NULL) ? 0 : current_process->p_pid;
     }
 }
 
@@ -484,7 +478,7 @@ void SYS_Get_Children(int *children, int size)
             num++;
         }
     }
-    current_process->p_s.reg_v0 = num;
+    bios_State->reg_v0 = num;
 }
 
 /* Per determinare se il processo corrente stava eseguento in kernel o user mode,
@@ -496,7 +490,7 @@ int Check_Kernel_mode()
 {
     unsigned mask;
     mask = ((1 << 1) - 1) << STATUS_KUp_BIT;
-    unsigned int bit_kernel = current_process->p_s.status & mask;
+    unsigned int bit_kernel = bios_State->status & mask;
     /* ritorna vero se il processo era in kernel mode, 0 in user mode*/
     return (bit_kernel == 0) ? TRUE : FALSE;
 }
@@ -506,7 +500,9 @@ void P_always(int *semaddr){
     /* aggiungere current_process nella coda dei
         processi bloccati da una P e sospenderlo*/
     insertBlocked(semaddr, current_process);
-    semaddr--;
+    soft_block_count++;
+    *semaddr--;
+    update_PC_SYS_bloccanti();
     scheduling();
 }
 

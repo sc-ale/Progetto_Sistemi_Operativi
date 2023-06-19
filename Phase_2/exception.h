@@ -4,7 +4,7 @@
 #include <umps3/umps/arch.h>
 #include "interrupt.h"
 
-
+state_t *bios_State = (state_t*) BIOSDATAPAGE;
 
 pcb_t pcbFree_table[MAXPROC];
 

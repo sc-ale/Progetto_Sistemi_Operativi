@@ -16,7 +16,7 @@ void *memcpy(void *dest, const void *src, unsigned int n)
 (Se nessuna linea è attiva ritorna 8 ma assumiamo che quando venga
  chiamata ci sia almeno una linea attiva) */
 int Get_Interrupt_Line_Max_Prio (){
-    unsigned int interrupt_pending = current_process->p_s.cause & CAUSE_IP_MASK;
+    unsigned int interrupt_pending = bios_State->cause & CAUSE_IP_MASK;
     /* così abbiamo solo i bit attivi da 8 a 15 del cause register */
     unsigned int intpeg_linee[8];
     for (int i=0; i<8; i++) {
@@ -240,8 +240,7 @@ void terminal_interrupt_handler(){
 
     /* Return control to the Current Process: Perform a LDST on the saved
         exception state (located at the start of the BIOS Data Page */
-    state_t *prev_state = (state_t*) BIOSDATAPAGE;
-    LDST(prev_state);
+    LDST(bios_State);
 }
 
 void V_all(){
