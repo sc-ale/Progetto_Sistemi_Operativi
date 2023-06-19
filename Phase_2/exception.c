@@ -360,7 +360,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         /*Calcola il device giusto e esegui una P sul suo semaforo*/
         devNo = devreg % 8;
   
-        P_always(sem_disk[devNo]);
+        P_always(&sem_disk[devNo]);
         break;
     case 1:
         for(int i=0; i<4; i++){
@@ -368,7 +368,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         }
         devNo = devreg % 8;
         bios_State->reg_v0 = 0;
-        P_always(sem_tape[devNo]);
+        P_always(&sem_tape[devNo]);
         break;
     case 2: 
         for(int i=0; i<4; i++){
@@ -376,7 +376,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         }
         devNo = devreg % 8;
         bios_State->reg_v0 = 0;
-        P_always(sem_network[devNo]);
+        P_always(&sem_network[devNo]);
         break;
     case 3:
         for(int i=0; i<4; i++){
@@ -384,7 +384,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         }
         devNo = devreg % 8;
         bios_State->reg_v0 = 0;
-        P_always(sem_printer[devNo]);
+        P_always(&sem_printer[devNo]);
         break;
     case 4:
         /*I registri dei terminali sono divisi in due (ricezione / trasmissione), 
@@ -396,7 +396,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         //is_terminal = true;
         devNo = *cmdAddr%16 == 0 ? devreg%8 : devreg%8+8;
         bios_State->reg_v0 = 0;
-        P_always(sem_terminal[devNo]);
+        P_always(&sem_terminal[devNo]);
         break;
     default:
         aaaBreakTest();
@@ -423,7 +423,7 @@ void SYS_Clockwait()
     update_PC_SYS_bloccanti();
 
     /* aggiungere current_process nella coda dei processi bloccati da una P e sospenderlo*/
-    insertBlocked(sem_interval_timer, current_process);
+    insertBlocked(&sem_interval_timer, current_process);
     /* se inserimento_avvenuto è 1 allora non è stato possibile allocare un nuovo SEMD perché la semdFree_h è vuota */
 
     /* Setta il valore del semaforo a 0 */

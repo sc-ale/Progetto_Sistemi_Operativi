@@ -94,11 +94,11 @@ void PLT_interrupt_handler() {
     setTIMER(TIMESLICE);
 
     /* Copy the processor state at the time of the exception (located at the start of the BIOS Data Page [Section ??-pops]) into the Current Pro- cess’s pcb (p_s). */
-    state_t *exc_state = BIOSDATAPAGE;
+    state_t *exc_state = (state_t*)BIOSDATAPAGE;
     current_process->p_s = *exc_state;
 
     /* Place the Current Process on the Ready Queue; transitioning the Current Process from the “running” state to the “ready” state. */
-    insertProcQ(&current_process->p_list, &readyQ);
+    insertProcQ(readyQ,current_process);
 
     /*Call the scheduler*/
     scheduling();
@@ -113,7 +113,7 @@ void IT_interrupt_handler(){
     V_all();
 
     /*Return control to the Current Process: Perform a LDST on the saved exception state*/
-    state_t *exc_state = BIOSDATAPAGE;
+    state_t *exc_state = (state_t*)BIOSDATAPAGE;
     LDST(exc_state);
 }
 
