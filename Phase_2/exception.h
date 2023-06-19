@@ -5,7 +5,6 @@
 #include "interrupt.h"
 
 
-
 pcb_t pcbFree_table[MAXPROC];
 state_t *bios_State = (state_t*) BIOSDATAPAGE;
 
