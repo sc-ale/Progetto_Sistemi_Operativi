@@ -1,42 +1,6 @@
 #ifndef EXCEPTION_C 
 #define EXCEPTION_C
 #include "exception.h"
-/*
-#include <umps3/umps/const.h>
-#include <umps3/umps/cp0.h>
-#include <umps3/umps/arch.h>
-#include <umps3/umps/libumps.h>
-#include <umps3/umps/types.h>
-#include <pandos_types.h>
-#include <pandos_const.h>
-#include "pcb.h"
-#include "ash.h"
-#include "ns.h"
-
-
-extern int process_count; 
-extern int soft_block_count; 
-extern struct list_head readyQ;
-extern pcb_t* current_process; 
-extern int sem_processor_local_timer;
-extern int sem_interval_timer;
-extern int sem_disk[8];
-extern int sem_tape[8];
-extern int sem_network[8];
-extern int sem_printer[8];
-extern int sem_terminal[16];
-extern void *memcpy(void *dest, const void *src, unsigned int n);
-extern void scheduling();   
-
-
-HIDDEN pcb_t pcbFree_table[MAXPROC];
-
-
-int pid_start = 0;
-
-extern void uTLB_RefillHandler();
-extern void *memcpy(void *dest, const void *src, unsigned int n);
-*/
 
 /* CONTROLLARE LA SEZIONE 3.5.12 */
 void foobar()
@@ -341,7 +305,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
 {
     /* chiamare update_PC_SYS_non_bloccanti(); */
         /* Mappa i registri dei device da 0 a 39*/
-    aaaTest_variable = cmdAddr;
+    aaaTest_variable = (int) cmdAddr;
     aaaBreakTest();
     int devreg = ((memaddr)cmdAddr - DEV_REG_START) / DEV_REG_SIZE;
     int devNo;
@@ -366,8 +330,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         }
         devNo = devreg % 8;
         bios_State->reg_v0 = 0;
-        bios_State->reg_v0 = 0;
-        P_always(sem_tape[devNo]);
+        P_always(&sem_tape[devNo]);
         break;
     case 2: 
         for(int i=0; i<4; i++){
@@ -375,8 +338,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         }
         devNo = devreg % 8;
         bios_State->reg_v0 = 0;
-        bios_State->reg_v0 = 0;
-        P_always(sem_network[devNo]);
+        P_always(&sem_network[devNo]);
         break;
     case 3:
         for(int i=0; i<4; i++){
@@ -384,8 +346,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         }
         devNo = devreg % 8;
         bios_State->reg_v0 = 0;
-        bios_State->reg_v0 = 0;
-        P_always(sem_printer[devNo]);
+        P_always(&sem_printer[devNo]);
         break;
     case 4:
         /*I registri dei terminali sono divisi in due (ricezione / trasmissione), 
@@ -397,13 +358,10 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         //is_terminal = true;
         devNo = *cmdAddr%16 == 0 ? devreg%8 : devreg%8+8;
         bios_State->reg_v0 = 0;
-        devNo = *cmdAddr%16 == 0 ? devreg%8 : devreg%8 +8;
-        bios_State->reg_v0 = 0;
-        P_always(sem_terminal[devNo]);
+        P_always(&sem_terminal[devNo]);
         break;
     default:
         aaaBreakTest();
-        bios_State->reg_v0 = -1;
         bios_State->reg_v0 = -1;
         break;
     }
@@ -427,7 +385,7 @@ void SYS_Clockwait()
     update_PC_SYS_bloccanti();
 
     /* aggiungere current_process nella coda dei processi bloccati da una P e sospenderlo*/
-    insertBlocked(sem_interval_timer, current_process);
+    insertBlocked(&sem_interval_timer, current_process);
     /* se inserimento_avvenuto è 1 allora non è stato possibile allocare un nuovo SEMD perché la semdFree_h è vuota */
 
     /* Setta il valore del semaforo a 0 */
