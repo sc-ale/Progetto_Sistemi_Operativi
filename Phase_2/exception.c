@@ -38,7 +38,6 @@ extern void uTLB_RefillHandler();
 extern void *memcpy(void *dest, const void *src, unsigned int n);
 */
 
-
 /* CONTROLLARE LA SEZIONE 3.5.12 */
 void foobar()
 {
@@ -86,7 +85,7 @@ void passup_ordie(int INDEX)
     }
     else {
         context_t exceptContext = current_process->p_supportStruct->sup_exceptContext[INDEX];
-        current_process->p_supportStruct->sup_exceptState[INDEX].status  = (state_t*)BIOSDATAPAGE;
+        current_process->p_supportStruct->sup_exceptState[INDEX].status  = (memaddr) BIOSDATAPAGE;
         LDCXT(exceptContext.stackPtr,exceptContext.status,exceptContext.pc);
     }
 }
@@ -98,30 +97,30 @@ void syscall_handler()
     /* NON assegnare il bios data page al current process, devono essere distinti,
     accediamo al bios data page SOLO per vedere quale eccezione è*/
 
-    //(int)current_process->p_s.reg_a0
-
+    //(int)bios_State->reg_a0
+ // Da riguardare (toglie il warning)
 
     switch (bios_State->reg_a0)
     {
     case CREATEPROCESS:
-        SYS_create_process(bios_State->reg_a1, bios_State->reg_a2, bios_State->reg_a3);
+        SYS_create_process((state_t*)bios_State->reg_a1, (support_t*)bios_State->reg_a2, (nsd_t*)bios_State->reg_a3);
         break;
 
     case TERMPROCESS:
-        SYS_terminate_process(bios_State->reg_a1);
+        SYS_terminate_process((int)bios_State->reg_a1);
         break;
 
     case PASSEREN:
-        SYS_Passeren(bios_State->reg_a1);
+        SYS_Passeren((int*)bios_State->reg_a1);
         
         break;
 
     case VERHOGEN:
-        SYS_Verhogen(bios_State->reg_a1);
+        SYS_Verhogen((int*)bios_State->reg_a1);
         break;
 
     case DOIO:
-        SYS_Doio(bios_State->reg_a1, bios_State->reg_a2);
+        SYS_Doio((int*)bios_State->reg_a1, (int*)bios_State->reg_a2);
        
         break;
 
@@ -139,11 +138,11 @@ void syscall_handler()
         break;
 
     case GETPROCESSID:
-        SYS_Get_Process_Id(bios_State->reg_a1);
+        SYS_Get_Process_Id((int)bios_State->reg_a1);
         break;
 
     case GETCHILDREN:
-        SYS_Get_Children(bios_State->reg_a1, bios_State->reg_a2);
+        SYS_Get_Children((int*)bios_State->reg_a1, (int)bios_State->reg_a2);
     default:
         break;
     }
@@ -179,7 +178,7 @@ void SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns)
     if (newProc != NULL)
     {
         /* newProc sarà il figlio di current_process e sarà disponibile nella readyQ*/
-        insertChild(&current_process, &newProc);
+        insertChild(current_process, newProc);
         insertProcQ(&readyQ, newProc);
         newProc->p_s = *statep;
         newProc->p_supportStruct = supportp;
@@ -344,8 +343,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         /* Mappa i registri dei device da 0 a 39*/
     aaaTest_variable = cmdAddr;
     aaaBreakTest();
-    int cmdPlace = cmdAddr;
-    int devreg = (cmdPlace - DEV_REG_START) / DEV_REG_SIZE;
+    int devreg = ((memaddr)cmdAddr - DEV_REG_START) / DEV_REG_SIZE;
     int devNo;
     aaaTest_variable = devreg;
     aaaBreakTest();
@@ -368,6 +366,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         }
         devNo = devreg % 8;
         bios_State->reg_v0 = 0;
+        bios_State->reg_v0 = 0;
         P_always(sem_tape[devNo]);
         break;
     case 2: 
@@ -376,6 +375,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         }
         devNo = devreg % 8;
         bios_State->reg_v0 = 0;
+        bios_State->reg_v0 = 0;
         P_always(sem_network[devNo]);
         break;
     case 3:
@@ -383,6 +383,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
             cmdAddr[i] = cmdValues[i];
         }
         devNo = devreg % 8;
+        bios_State->reg_v0 = 0;
         bios_State->reg_v0 = 0;
         P_always(sem_printer[devNo]);
         break;
@@ -394,12 +395,15 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
             cmdAddr[i] = cmdValues[i];
         }
         //is_terminal = true;
+        devNo = *cmdAddr%16 == 0 ? devreg%8 : devreg%8+8;
+        bios_State->reg_v0 = 0;
         devNo = *cmdAddr%16 == 0 ? devreg%8 : devreg%8 +8;
         bios_State->reg_v0 = 0;
         P_always(sem_terminal[devNo]);
         break;
     default:
         aaaBreakTest();
+        bios_State->reg_v0 = -1;
         bios_State->reg_v0 = -1;
         break;
     }
@@ -434,9 +438,15 @@ void SYS_Clockwait()
 
 /* Restituisce un puntatore alla struttura di supporto del processo corrente,
  ovvero il campo p_supportStruct del pcb_t.*/
-void SYS_Get_Support_Data()
+support_t* SYS_Get_Support_Data()
 {
-    bios_State->reg_v0 = current_process->p_supportStruct;
+    if(current_process->p_supportStruct == NULL) {
+        return NULL;
+    }
+    else {
+        return current_process->p_supportStruct;
+    }
+
 }
 
 /* Restituisce l’identificatore del processo invocante se parent == 0,
@@ -448,6 +458,7 @@ void SYS_Get_Process_Id(int parent)
     if (parent == 0)
     {
         bios_State->reg_v0 = current_process->p_pid;
+        bios_State->reg_v0 = current_process->p_pid;
     }
     else
     { /* dobbiamo restituire il pid del padre, se si trovano nello stesso namespace */
@@ -455,6 +466,7 @@ void SYS_Get_Process_Id(int parent)
         nsd_t *parent_pid = getNamespace(current_process->p_parent, current_process->namespaces[0]->n_type);
 
         /* se current_process e il processo padre non sono nello stesso namespace restituisci 0 */
+        bios_State->reg_v0 = (parent_pid == NULL) ? 0 : current_process->p_pid;
         bios_State->reg_v0 = (parent_pid == NULL) ? 0 : current_process->p_pid;
     }
 }
@@ -479,6 +491,7 @@ void SYS_Get_Children(int *children, int size)
         }
     }
     bios_State->reg_v0 = num;
+    bios_State->reg_v0 = num;
 }
 
 /* Per determinare se il processo corrente stava eseguento in kernel o user mode,
@@ -491,6 +504,7 @@ int Check_Kernel_mode()
     unsigned mask;
     mask = ((1 << 1) - 1) << STATUS_KUp_BIT;
     unsigned int bit_kernel = bios_State->status & mask;
+    unsigned int bit_kernel = bios_State->status & mask;
     /* ritorna vero se il processo era in kernel mode, 0 in user mode*/
     return (bit_kernel == 0) ? TRUE : FALSE;
 }
@@ -501,7 +515,7 @@ void P_always(int *semaddr){
         processi bloccati da una P e sospenderlo*/
     insertBlocked(semaddr, current_process);
     soft_block_count++;
-    *semaddr--;
+    *semaddr-=1;
     update_PC_SYS_bloccanti();
     scheduling();
 }
