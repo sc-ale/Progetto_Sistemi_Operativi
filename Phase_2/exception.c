@@ -51,7 +51,7 @@ void passup_ordie(int INDEX)
     }
     else {
         context_t exceptContext = current_process->p_supportStruct->sup_exceptContext[INDEX];
-        current_process->p_supportStruct->sup_exceptState[INDEX].status  = (state_t*)BIOSDATAPAGE;
+        current_process->p_supportStruct->sup_exceptState[INDEX].status  = (memaddr) BIOSDATAPAGE;
         LDCXT(exceptContext.stackPtr,exceptContext.status,exceptContext.pc);
     }
 }
@@ -69,24 +69,24 @@ void syscall_handler()
     switch (bios_State->reg_a0)
     {
     case CREATEPROCESS:
-        SYS_create_process(bios_State->reg_a1, bios_State->reg_a2, bios_State->reg_a3);
+        SYS_create_process((state_t*)bios_State->reg_a1, (support_t*)bios_State->reg_a2, (nsd_t*)bios_State->reg_a3);
         break;
 
     case TERMPROCESS:
-        SYS_terminate_process(bios_State->reg_a1);
+        SYS_terminate_process((int)bios_State->reg_a1);
         break;
 
     case PASSEREN:
-        SYS_Passeren(bios_State->reg_a1);
+        SYS_Passeren((int*)bios_State->reg_a1);
         
         break;
 
     case VERHOGEN:
-        SYS_Verhogen(bios_State->reg_a1);
+        SYS_Verhogen((int*)bios_State->reg_a1);
         break;
 
     case DOIO:
-        SYS_Doio(bios_State->reg_a1, bios_State->reg_a2);
+        SYS_Doio((int*)bios_State->reg_a1, (int*)bios_State->reg_a2);
        
         break;
 
@@ -104,11 +104,11 @@ void syscall_handler()
         break;
 
     case GETPROCESSID:
-        SYS_Get_Process_Id(bios_State->reg_a1);
+        SYS_Get_Process_Id((int)bios_State->reg_a1);
         break;
 
     case GETCHILDREN:
-        SYS_Get_Children(bios_State->reg_a1, bios_State->reg_a2);
+        SYS_Get_Children((int*)bios_State->reg_a1, (int)bios_State->reg_a2);
     default:
         break;
     }
@@ -144,7 +144,7 @@ void SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns)
     if (newProc != NULL)
     {
         /* newProc sarà il figlio di current_process e sarà disponibile nella readyQ*/
-        insertChild(&current_process, &newProc);
+        insertChild(current_process, newProc);
         insertProcQ(&readyQ, newProc);
         newProc->p_s = *statep;
         newProc->p_supportStruct = supportp;
@@ -309,8 +309,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         /* Mappa i registri dei device da 0 a 39*/
     aaaTest_variable = cmdAddr;
     aaaBreakTest();
-    int cmdPlace = cmdAddr;
-    int devreg = (cmdPlace - DEV_REG_START) / DEV_REG_SIZE;
+    int devreg = ((memaddr)cmdAddr - DEV_REG_START) / DEV_REG_SIZE;
     int devNo;
     aaaTest_variable = devreg;
     aaaBreakTest();
