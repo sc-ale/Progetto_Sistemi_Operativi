@@ -260,7 +260,7 @@ void SYS_Passeren(int *semaddr)
     }
     else
     {
-        semaddr--;
+        *semaddr-=1;
     }
 }
 
@@ -286,7 +286,7 @@ void SYS_Verhogen(int *semaddr)
     }
     else
     {
-        semaddr++;
+        *semaddr+=1;
     }
 }
 
