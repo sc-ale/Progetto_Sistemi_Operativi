@@ -470,7 +470,7 @@ void P_always(int *semaddr){
     /* aggiungere current_process nella coda dei
         processi bloccati da una P e sospenderlo*/
     insertBlocked(semaddr, current_process);
-    semaddr--;
+    *semaddr-=1;
     soft_block_count += 1;
     update_PC_SYS_bloccanti();
     scheduling();
