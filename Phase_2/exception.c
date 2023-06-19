@@ -9,8 +9,6 @@ void foobar()
     STCK(momento_attuale);
     current_process->p_time += momento_attuale - current_process->istante_Lancio_Blocco;
 
- ; // Da riguardare (toglie il warning)
-
     /* fornisce il codice del tipo di eccezione avvenuta */
     switch (CAUSE_GET_EXCCODE(bios_State->cause))
     {
@@ -323,8 +321,8 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         }
         /*Calcola il device giusto e esegui una P sul suo semaforo*/
         devNo = devreg % 8;
-  
-        P_always(&sem_disk[devNo]);
+        bios_State->reg_v0 = 0;
+        P_always(sem_disk[devNo]);
         break;
     case 1:
         for(int i=0; i<4; i++){
@@ -470,8 +468,8 @@ void P_always(int *semaddr){
     /* aggiungere current_process nella coda dei
         processi bloccati da una P e sospenderlo*/
     insertBlocked(semaddr, current_process);
-    semaddr--;
-    soft_block_count += 1;
+    soft_block_count++;
+    *semaddr-=1;
     update_PC_SYS_bloccanti();
     scheduling();
 }

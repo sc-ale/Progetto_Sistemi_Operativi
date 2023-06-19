@@ -241,8 +241,7 @@ void terminal_interrupt_handler(){
 
     /* Return control to the Current Process: Perform a LDST on the saved
         exception state (located at the start of the BIOS Data Page */
-    state_t *prev_state = (state_t*) BIOSDATAPAGE;
-    LDST(prev_state);
+    LDST(bios_State);
 }
 
 void V_all(){
