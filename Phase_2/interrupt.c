@@ -21,7 +21,7 @@ int Get_Interrupt_Line_Max_Prio (){
     /* così abbiamo solo i bit attivi da 8 a 15 del cause register */
     unsigned int intpeg_linee[8];
     for (int i=0; i<8; i++) {
-        unsigned mask = ((1<<1)-1)<<i+8;
+        unsigned mask = ((1<<1)-1)<<(i+8);
         intpeg_linee[i] = mask & interrupt_pending;
     }
     /* intpeg_linee[i] indica se la linea i-esima è attiva */
@@ -94,11 +94,11 @@ void PLT_interrupt_handler() {
     setTIMER(TIMESLICE);
 
     /* Copy the processor state at the time of the exception (located at the start of the BIOS Data Page [Section ??-pops]) into the Current Pro- cess’s pcb (p_s). */
-    state_t *exc_state = BIOSDATAPAGE;
+    state_t *exc_state = (state_t*) BIOSDATAPAGE;
     current_process->p_s = *exc_state;
 
     /* Place the Current Process on the Ready Queue; transitioning the Current Process from the “running” state to the “ready” state. */
-    insertProcQ(&current_process->p_list, &readyQ);
+    insertProcQ(&readyQ, &current_process);
 
     /*Call the scheduler*/
     scheduling();

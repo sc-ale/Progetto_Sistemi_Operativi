@@ -307,7 +307,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
 {
     /* chiamare update_PC_SYS_non_bloccanti(); */
         /* Mappa i registri dei device da 0 a 39*/
-    aaaTest_variable = cmdAddr;
+    aaaTest_variable = (int) cmdAddr;
     aaaBreakTest();
     int devreg = ((memaddr)cmdAddr - DEV_REG_START) / DEV_REG_SIZE;
     int devNo;
@@ -387,7 +387,7 @@ void SYS_Clockwait()
     update_PC_SYS_bloccanti();
 
     /* aggiungere current_process nella coda dei processi bloccati da una P e sospenderlo*/
-    insertBlocked(sem_interval_timer, current_process);
+    insertBlocked(&sem_interval_timer, current_process);
     /* se inserimento_avvenuto è 1 allora non è stato possibile allocare un nuovo SEMD perché la semdFree_h è vuota */
 
     /* Setta il valore del semaforo a 0 */
