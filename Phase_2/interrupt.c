@@ -151,7 +151,7 @@ void general_interrupt_handler(int IntLineNo)
     
     /* Save off the status code from the device’s device register. */
     /*Uso la macro per trovare l'inidirzzo di base del device con la linea di interrupt e il numero di device*/
-    dtpreg_t *dev_addr=DEV_REG_ADDR(IntLineNo,DevNo);
+    dtpreg_t *dev_addr = (dtpreg_t*) DEV_REG_ADDR(IntLineNo,DevNo);
     /* Copia del device register*/
     dtpreg_t dev_reg;
     dev_reg.status = dev_addr->status;
@@ -202,7 +202,7 @@ void terminal_interrupt_handler(){
    
     /* Save off the status code from the device’s device register. */
     /*Uso la macro per trovare l'inidirzzo di base del device con la linea di interrupt e il numero di device*/
-    termreg_t *dev_addr=DEV_REG_ADDR(TERMINT,DevNo);
+    termreg_t *dev_addr= (termreg_t*) DEV_REG_ADDR(TERMINT,DevNo);
     /* Copia del device register*/
     termreg_t dev_reg;
     dev_reg.recv_status = dev_addr->recv_status;
@@ -250,8 +250,8 @@ void V_all(){
          /* chiamata allo scheduler*/
         scheduling();
     } else {
-        while(headBlocked(sem_interval_timer)!=NULL){
-            pcb_t* wakedProc = removeBlocked(sem_interval_timer);
+        while(headBlocked(&sem_interval_timer)!=NULL){
+            pcb_t* wakedProc = removeBlocked(&sem_interval_timer);
             insertProcQ(&readyQ, wakedProc); 
         }
         sem_interval_timer = 1;
