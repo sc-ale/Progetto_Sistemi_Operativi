@@ -1,42 +1,6 @@
 #ifndef EXCEPTION_C 
 #define EXCEPTION_C
 #include "exception.h"
-/*
-#include <umps3/umps/const.h>
-#include <umps3/umps/cp0.h>
-#include <umps3/umps/arch.h>
-#include <umps3/umps/libumps.h>
-#include <umps3/umps/types.h>
-#include <pandos_types.h>
-#include <pandos_const.h>
-#include "pcb.h"
-#include "ash.h"
-#include "ns.h"
-
-
-extern int process_count; 
-extern int soft_block_count; 
-extern struct list_head readyQ;
-extern pcb_t* current_process; 
-extern int sem_processor_local_timer;
-extern int sem_interval_timer;
-extern int sem_disk[8];
-extern int sem_tape[8];
-extern int sem_network[8];
-extern int sem_printer[8];
-extern int sem_terminal[16];
-extern void *memcpy(void *dest, const void *src, unsigned int n);
-extern void scheduling();   
-
-
-HIDDEN pcb_t pcbFree_table[MAXPROC];
-
-
-int pid_start = 0;
-
-extern void uTLB_RefillHandler();
-extern void *memcpy(void *dest, const void *src, unsigned int n);
-*/
 
 
 /* CONTROLLARE LA SEZIONE 3.5.12 */
