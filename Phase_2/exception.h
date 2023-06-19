@@ -7,6 +7,7 @@
 
 
 pcb_t pcbFree_table[MAXPROC];
+state_t *bios_State = (state_t*) BIOSDATAPAGE;
 
 /* come process id usiamo un intero che aumenta
     e basta (no caso reincarazione)*/
@@ -42,7 +43,7 @@ void SYS_Get_CPU_Time();
 
 void SYS_Clockwait();
 
-void SYS_Get_Support_Data();
+support_t* SYS_Get_Support_Data();
 
 void SYS_Get_Process_Id(int );
 

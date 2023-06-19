@@ -3,6 +3,7 @@
 
 #include "interrupt.h"
 
+
 void *memcpy(void *dest, const void *src, unsigned int n)
 {
     for (unsigned int i = 0; i < n; i++)
@@ -16,7 +17,7 @@ void *memcpy(void *dest, const void *src, unsigned int n)
 (Se nessuna linea è attiva ritorna 8 ma assumiamo che quando venga
  chiamata ci sia almeno una linea attiva) */
 int Get_Interrupt_Line_Max_Prio (){
-    unsigned int interrupt_pending = current_process->p_s.cause & CAUSE_IP_MASK;
+    unsigned int interrupt_pending = bios_State->cause & CAUSE_IP_MASK;
     /* così abbiamo solo i bit attivi da 8 a 15 del cause register */
     unsigned int intpeg_linee[8];
     for (int i=0; i<8; i++) {
