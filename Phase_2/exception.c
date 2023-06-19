@@ -258,7 +258,7 @@ void SYS_Passeren(int *semaddr)
     }
     else
     {
-        semaddr--;
+        *semaddr-=1;
     }
 }
 
@@ -284,7 +284,7 @@ void SYS_Verhogen(int *semaddr)
     }
     else
     {
-        semaddr++;
+        *semaddr+=1;
     }
 }
 
@@ -458,7 +458,6 @@ int Check_Kernel_mode()
 {
     unsigned mask;
     mask = ((1 << 1) - 1) << STATUS_KUp_BIT;
-    unsigned int bit_kernel = bios_State->status & mask;
     unsigned int bit_kernel = bios_State->status & mask;
     /* ritorna vero se il processo era in kernel mode, 0 in user mode*/
     return (bit_kernel == 0) ? TRUE : FALSE;
