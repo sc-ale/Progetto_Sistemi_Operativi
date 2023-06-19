@@ -7,7 +7,7 @@
 int process_count; /* numero processi attivi */
 int soft_block_count; /* conteggio processi bloccati per I/O o timer request*/
 
-struct list_head readyQ; /* lista processi ready */
+LIST_HEAD(readyQ); /* lista processi ready */
 pcb_t* current_process; /* puntatore al processo in esecuzione */
 
 int sem_processor_local_timer;
