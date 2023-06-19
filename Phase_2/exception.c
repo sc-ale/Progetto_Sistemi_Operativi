@@ -108,24 +108,24 @@ void syscall_handler()
     switch (bios_State->reg_a0)
     {
     case CREATEPROCESS:
-        SYS_create_process((state_t *)current_process->p_s.reg_a1, (support_t *)current_process->p_s.reg_a2, (nsd_t *)current_process->p_s.reg_a3);
+        SYS_create_process(bios_State->reg_a1, bios_State->reg_a2, bios_State->reg_a3);
         break;
 
     case TERMPROCESS:
-        SYS_terminate_process((int)current_process->p_s.reg_a1);
+        SYS_terminate_process(bios_State->reg_a1);
         break;
 
     case PASSEREN:
-        SYS_Passeren((int *)current_process->p_s.reg_a1);
+        SYS_Passeren(bios_State->reg_a1);
         
         break;
 
     case VERHOGEN:
-        SYS_Verhogen((int *)current_process->p_s.reg_a1);
+        SYS_Verhogen(bios_State->reg_a1);
         break;
 
     case DOIO:
-        SYS_Doio((int *)current_process->p_s.reg_a1, (int *)current_process->p_s.reg_a2);
+        SYS_Doio(bios_State->reg_a1, bios_State->reg_a2);
        
         break;
 
@@ -143,11 +143,11 @@ void syscall_handler()
         break;
 
     case GETPROCESSID:
-        SYS_Get_Process_Id((int)current_process->p_s.reg_a1);
+        SYS_Get_Process_Id(bios_State->reg_a1);
         break;
 
     case GETCHILDREN:
-        SYS_Get_Children((int *)current_process->p_s.reg_a1, (int)current_process->p_s.reg_a2);
+        SYS_Get_Children(bios_State->reg_a1, bios_State->reg_a2);
     default:
         break;
     }
@@ -348,8 +348,12 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
 {
     /* chiamare update_PC_SYS_non_bloccanti(); */
         /* Mappa i registri dei device da 0 a 39*/
-    int devreg = (*cmdAddr - DEV_REG_START) / DEV_REG_SIZE;
+    aaaTest_variable = cmdAddr;
+    aaaBreakTest();
+    int cmdPlace = cmdAddr;
+    int devreg = (cmdPlace - DEV_REG_START) / DEV_REG_SIZE;
     int devNo;
+    aaaTest_variable = devreg;
     aaaBreakTest();
     switch (devreg / 8)
     {
@@ -401,6 +405,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         P_always(sem_terminal[devNo]);
         break;
     default:
+        aaaBreakTest();
         current_process->p_s.reg_v0 = -1;
         break;
     }

@@ -12,6 +12,8 @@ pcb_t pcbFree_table[MAXPROC];
     e basta (no caso reincarazione)*/
 int pid_start = 0;
 
+unsigned int aaaTest_variable = 0;
+
 void foobar();
 
 void passup_ordie(int );
