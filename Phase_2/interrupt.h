@@ -6,6 +6,7 @@
 #include "scheduler.h"
 
 extern state_t* bios_State;
+extern void SYS_Verhogen(int*);
 
 void *memcpy(void *, const void *, unsigned int );
 

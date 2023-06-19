@@ -251,7 +251,7 @@ void V_all(){
          /* chiamata allo scheduler*/
         scheduling();
     } else {
-        while(headBlocked(sem_interval_timer)!=NULL){
+        while(headBlocked(&sem_interval_timer)!=NULL){
             pcb_t* wakedProc = removeBlocked(sem_interval_timer);
             insertProcQ(&readyQ, wakedProc); 
         }
