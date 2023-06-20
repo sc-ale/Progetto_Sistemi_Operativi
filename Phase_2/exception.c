@@ -186,6 +186,7 @@ void SYS_terminate_process(int pid)
     }
 
     terminate_family(Proc2Delete);
+    scheduling();
 }
 
 /*Uccide un processo e tutta la sua progenie (NON I FRATELLI DEL PROCESSO CHIAMATO) */
@@ -267,9 +268,11 @@ void SYS_Passeren(int *semaddr)
 /* Operazione di rilascio di un semaforo binario la cui chiave è il valore puntato da semaddr */
 void SYS_Verhogen(int *semaddr)
 {
+    aaaBreakTest();
     //int pid_current = current_process->p_pid;
     if (*semaddr == 1)
     {
+        update_PC_SYS_bloccanti();
         /* aggiungere current_process nella coda dei
          processi bloccati da una V e sospenderlo*/
         //int inserimento_avvenuto = 
@@ -470,10 +473,10 @@ void P_always(int *semaddr){
     
     /* aggiungere current_process nella coda dei
         processi bloccati da una P e sospenderlo*/
-    insertBlocked(semaddr, current_process);
     soft_block_count++;
     *semaddr-=1;
     update_PC_SYS_bloccanti();
+    insertBlocked(semaddr, current_process);
     scheduling();
 }
 
