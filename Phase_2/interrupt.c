@@ -4,14 +4,17 @@
 #include "interrupt.h"
 
 
+
 void *memcpy(void *dest, const void *src, unsigned int n)
 {
     for (unsigned int i = 0; i < n; i++)
     {
         ((char*)dest)[i] = ((char*)src)[i];
     }
-    return;
-}
+    //Questo return l'ho aggiunto per togliere il warning(non dovrebbe creare problemi
+    // la funzione memcpy dovrebbe ritornare la locazione di memoria dove ha copiato)
+    return dest;
+} 
 
 /* Restituisce la linea con interrupt in attesa con massima priorità. 
 (Se nessuna linea è attiva ritorna 8 ma assumiamo che quando venga
@@ -245,7 +248,6 @@ void terminal_interrupt_handler(){
 }
 
 void V_all(){
-    int pid_current = current_process->p_pid;
     if(sem_interval_timer == 1) {
          /* chiamata allo scheduler*/
         scheduling();

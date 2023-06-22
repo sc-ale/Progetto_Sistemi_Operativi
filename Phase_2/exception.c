@@ -186,6 +186,7 @@ void SYS_terminate_process(int pid)
     }
 
     terminate_family(Proc2Delete);
+    scheduling();
 }
 
 /*Uccide un processo e tutta la sua progenie (NON I FRATELLI DEL PROCESSO CHIAMATO) */
@@ -243,7 +244,9 @@ void SYS_Passeren(int *semaddr)
         update_PC_SYS_bloccanti();
         /* aggiungere current_process nella coda dei
          processi bloccati da una P e sospenderlo*/
-        int inserimento_avvenuto = insertBlocked(semaddr, current_process);
+        //int inserimento_avvenuto =  Questa variabile non la usiamo?
+        
+        insertBlocked(semaddr, current_process);
         /* se inserimento_avvenuto è 1 allora non è stato possibile allocare 
          un nuovo SEMD perché la semdFree_h è vuota */
         
@@ -265,12 +268,15 @@ void SYS_Passeren(int *semaddr)
 /* Operazione di rilascio di un semaforo binario la cui chiave è il valore puntato da semaddr */
 void SYS_Verhogen(int *semaddr)
 {
-    int pid_current = current_process->p_pid;
+    aaaBreakTest();
+    //int pid_current = current_process->p_pid;
     if (*semaddr == 1)
     {
+        update_PC_SYS_bloccanti();
         /* aggiungere current_process nella coda dei
          processi bloccati da una V e sospenderlo*/
-        int inserimento_avvenuto = insertBlocked(semaddr, current_process);
+        //int inserimento_avvenuto = 
+        insertBlocked(semaddr, current_process);
         /* se inserimento_avvenuto è 1 allora non è stato possibile allocare un nuovo SEMD perché la semdFree_h è vuota */
 
         /* chiamata allo scheduler, non so si può far direttamente così */
@@ -322,7 +328,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         /*Calcola il device giusto e esegui una P sul suo semaforo*/
         devNo = devreg % 8;
         bios_State->reg_v0 = 0;
-        P_always(sem_disk[devNo]);
+        P_always(&sem_disk[devNo]);
         break;
     case 1:
         for(int i=0; i<4; i++){
@@ -467,10 +473,10 @@ void P_always(int *semaddr){
     
     /* aggiungere current_process nella coda dei
         processi bloccati da una P e sospenderlo*/
-    insertBlocked(semaddr, current_process);
     soft_block_count++;
     *semaddr-=1;
     update_PC_SYS_bloccanti();
+    insertBlocked(semaddr, current_process);
     scheduling();
 }
 
