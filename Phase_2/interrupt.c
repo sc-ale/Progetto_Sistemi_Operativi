@@ -230,23 +230,14 @@ void terminal_interrupt_handler(){
         its completion via a SYS5 operation.*/
 
     pcb_t *blocked_process = headBlocked(&sem_terminal[DevNo]);
-
-    if (blocked_process == NULL) {
-        aaaBreakTest();
-    }
-    SYS_Verhogen(&sem_terminal[DevNo]);
+    SYS_Verhogen(blocked_process->p_semAdd);
 
 
     /* Place the stored off status code in the newly unblocked pcb’s v0 register.*/
-    if(write == true) {
-        blocked_process->p_s.reg_v0 = dev_addr->transm_status;
-    }
-    else {
-         blocked_process->p_s.reg_v0 = dev_addr->recv_status;
-    }
+    blocked_process->p_s.reg_v0 = write ? dev_reg.transm_status : dev_reg.recv_status;
     /* Insert the newly unblocked pcb on the Ready Queue, transitioning this
         process from the “blocked” state to the “ready” state*/
-    insertProcQ(&readyQ,blocked_process);
+    insertProcQ(&readyQ, blocked_process);
     /* Return control to the Current Process: Perform a LDST on the saved
         exception state (located at the start of the BIOS Data Page */
     LDST(bios_State);
