@@ -8,7 +8,7 @@ void foobar()
     cpu_t momento_attuale;
     STCK(momento_attuale);
     current_process->p_time += momento_attuale - current_process->istante_Lancio_Blocco;
-
+    bios_State = (state_t*) BIOSDATAPAGE;
     /* fornisce il codice del tipo di eccezione avvenuta */
     switch (CAUSE_GET_EXCCODE(bios_State->cause))
     {
@@ -246,7 +246,11 @@ void SYS_Passeren(int *semaddr)
          processi bloccati da una P e sospenderlo*/
         //int inserimento_avvenuto =  Questa variabile non la usiamo?
         
-        insertBlocked(semaddr, current_process);
+        if (insertBlocked(semaddr, current_process) == TRUE) {
+            aaaBreakTest();
+        }
+
+        
         /* se inserimento_avvenuto è 1 allora non è stato possibile allocare 
          un nuovo SEMD perché la semdFree_h è vuota */
         
@@ -268,7 +272,6 @@ void SYS_Passeren(int *semaddr)
 /* Operazione di rilascio di un semaforo binario la cui chiave è il valore puntato da semaddr */
 void SYS_Verhogen(int *semaddr)
 {
-    aaaBreakTest();
     //int pid_current = current_process->p_pid;
     if (*semaddr == 1)
     {
@@ -315,6 +318,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
     aaaBreakTest();
     int devreg = ((memaddr)cmdAddr - DEV_REG_START) / DEV_REG_SIZE;
     int devNo;
+    soft_block_count++;
     aaaTest_variable = devreg;
     aaaBreakTest();
     switch (devreg / 8)
@@ -328,7 +332,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         /*Calcola il device giusto e esegui una P sul suo semaforo*/
         devNo = devreg % 8;
         bios_State->reg_v0 = 0;
-        P_always(&sem_disk[devNo]);
+        SYS_Passeren(&sem_disk[devNo]);
         break;
     case 1:
         for(int i=0; i<4; i++){
@@ -336,7 +340,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         }
         devNo = devreg % 8;
         bios_State->reg_v0 = 0;
-        P_always(&sem_tape[devNo]);
+        SYS_Passeren(&sem_tape[devNo]);
         break;
     case 2: 
         for(int i=0; i<4; i++){
@@ -344,7 +348,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         }
         devNo = devreg % 8;
         bios_State->reg_v0 = 0;
-        P_always(&sem_network[devNo]);
+        SYS_Passeren(&sem_network[devNo]);
         break;
     case 3:
         for(int i=0; i<4; i++){
@@ -352,7 +356,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         }
         devNo = devreg % 8;
         bios_State->reg_v0 = 0;
-        P_always(&sem_printer[devNo]);
+        SYS_Passeren(&sem_printer[devNo]);
         break;
     case 4:
         /*I registri dei terminali sono divisi in due (ricezione / trasmissione), 
@@ -364,7 +368,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         //is_terminal = true;
         devNo = *cmdAddr%16 == 0 ? devreg%8 : devreg%8+8;
         bios_State->reg_v0 = 0;
-        P_always(&sem_terminal[devNo]);
+        SYS_Passeren(&sem_terminal[devNo]);
         break;
     default:
         aaaBreakTest();
@@ -467,17 +471,6 @@ int Check_Kernel_mode()
     unsigned int bit_kernel = bios_State->status & mask;
     /* ritorna vero se il processo era in kernel mode, 0 in user mode*/
     return (bit_kernel == 0) ? TRUE : FALSE;
-}
-
-void P_always(int *semaddr){
-    
-    /* aggiungere current_process nella coda dei
-        processi bloccati da una P e sospenderlo*/
-    soft_block_count++;
-    *semaddr-=1;
-    update_PC_SYS_bloccanti();
-    insertBlocked(semaddr, current_process);
-    scheduling();
 }
 
 #endif

@@ -6,7 +6,7 @@
 
 
 pcb_t pcbFree_table[MAXPROC];
-state_t *bios_State = (state_t*) BIOSDATAPAGE;
+state_t *bios_State;
 
 /* come process id usiamo un intero che aumenta
     e basta (no caso reincarazione)*/

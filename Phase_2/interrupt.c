@@ -205,12 +205,7 @@ void terminal_interrupt_handler(){
    
     /* Save off the status code from the device’s device register. */
     /*Uso la macro per trovare l'inidirzzo di base del device con la linea di interrupt e il numero di device*/
-    termreg_t *dev_addr= (termreg_t*) DEV_REG_ADDR(TERMINT,DevNo);
-    /* Copia del device register*/
-    termreg_t dev_reg;
-    dev_reg.recv_status = dev_addr->recv_status;
-    dev_reg.transm_status = dev_addr->transm_status;
-
+    termreg_t *dev_addr = (termreg_t*) DEV_REG_ADDR(TERMINT,DevNo);
     /* Acknowledge the outstanding interrupt. This is accomplished by writ-
         ing the acknowledge command code in the interrupting device’s device
         register. Alternatively, writing a new command in the interrupting
@@ -219,13 +214,13 @@ void terminal_interrupt_handler(){
         altrimenti l'interrupt è stato generato per ricevere*/
     /* write utilizzato per salvare quale delle due operazioni stiamo eseguendo*/
     bool write = false;
-    if(dev_reg.transm_status == OKCHARTRANS){
+    if(dev_addr->transm_status == OKCHARTRANS){
         dev_addr->transm_command = ACK;
         write = true;
     } else{
         dev_addr->recv_command = ACK;
         /*Aumenta DevNo per accedere poi ai campi di sem_interval
-            Primi 8 in trasmissione ultimi 8 in ricezione*/
+        Primi 8 in trasmissione ultimi 8 in ricezione*/
         DevNo += 8;
     }
 
@@ -235,13 +230,23 @@ void terminal_interrupt_handler(){
         its completion via a SYS5 operation.*/
 
     pcb_t *blocked_process = headBlocked(&sem_terminal[DevNo]);
+
+    if (blocked_process == NULL) {
+        aaaBreakTest();
+    }
     SYS_Verhogen(&sem_terminal[DevNo]);
 
+
     /* Place the stored off status code in the newly unblocked pcb’s v0 register.*/
-    blocked_process->p_s.reg_v0= write ? dev_reg.transm_status : dev_reg.recv_status;
+    if(write == true) {
+        blocked_process->p_s.reg_v0 = dev_addr->transm_status;
+    }
+    else {
+         blocked_process->p_s.reg_v0 = dev_addr->recv_status;
+    }
     /* Insert the newly unblocked pcb on the Ready Queue, transitioning this
         process from the “blocked” state to the “ready” state*/
-
+    insertProcQ(&readyQ,blocked_process);
     /* Return control to the Current Process: Perform a LDST on the saved
         exception state (located at the start of the BIOS Data Page */
     LDST(bios_State);
