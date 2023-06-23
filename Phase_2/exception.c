@@ -362,7 +362,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
             cmdAddr[i] = cmdValues[i];
         }
         //is_terminal = true;
-        devNo = *cmdAddr%16 == 0 ? devreg%8 : devreg%8+8;
+        devNo = *cmdAddr%16 == 0 ? devreg%8 : (devreg%8)+8;
         bios_State->reg_v0 = 0;
         P_always(&sem_terminal[devNo]);
         break;
