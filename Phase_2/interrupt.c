@@ -230,11 +230,13 @@ void terminal_interrupt_handler(){
         its completion via a SYS5 operation.*/
 
     pcb_t *blocked_process = headBlocked(&sem_terminal[DevNo]);
+    aaaTest_variable = (unsigned int) blocked_process;
+    aaaBreakTest();
     SYS_Verhogen(blocked_process->p_semAdd);
-
+    aaaBreakTest();
 
     /* Place the stored off status code in the newly unblocked pcb’s v0 register.*/
-    blocked_process->p_s.reg_v0 = write ? dev_reg.transm_status : dev_reg.recv_status;
+    blocked_process->p_s.reg_v0 = write ? dev_addr->transm_status : dev_addr->recv_status;
     /* Insert the newly unblocked pcb on the Ready Queue, transitioning this
         process from the “blocked” state to the “ready” state*/
     insertProcQ(&readyQ, blocked_process);
