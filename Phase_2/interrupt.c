@@ -243,7 +243,7 @@ void terminal_interrupt_handler(){
     insertProcQ(&readyQ, blocked_process);
     /* Return control to the Current Process: Perform a LDST on the saved
         exception state (located at the start of the BIOS Data Page */
-    LDST(bios_State);
+    scheduling();
 }
 
 void V_all(){

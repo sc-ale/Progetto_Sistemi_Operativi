@@ -2,6 +2,8 @@
 #define SCHEDULER_C
 
 #include "scheduler.h"
+// necessario controllare se l'interrupt è stato chiamata durante
+// l'esecuzione di un processo o durante una wait
 
 void scheduling(){
     /* readyQ non vuota */
@@ -31,6 +33,7 @@ void scheduling(){
         setTIMER(NEVER);
         /* fare qualcosa con il PLT*/
         WAIT();
+        //quando esce dal wait dove va?
     }
     else if (process_count>0 && soft_block_count==0)
     {
