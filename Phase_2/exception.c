@@ -250,6 +250,7 @@ void SYS_Passeren(int *semaddr)
             aaaBreakTest();
         }
 
+        aaaBreakTest();
         
         /* se inserimento_avvenuto è 1 allora non è stato possibile allocare 
          un nuovo SEMD perché la semdFree_h è vuota */
@@ -273,6 +274,7 @@ void SYS_Passeren(int *semaddr)
 void SYS_Verhogen(int *semaddr)
 {
     //int pid_current = current_process->p_pid;
+    aaaTest_variable = (unsigned int) semaddr;
     if (*semaddr == 1)
     {
         update_PC_SYS_bloccanti();
@@ -289,10 +291,11 @@ void SYS_Verhogen(int *semaddr)
     { /*Se la coda dei processi bloccati non è vuota*/
         /* risvegliare il primo processo che si era bloccato su una P */
         pcb_t *wakedProc = removeBlocked(semaddr);
-        insertProcQ(&readyQ, wakedProc);
+        insertProcQ(&readyQ, wakedProc); 
     }
     else
     {
+        aaaBreakTest();
         *semaddr+=1;
     }
 }
@@ -314,17 +317,12 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
 {
     /* chiamare update_PC_SYS_non_bloccanti(); */
         /* Mappa i registri dei device da 0 a 39*/
-    aaaTest_variable = (int) cmdAddr;
-    aaaBreakTest();
     int devreg = ((memaddr)cmdAddr - DEV_REG_START) / DEV_REG_SIZE;
     int devNo;
     soft_block_count++;
-    aaaTest_variable = devreg;
-    aaaBreakTest();
     switch (devreg / 8)
     {
     case 0:
-    aaaBreakTest();
         /*Copia i valori di cmdValues nel registro del device*/
         for(int i=0; i<4; i++){
             cmdAddr[i] = cmdValues[i];
@@ -371,7 +369,6 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         SYS_Passeren(&sem_terminal[devNo]);
         break;
     default:
-        aaaBreakTest();
         bios_State->reg_v0 = -1;
         break;
     }

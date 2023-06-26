@@ -234,7 +234,7 @@ void terminal_interrupt_handler(){
         aaaBreakTest();
     }
     SYS_Verhogen(blocked_process->p_semAdd);
-
+    aaaBreakTest();
 
     /* Place the stored off status code in the newly unblocked pcb’s v0 register.*/
     blocked_process->p_s.reg_v0 = write ? dev_addr->transm_status : dev_addr->recv_status;
