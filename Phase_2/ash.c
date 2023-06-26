@@ -19,12 +19,14 @@ int insertBlocked(int* semAdd, pcb_t* p)
 {
     if(p->p_semAdd==NULL) {
         /* p non è associato ad altri semafori */
-        struct semd_t* corrente; 
-        hash_for_each_possible(semd_h, corrente, s_link, (u32)semAdd) {
-            /* semaforo già in semd_h */
-            p->p_semAdd = semAdd;
-            insertProcQ(&corrente->s_procq,p);
-            return FALSE;
+        struct semd_t* corrente = NULL; 
+        int bkt;
+
+        hash_for_each(semd_h, bkt, corrente, s_link){
+            if(corrente->s_key == semAdd) {
+                insertProcQ(&corrente->s_procq, p);
+                return FALSE;
+            }
         }
 
         if (!list_empty(&semdFree_h)) {
