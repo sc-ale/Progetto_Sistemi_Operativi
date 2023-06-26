@@ -5,7 +5,7 @@ HIDDEN semd_t semd_table[MAXPROC];
 HIDDEN LIST_HEAD(semdFree_h);
 HIDDEN DECLARE_HASHTABLE(semd_h, 5);
 
-extern aaaBreakTest();
+extern void aaaBreakTest();
 
 void initASH()
 {
@@ -49,12 +49,18 @@ pcb_t* outBlocked(pcb_t *p)
 {
     semd_t *semdP=NULL;
     struct list_head *corrente, *temp = NULL;
+    int bkt;
+    semd_t *semTemp=NULL;
 
-    hash_for_each_possible(semd_h,semdP,s_link,(u32)p->p_semAdd) {
+    hash_for_each(semd_h, bkt, semdP, s_link) {
         /* se entriamo nel ciclo semdP punta al semaforo che blocca il processo p */
-        break;
+        if(semdP->s_key == p->p_semAdd){
+            semTemp = semdP;
+            break;
+        }
     }
 
+    semdP = semTemp;
     if(semdP!=NULL){
 
         list_for_each_safe(corrente, temp, &semdP->s_procq) 
@@ -83,17 +89,15 @@ pcb_t* outBlocked(pcb_t *p)
 pcb_t* removeBlocked(int *semAdd)
 {
     semd_t *semdP=NULL;
-
-    hash_for_each_possible(semd_h,semdP,s_link,(u32)semAdd) {
+    int bkt;
+    hash_for_each(semd_h,bkt,semdP,s_link) {
         /* se entriamo nel ciclo semdP punta al semaforo con chiave semAdd */
-        break;
+        if (semdP->s_key == semAdd ) {
+            pcb_t *trovato = list_first_entry(&semdP->s_procq, pcb_t, p_list);
+            return outBlocked(trovato);
+        }
     }
 
-    if(semdP!=NULL) {
-        /* eliminiamo il primo processo in semdP */
-        pcb_t *trovato = list_first_entry(&semdP->s_procq, pcb_t, p_list);
-        return outBlocked(trovato);
-    }
     return NULL;
 }
 
@@ -104,15 +108,9 @@ pcb_t* headBlocked(int *semAdd)
     int bkt;
     hash_for_each(semd_h, bkt, semdP,s_link) {
         /* se entriamo nel ciclo semdP punta al semaforo con chiave semAdd */
-        if (semdP->s_key == *semAdd ) {
+        if (semdP->s_key == semAdd ) {
             return headProcQ(&semdP->s_procq);
         }
-    }
-
-    if(semdP!=NULL) {
-        /* se la coda dei processi non è vuota ritorniamo il pcb in testa alla coda di semdP */
-        if(!list_empty(&semdP->s_procq))
-            return list_first_entry(&semdP->s_procq, pcb_t, p_list);
     }
 
     return NULL;
