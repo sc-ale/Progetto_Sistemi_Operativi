@@ -26,7 +26,9 @@ void scheduling(){
         The first interrupt that occurs after entering a 
         Wait State should not be for the PLT. */
         //setSTATUS((getSTATUS() ^ TEBITON) | IEPON);
-        setSTATUS((IECON | IMON) & (~TEBITON));
+        //setSTATUS((IECON | IMON) & (~TEBITON));
+        /*Sez: 3.2 Invece che disattivare il plt ci carichiamo un valore molto grande*/
+        setTIMER(NEVER);
         /* fare qualcosa con il PLT*/
         WAIT();
     }
