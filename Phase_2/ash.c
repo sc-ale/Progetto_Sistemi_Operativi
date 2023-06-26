@@ -5,7 +5,7 @@ HIDDEN semd_t semd_table[MAXPROC];
 HIDDEN LIST_HEAD(semdFree_h);
 HIDDEN DECLARE_HASHTABLE(semd_h, 5);
 
-extern aaaBreakTest();
+extern void aaaBreakTest();
 
 void initASH()
 {
@@ -104,7 +104,7 @@ pcb_t* headBlocked(int *semAdd)
     int bkt;
     hash_for_each(semd_h, bkt, semdP,s_link) {
         /* se entriamo nel ciclo semdP punta al semaforo con chiave semAdd */
-        if (semdP->s_key == *semAdd ) {
+        if (semdP->s_key == semAdd ) {
             return headProcQ(&semdP->s_procq);
         }
     }
