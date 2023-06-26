@@ -5,6 +5,7 @@ HIDDEN semd_t semd_table[MAXPROC];
 HIDDEN LIST_HEAD(semdFree_h);
 HIDDEN DECLARE_HASHTABLE(semd_h, 5);
 
+extern aaaBreakTest();
 
 void initASH()
 {
@@ -35,8 +36,8 @@ int insertBlocked(int* semAdd, pcb_t* p)
             p->p_semAdd = semAdd; 
             insertProcQ(&newSemd->s_procq, p);
 
-            hash_add(semd_h,&newSemd->s_link, (u32)newSemd->s_key);
             list_del(&newSemd->s_freelink);
+            hash_add(semd_h,&newSemd->s_link, (u32)newSemd->s_key);
             return FALSE;
         }
     }
@@ -100,10 +101,12 @@ pcb_t* removeBlocked(int *semAdd)
 pcb_t* headBlocked(int *semAdd)
 {
     semd_t *semdP=NULL;
-
-    hash_for_each_possible(semd_h,semdP,s_link,(u32)semAdd) {
-         /* se entriamo nel ciclo semdP punta al semaforo con chiave semAdd */
-        break;
+    int bkt;
+    hash_for_each(semd_h, bkt, semdP,s_link) {
+        /* se entriamo nel ciclo semdP punta al semaforo con chiave semAdd */
+        if (semdP->s_key == *semAdd ) {
+            return headProcQ(&semdP->s_procq);
+        }
     }
 
     if(semdP!=NULL) {
