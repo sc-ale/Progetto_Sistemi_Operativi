@@ -178,18 +178,23 @@ void general_interrupt_handler(int IntLineNo)
         case DISKINT:
             blocked_process = headBlocked(&sem_disk[DevNo]);
             SYS_Verhogen(&sem_disk[DevNo]);
+            break;
         case FLASHINT:
             blocked_process = headBlocked(&sem_tape[DevNo]);
             SYS_Verhogen(&sem_tape[DevNo]);
+            break;
         case NETWINT:
             blocked_process = headBlocked(&sem_network[DevNo]);
             SYS_Verhogen(&sem_network[DevNo]);
+            break;
         case PRNTINT:
             blocked_process = headBlocked(&sem_printer[DevNo]);
             SYS_Verhogen(&sem_printer[DevNo]);
+            break;
         case TERMINT:
             blocked_process = headBlocked(&sem_terminal[DevNo]);
             SYS_Verhogen(&sem_terminal[DevNo]);
+            break;
     }
 
     /* Place the stored off status code in the newly unblocked pcb’s v0 register.*/

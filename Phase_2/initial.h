@@ -18,6 +18,6 @@ extern void scheduling();
 extern void foobar();
 
 void aaaBreakTest();
-
+void aaa_readyQ_vuota();
 
 #endif 

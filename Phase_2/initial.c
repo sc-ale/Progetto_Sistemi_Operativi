@@ -85,5 +85,6 @@ int main() {
 }
 
 void aaaBreakTest(){}
+void aaa_readyQ_vuota(){}
 
 #endif

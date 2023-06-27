@@ -53,5 +53,12 @@ int Check_Kernel_mode();
 void P_always(int *);
 
 
+/* funzioni per test */
+void aaaCASO_0_test(){}
+void aaaCASO_1_test(){}
+void aaaCASO_2_test(){}
+void aaaCASO_3_test(){}
+void aaaCASO_4_test(){}
+
 
 #endif
