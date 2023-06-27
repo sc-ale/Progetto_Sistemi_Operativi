@@ -6,6 +6,7 @@ HIDDEN LIST_HEAD(semdFree_h);
 HIDDEN DECLARE_HASHTABLE(semd_h, 5);
 
 extern void aaaBreakTest();
+extern unsigned int aaaTest_variable;
 
 void initASH()
 {
@@ -17,13 +18,17 @@ void initASH()
 
 int insertBlocked(int* semAdd, pcb_t* p)
 {
+    aaaBreakTest();
+    aaaTest_variable = (unsigned int)semAdd;
     if(p->p_semAdd==NULL) {
         /* p non è associato ad altri semafori */
-        struct semd_t* corrente = NULL; 
+        semd_t* corrente = NULL; 
         int bkt;
 
         hash_for_each(semd_h, bkt, corrente, s_link){
             if(corrente->s_key == semAdd) {
+                /*  aggiungiamo p al semaforo corrente, questo if viene effettuato 
+                    se esiste già un altro processo associato al semaforo semAdd */
                 insertProcQ(&corrente->s_procq, p);
                 return FALSE;
             }
@@ -31,7 +36,7 @@ int insertBlocked(int* semAdd, pcb_t* p)
 
         if (!list_empty(&semdFree_h)) {
             /* allochiamo un semd libero per p e lo inseriamo in semd_h */
-            semd_t* newSemd = list_first_entry(&semdFree_h,semd_t,s_freelink);
+            semd_t* newSemd = list_first_entry(&semdFree_h, semd_t, s_freelink);
 
             newSemd->s_key = semAdd;
             mkEmptyProcQ(&newSemd->s_procq); 
@@ -39,7 +44,7 @@ int insertBlocked(int* semAdd, pcb_t* p)
             insertProcQ(&newSemd->s_procq, p);
 
             list_del(&newSemd->s_freelink);
-            hash_add(semd_h,&newSemd->s_link, (u32)newSemd->s_key);
+            hash_add(semd_h, &newSemd->s_link, (u32)newSemd->s_key);
             return FALSE;
         }
     }
@@ -106,6 +111,8 @@ pcb_t* removeBlocked(int *semAdd)
 
 pcb_t* headBlocked(int *semAdd)
 {
+    aaaBreakTest();
+    aaaTest_variable = (unsigned int)semAdd;
     semd_t *semdP=NULL;
     int bkt;
     hash_for_each(semd_h, bkt, semdP,s_link) {

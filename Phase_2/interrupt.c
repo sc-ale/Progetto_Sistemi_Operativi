@@ -124,13 +124,16 @@ void IT_interrupt_handler(){
 int Get_interrupt_device(int IntLineNo)
 {
     /* Calculate the address for this device’s device register */
-    unsigned int interrupt_dev_bit_map = CDEV_BITMAP_ADDR(IntLineNo); 
+    unsigned int roba = CDEV_BITMAP_ADDR(IntLineNo);
+    unsigned int *interrupt_dev_bit_map = roba;
+
+    // 1000 0050
     /*+indirizzo diverso in base al tipo di device */
 
     unsigned int int_linee[8];
     for (int i=0; i<8; i++) {
         unsigned mask = ((1<<1)-1)<<i;
-        int_linee[i] = mask & interrupt_dev_bit_map;
+        int_linee[i] = mask & *interrupt_dev_bit_map;
     }
     
     /* int_linee[i] indica se la linea i-esima è attiva */
@@ -228,7 +231,8 @@ void terminal_interrupt_handler(){
         ated with this (sub)device. This operation should unblock the process
         (pcb) which initiated this I/O operation and then requested to wait for
         its completion via a SYS5 operation.*/
-
+    aaaBreakTest();
+    aaaTest_variable = DevNo;
     pcb_t *blocked_process = headBlocked(&sem_terminal[DevNo]);
     if (blocked_process==NULL) {
         aaaBreakTest();

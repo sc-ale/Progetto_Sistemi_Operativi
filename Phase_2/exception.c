@@ -366,6 +366,8 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         //is_terminal = true;
         devNo = *cmdAddr%16 == 0 ? devreg%8 : (devreg%8)+8;
         bios_State->reg_v0 = 0;
+        aaaBreakTest();
+        aaaTest_variable = devNo;
         SYS_Passeren(&sem_terminal[devNo]);
         break;
     default:
