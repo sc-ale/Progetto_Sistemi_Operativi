@@ -29,6 +29,8 @@ int main() {
     passUpVect->exception_handler = (memaddr) foobar;
     passUpVect->exception_stackPtr = (memaddr) KERNELSTACK; 
 
+    aaaTest_Supremo = (memaddr)0x1000025c;
+
 /* inizializzazione strutture dati prima fase */
 // fase 3
     initPcbs();

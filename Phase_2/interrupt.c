@@ -124,8 +124,7 @@ void IT_interrupt_handler(){
 int Get_interrupt_device(int IntLineNo)
 {
     /* Calculate the address for this device’s device register */
-    unsigned int roba = CDEV_BITMAP_ADDR(IntLineNo);
-    unsigned int *interrupt_dev_bit_map = roba;
+    unsigned int *interrupt_dev_bit_map = (unsigned int*)CDEV_BITMAP_ADDR(IntLineNo);
 
     // 1000 0050
     /*+indirizzo diverso in base al tipo di device */
@@ -225,31 +224,29 @@ void terminal_interrupt_handler(){
     if(dev_addr->transm_status == OKCHARTRANS){
         dev_addr->transm_command = ACK;
         write = true;
-    } else{
+    } else if(dev_addr->recv_status == OKCHARTRANS){
         dev_addr->recv_command = ACK;
         /*Aumenta DevNo per accedere poi ai campi di sem_interval
         Primi 8 in trasmissione ultimi 8 in ricezione*/
         DevNo += 8;
+    } else{
+        aaaTest_variable = (unsigned int)dev_addr->transm_status;
+        aaaBreakTest();
+        aaaTest_variable = (unsigned int)dev_addr->recv_status;
     }
 
     /* Perform a V operation on the Nucleus maintained semaphore associ-
         ated with this (sub)device. This operation should unblock the process
         (pcb) which initiated this I/O operation and then requested to wait for
         its completion via a SYS5 operation.*/
-    aaaBreakTest();
-    aaaTest_variable = DevNo;
     pcb_t *blocked_process = headBlocked(&sem_terminal[DevNo]);
-    if (blocked_process==NULL) {
-        aaaBreakTest();
-    }
     SYS_Verhogen(blocked_process->p_semAdd);
-    aaaBreakTest();
 
     /* Place the stored off status code in the newly unblocked pcb’s v0 register.*/
     blocked_process->p_s.reg_v0 = write ? dev_addr->transm_status : dev_addr->recv_status;
     /* Insert the newly unblocked pcb on the Ready Queue, transitioning this
         process from the “blocked” state to the “ready” state*/
-    insertProcQ(&readyQ, blocked_process);
+    /* InsertProcQ lo fa già nella Verhogen */
     /* Return control to the Current Process: Perform a LDST on the saved
         exception state (located at the start of the BIOS Data Page */
     scheduling();

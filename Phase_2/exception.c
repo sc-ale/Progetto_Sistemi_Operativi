@@ -250,7 +250,6 @@ void SYS_Passeren(int *semaddr)
             aaaBreakTest();
         }
 
-        aaaBreakTest();
         
         /* se inserimento_avvenuto è 1 allora non è stato possibile allocare 
          un nuovo SEMD perché la semdFree_h è vuota */
@@ -274,7 +273,6 @@ void SYS_Passeren(int *semaddr)
 void SYS_Verhogen(int *semaddr)
 {
     //int pid_current = current_process->p_pid;
-    aaaTest_variable = (unsigned int) semaddr;
     if (*semaddr == 1)
     {
         update_PC_SYS_bloccanti();
@@ -295,7 +293,6 @@ void SYS_Verhogen(int *semaddr)
     }
     else
     {
-        aaaBreakTest();
         *semaddr+=1;
     }
 }
@@ -315,6 +312,8 @@ copied back in the cmdValues array
 */
 void SYS_Doio(int *cmdAddr, int *cmdValues)
 {
+    aaaTest_variable = (unsigned int)*aaaTest_Supremo;
+    aaaBreakTest();
     /* chiamare update_PC_SYS_non_bloccanti(); */
         /* Mappa i registri dei device da 0 a 39*/
     int devreg = ((memaddr)cmdAddr - DEV_REG_START) / DEV_REG_SIZE;
@@ -369,11 +368,10 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         for(int i=0; i<2; i++){
             cmdAddr[i] = cmdValues[i];
         }
+        aaaTest_variable = (unsigned int) *aaaTest_Supremo;
         //is_terminal = true;
         devNo = *cmdAddr%16 == 0 ? devreg%8 : (devreg%8)+8;
         bios_State->reg_v0 = 0;
-        aaaBreakTest();
-        aaaTest_variable = devNo;
         SYS_Passeren(&sem_terminal[devNo]);
         break;
     default:

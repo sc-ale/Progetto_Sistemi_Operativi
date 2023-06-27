@@ -19,5 +19,7 @@ extern void foobar();
 
 void aaaBreakTest();
 void aaa_readyQ_vuota();
+extern unsigned int* aaaTest_Supremo;
+
 
 #endif 

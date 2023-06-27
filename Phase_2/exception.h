@@ -13,6 +13,7 @@ state_t *bios_State;
 int pid_start = 0;
 
 unsigned int aaaTest_variable = 0;
+unsigned int* aaaTest_Supremo = NULL;
 
 void foobar();
 

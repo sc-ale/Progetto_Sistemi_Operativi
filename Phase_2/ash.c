@@ -18,8 +18,6 @@ void initASH()
 
 int insertBlocked(int* semAdd, pcb_t* p)
 {
-    aaaBreakTest();
-    aaaTest_variable = (unsigned int)semAdd;
     if(p->p_semAdd==NULL) {
         /* p non è associato ad altri semafori */
         semd_t* corrente = NULL; 
@@ -111,8 +109,6 @@ pcb_t* removeBlocked(int *semAdd)
 
 pcb_t* headBlocked(int *semAdd)
 {
-    aaaBreakTest();
-    aaaTest_variable = (unsigned int)semAdd;
     semd_t *semdP=NULL;
     int bkt;
     hash_for_each(semd_h, bkt, semdP,s_link) {
