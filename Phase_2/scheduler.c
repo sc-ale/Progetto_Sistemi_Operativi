@@ -19,10 +19,12 @@ void scheduling(){
     }
     else if(process_count==0)
     {
+        aaa_readyQ_vuota();
         HALT();
     }
     else if(process_count>0 && soft_block_count>0)
     {
+        aaa_readyQ_vuota();
         /* the Scheduler must first set the Status register
             to enable interrupts and either disable the PLT
         The first interrupt that occurs after entering a 

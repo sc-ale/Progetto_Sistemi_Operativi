@@ -323,6 +323,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
     switch (devreg / 8)
     {
     case 0:
+        aaaCASO_0_test();
         /*Copia i valori di cmdValues nel registro del device*/
         for(int i=0; i<4; i++){
             cmdAddr[i] = cmdValues[i];
@@ -333,6 +334,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         SYS_Passeren(&sem_disk[devNo]);
         break;
     case 1:
+        aaaCASO_1_test();
         for(int i=0; i<4; i++){
             cmdAddr[i] = cmdValues[i];
         }
@@ -341,6 +343,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         SYS_Passeren(&sem_tape[devNo]);
         break;
     case 2: 
+        aaaCASO_2_test();
         for(int i=0; i<4; i++){
             cmdAddr[i] = cmdValues[i];
         }
@@ -349,6 +352,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         SYS_Passeren(&sem_network[devNo]);
         break;
     case 3:
+        aaaCASO_3_test();
         for(int i=0; i<4; i++){
             cmdAddr[i] = cmdValues[i];
         }
@@ -357,8 +361,10 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         SYS_Passeren(&sem_printer[devNo]);
         break;
     case 4:
+        aaaCASO_4_test();
         /*I registri dei terminali sono divisi in due (ricezione / trasmissione), 
-            facendo l'indirizzo modulo 16 capiamo se siamo all'inizio del registro (e quindi ricezione)
+            facendo l'indirizzo modulo 16 capiamo se siamo all'inizio del registro 
+            (e quindi ricezione)
             oppure a metà del registro (e quindi trasmissione)*/
         for(int i=0; i<2; i++){
             cmdAddr[i] = cmdValues[i];
@@ -369,6 +375,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         SYS_Passeren(&sem_terminal[devNo]);
         break;
     default:
+        soft_block_count-=1;
         bios_State->reg_v0 = -1;
         break;
     }
