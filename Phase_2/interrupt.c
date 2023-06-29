@@ -221,18 +221,16 @@ void terminal_interrupt_handler(){
         altrimenti l'interrupt è stato generato per ricevere*/
     /* write utilizzato per salvare quale delle due operazioni stiamo eseguendo*/
     bool write = false;
-    if(dev_addr->transm_status == OKCHARTRANS){
+    if((dev_addr->transm_status & BYTE1MASK) == OKCHARTRANS){
         dev_addr->transm_command = ACK;
-        write = true;
-    } else if(dev_addr->recv_status == OKCHARTRANS){
-        dev_addr->recv_command = ACK;
         /*Aumenta DevNo per accedere poi ai campi di sem_interval
-        Primi 8 in trasmissione ultimi 8 in ricezione*/
+        Primi 8 in ricezione ultimi 8 in trasmissione*/
         DevNo += 8;
+        write = true;
+    } else if((dev_addr->recv_status & BYTE1MASK) == OKCHARTRANS){
+        dev_addr->recv_command = ACK;
     } else{
-        aaaTest_variable = (unsigned int)dev_addr->transm_status;
         aaaBreakTest();
-        aaaTest_variable = (unsigned int)dev_addr->recv_status;
     }
 
     /* Perform a V operation on the Nucleus maintained semaphore associ-

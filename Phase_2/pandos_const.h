@@ -169,5 +169,6 @@
 #define POOLSIZE (UPROCMAX * 2)
 /* End of Mikeyg constants */
 
+#define BYTE1MASK 0x000000FF
 
 #endif

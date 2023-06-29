@@ -312,8 +312,6 @@ copied back in the cmdValues array
 */
 void SYS_Doio(int *cmdAddr, int *cmdValues)
 {
-    aaaTest_variable = (unsigned int)*aaaTest_Supremo;
-    aaaBreakTest();
     /* chiamare update_PC_SYS_non_bloccanti(); */
         /* Mappa i registri dei device da 0 a 39*/
     int devreg = ((memaddr)cmdAddr - DEV_REG_START) / DEV_REG_SIZE;
@@ -368,7 +366,6 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         for(int i=0; i<2; i++){
             cmdAddr[i] = cmdValues[i];
         }
-        aaaTest_variable = (unsigned int) *aaaTest_Supremo;
         //is_terminal = true;
         devNo = *cmdAddr%16 == 0 ? devreg%8 : (devreg%8)+8;
         bios_State->reg_v0 = 0;
