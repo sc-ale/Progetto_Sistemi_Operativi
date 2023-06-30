@@ -121,6 +121,8 @@ ns_p_new_ns();
 extern void p5gen();
 extern void p5mm();
 
+void aaaSiumTest(){};
+int aaaIOValues;
 
 /* a procedure to print on terminal 0 */
 void print(char *msg) {
@@ -132,7 +134,9 @@ void print(char *msg) {
     SYSCALL(PASSEREN, (int)&sem_term_mut, 0, 0); /* P(sem_term_mut) */
     while (*s != EOS) {
         devregtr value[2] = {0, PRINTCHR | (((devregtr)*s) << 8)};
-        status         = SYSCALL(DOIO, (int)command, (int)value, 0);
+        aaaIOValues         = SYSCALL(DOIO, (int)command, (int)value, 0);
+        //aaaIOValues = status;
+        aaaSiumTest();
         if (status != 0 || (value[0] & TERMSTATMASK) != RECVD) {
             PANIC();
         }

@@ -221,7 +221,9 @@ void terminal_interrupt_handler(){
         altrimenti l'interrupt è stato generato per ricevere*/
     /* write utilizzato per salvare quale delle due operazioni stiamo eseguendo*/
     bool write = false;
+    unsigned int device_response;
     if((dev_addr->transm_status & BYTE1MASK) == OKCHARTRANS){
+        device_response = dev_addr->transm_status;
         dev_addr->transm_command = ACK;
         /*Aumenta DevNo per accedere poi ai campi di sem_interval
         Primi 8 in ricezione ultimi 8 in trasmissione*/
@@ -229,6 +231,7 @@ void terminal_interrupt_handler(){
         write = true;
     } else if((dev_addr->recv_status & BYTE1MASK) == OKCHARTRANS){
         dev_addr->recv_command = ACK;
+        device_response = dev_addr->recv_status;
     } else{
         aaaBreakTest();
     }
@@ -241,7 +244,10 @@ void terminal_interrupt_handler(){
     SYS_Verhogen(blocked_process->p_semAdd);
 
     /* Place the stored off status code in the newly unblocked pcb’s v0 register.*/
-    blocked_process->p_s.reg_v0 = write ? dev_addr->transm_status : dev_addr->recv_status;
+    //blocked_process->p_s.reg_v0 = write ? dev_addr->transm_status : dev_addr->recv_status;
+    blocked_process->p_s.reg_v0 = 0;
+    *blocked_process->IOvalues = device_response;
+    aaaBreakTest();
     /* Insert the newly unblocked pcb on the Ready Queue, transitioning this
         process from the “blocked” state to the “ready” state*/
     /* InsertProcQ lo fa già nella Verhogen */

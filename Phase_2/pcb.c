@@ -33,6 +33,8 @@ pcb_t *allocPcb()
                 INIT_LIST_HEAD(&p->p_child);
                 INIT_LIST_HEAD(&p->p_sib);
                 p->p_semAdd=NULL;
+                p->IOvalues=NULL;
+                p->istante_Lancio_Blocco=0;
                 return p;
         }
 }
