@@ -169,6 +169,7 @@ void SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns)
  (e figli dei figli...) se pid è 0 allora termina il processo corrente */
 void SYS_terminate_process(int pid)
 {
+    aaaBreakTest();
     pcb_t *Proc2Delete;
     if (pid == 0)
     {
@@ -216,15 +217,12 @@ void kill_process(pcb_t *ptrn)
 {
     outChild(ptrn);
     /* uccido ptrn */
-    ptrn->p_parent = NULL;
     list_del(&ptrn->p_list);
-    list_del(&ptrn->p_child);
-    list_del(&ptrn->p_sib);
     /* forse dobbiamo eliminare il processo dalla ahs (?) */
     if (ptrn->p_semAdd != NULL)
     {
-
-        ptrn->p_semAdd = NULL;
+        outBlocked(ptrn);
+        //ptrn->p_semAdd = NULL;
     }
     ptrn->p_pid = 0;
     freePcb(ptrn);

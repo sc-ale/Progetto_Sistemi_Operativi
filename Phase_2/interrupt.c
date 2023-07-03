@@ -110,7 +110,6 @@ void PLT_interrupt_handler() {
 
 //3.6.3
 void IT_interrupt_handler(){
-    aaaBreakTest();
     /*Acknowledge the interrupt by loading the Interval Timer with a new value: 100 milliseconds.*/
     LDIT(PSECOND);
 
