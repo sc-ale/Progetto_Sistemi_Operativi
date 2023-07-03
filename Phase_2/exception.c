@@ -398,6 +398,7 @@ void SYS_Clockwait()
 
     /* aggiungere current_process nella coda dei processi bloccati da una P e sospenderlo*/
     insertBlocked(&sem_interval_timer, current_process);
+    soft_block_count++;
     /* se inserimento_avvenuto è 1 allora non è stato possibile allocare un nuovo SEMD perché la semdFree_h è vuota */
 
     /* Setta il valore del semaforo a 0 */
