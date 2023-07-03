@@ -364,7 +364,7 @@ void test() {
 
     /* create process p2 */
     p2pid = SYSCALL(CREATEPROCESS, (int)&p2state, (int)NULL, (int)NULL); /* start p2     */
-    aaaSiumTest();
+
     print("p2 was started\n");
 
     SYSCALL(VERHOGEN, (int)&sem_startp2, 0, 0); /* V(sem_startp2)   */
@@ -444,7 +444,7 @@ void p2() {
     int   i;              /* just to waste time  */
     cpu_t now1, now2;     /* times of day        */
     cpu_t cpu_t1, cpu_t2; /* cpu time used       */
-    aaaSiumTest();
+
     SYSCALL(PASSEREN, (int)&sem_startp2, 0, 0); /* P(sem_startp2)   */
     aaaP2Test();
     print("p2 starts\n");
@@ -491,7 +491,7 @@ void p2() {
     }
 
     p1p2synch = 1; /* p1 will check this */
-
+    aaaSiumTest();
     SYSCALL(PASSEREN, (int)&sem_endp2, 0, 0); /* P(sem_endp2)    unblocking P ! */
 
     SYSCALL(TERMPROCESS, 0, 0, 0); /* terminate p2 */
