@@ -93,6 +93,7 @@ void interrupt_handler()
 
 //3.6.2
 void PLT_interrupt_handler() {
+    /* Bisogna controllare che il PLT è attivo*/
     /*Acknowledge the PLT interrupt by loading the timer with a new value.*/
     setTIMER(TIMESLICE);
 
@@ -109,15 +110,28 @@ void PLT_interrupt_handler() {
 
 //3.6.3
 void IT_interrupt_handler(){
+    aaaBreakTest();
     /*Acknowledge the interrupt by loading the Interval Timer with a new value: 100 milliseconds.*/
     LDIT(PSECOND);
 
     /*Unblock ALL pcbs blocked on the Pseudo-clock semaphore. Hence, the semantics of this semaphore are a bit different than traditional synchronization semaphores*/
-    V_all();
+    while(headBlocked(&sem_interval_timer)!=NULL){
+        pcb_t* wakedProc = removeBlocked(&sem_interval_timer);
+        insertProcQ(&readyQ, wakedProc); 
+        soft_block_count--;
+    }
 
+    sem_interval_timer = 0;
     /*Return control to the Current Process: Perform a LDST on the saved exception state*/
-    state_t *exc_state = (state_t*)BIOSDATAPAGE;
-    LDST(exc_state);
+
+    if (current_process == NULL) {
+        scheduling();
+    }
+    else {
+        state_t *exc_state = (state_t*)BIOSDATAPAGE;
+        LDST(exc_state);
+    }
+        
 }
 
 /* ritorna la linea del device il cui interrupt è attivo */
@@ -220,7 +234,6 @@ void terminal_interrupt_handler(){
     /* Lo status code OKCHARTRANS (5) significa che il terminale ha generato l'interrupt per trasmettere, 
         altrimenti l'interrupt è stato generato per ricevere*/
     /* write utilizzato per salvare quale delle due operazioni stiamo eseguendo*/
-    bool write = false;
     unsigned int device_response;
     if((dev_addr->transm_status & BYTE1MASK) == OKCHARTRANS){
         device_response = dev_addr->transm_status;
@@ -228,7 +241,6 @@ void terminal_interrupt_handler(){
         /*Aumenta DevNo per accedere poi ai campi di sem_interval
         Primi 8 in ricezione ultimi 8 in trasmissione*/
         DevNo += 8;
-        write = true;
     } else if((dev_addr->recv_status & BYTE1MASK) == OKCHARTRANS){
         device_response = dev_addr->recv_status;
         dev_addr->recv_command = ACK;
@@ -242,18 +254,25 @@ void terminal_interrupt_handler(){
         its completion via a SYS5 operation.*/
     pcb_t *blocked_process = headBlocked(&sem_terminal[DevNo]);
     SYS_Verhogen(blocked_process->p_semAdd);
+    soft_block_count--;
 
     /* Place the stored off status code in the newly unblocked pcb’s v0 register.*/
     //blocked_process->p_s.reg_v0 = write ? dev_addr->transm_status : dev_addr->recv_status;
     blocked_process->p_s.reg_v0 = 0;
     *blocked_process->IOvalues = device_response;
-    aaaBreakTest();
     /* Insert the newly unblocked pcb on the Ready Queue, transitioning this
         process from the “blocked” state to the “ready” state*/
     /* InsertProcQ lo fa già nella Verhogen */
     /* Return control to the Current Process: Perform a LDST on the saved
         exception state (located at the start of the BIOS Data Page */
-    scheduling();
+    
+    if(is_waiting){
+        is_waiting = false;
+        scheduling();
+    } else {
+        is_waiting = false;
+        LDST(bios_State);
+    }
 }
 
 void V_all(){
@@ -261,10 +280,6 @@ void V_all(){
          /* chiamata allo scheduler*/
         scheduling();
     } else {
-        while(headBlocked(&sem_interval_timer)!=NULL){
-            pcb_t* wakedProc = removeBlocked(&sem_interval_timer);
-            insertProcQ(&readyQ, wakedProc); 
-        }
         sem_interval_timer = 1;
     }
 }

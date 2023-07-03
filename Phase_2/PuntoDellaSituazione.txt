@@ -19,7 +19,7 @@ COSE DA FARE
 - aggiornare il PC nelle sys call per evitare loop
 - accumulated cpu time
 - fix: nel ritorno delle sys call nel registro del bios data page
-- aggiungere le modifiche di soft_block_count nella P e nella V
+- aggiungere le modifiche di soft_block_count
 - aggiornare il tempo in update_PC_SYS_bloccanti 3.5.13
 
 Quando è necessario accedere a registri della CPU ci accediamo il bios data page,

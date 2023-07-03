@@ -135,9 +135,8 @@ void print(char *msg) {
     SYSCALL(PASSEREN, (int)&sem_term_mut, 0, 0); /* P(sem_term_mut) */
     while (*s != EOS) {
         devregtr value[2] = {0, PRINTCHR | (((devregtr)*s) << 8)};
-        status     = SYSCALL(DOIO, (int)command, (int)value, 0);
-        aaaIOValues = status;
-        //aaaSiumTest();
+        status        = SYSCALL(DOIO, (int)command, (int)value, 0);
+        
         if (status != 0 || (value[0] & TERMSTATMASK) != RECVD) {
             PANIC();
         }
@@ -365,7 +364,7 @@ void test() {
 
     /* create process p2 */
     p2pid = SYSCALL(CREATEPROCESS, (int)&p2state, (int)NULL, (int)NULL); /* start p2     */
-
+    aaaSiumTest();
     print("p2 was started\n");
 
     SYSCALL(VERHOGEN, (int)&sem_startp2, 0, 0); /* V(sem_startp2)   */
@@ -445,6 +444,7 @@ void p2() {
     int   i;              /* just to waste time  */
     cpu_t now1, now2;     /* times of day        */
     cpu_t cpu_t1, cpu_t2; /* cpu time used       */
+    aaaSiumTest();
     SYSCALL(PASSEREN, (int)&sem_startp2, 0, 0); /* P(sem_startp2)   */
     aaaP2Test();
     print("p2 starts\n");

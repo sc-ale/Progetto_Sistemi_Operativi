@@ -18,7 +18,7 @@ int sem_network[8];
 int sem_printer[8];
 int sem_terminal[16];
 
-
+bool is_waiting;
 
 int main() {
 /* popolazione pass up vector */
@@ -30,6 +30,7 @@ int main() {
     passUpVect->exception_stackPtr = (memaddr) KERNELSTACK; 
 
     aaaTest_Supremo = (memaddr)0x1000025c;
+    is_waiting = false;
 
 /* inizializzazione strutture dati prima fase */
 // fase 3
