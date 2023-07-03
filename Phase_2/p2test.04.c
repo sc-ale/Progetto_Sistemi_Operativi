@@ -122,6 +122,7 @@ extern void p5gen();
 extern void p5mm();
 
 void aaaSiumTest(){};
+void aaaP2Test(){};
 int aaaIOValues;
 
 /* a procedure to print on terminal 0 */
@@ -134,9 +135,9 @@ void print(char *msg) {
     SYSCALL(PASSEREN, (int)&sem_term_mut, 0, 0); /* P(sem_term_mut) */
     while (*s != EOS) {
         devregtr value[2] = {0, PRINTCHR | (((devregtr)*s) << 8)};
-        aaaIOValues         = SYSCALL(DOIO, (int)command, (int)value, 0);
-        //aaaIOValues = status;
-        aaaSiumTest();
+        status     = SYSCALL(DOIO, (int)command, (int)value, 0);
+        aaaIOValues = status;
+        //aaaSiumTest();
         if (status != 0 || (value[0] & TERMSTATMASK) != RECVD) {
             PANIC();
         }
@@ -369,8 +370,12 @@ void test() {
 
     SYSCALL(VERHOGEN, (int)&sem_startp2, 0, 0); /* V(sem_startp2)   */
     
+    aaaSiumTest();
+    
     SYSCALL(VERHOGEN, (int)&sem_endp2, 0, 0); /* V(sem_endp2) (blocking V!)     */
     
+    aaaSiumTest();
+
     /* make sure we really blocked */
     if (p1p2synch == 0) {
         print("error: p1/p2 synchronization bad\n");
@@ -441,8 +446,9 @@ void p2() {
     cpu_t now1, now2;     /* times of day        */
     cpu_t cpu_t1, cpu_t2; /* cpu time used       */
     SYSCALL(PASSEREN, (int)&sem_startp2, 0, 0); /* P(sem_startp2)   */
+    aaaP2Test();
     print("p2 starts\n");
-
+    aaaP2Test();
     int pid = SYSCALL(GETPROCESSID, 0, 0, 0);
     if (pid != p2pid) {
         print("Inconsistent process id for p2!\n");
