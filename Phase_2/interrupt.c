@@ -254,12 +254,8 @@ void terminal_interrupt_handler(){
         its completion via a SYS5 operation.*/
     pcb_t *blocked_process = headBlocked(&sem_terminal[DevNo]);
     SYS_Verhogen(blocked_process->p_semAdd);
-<<<<<<< HEAD
-    soft_block_count --;
-=======
     soft_block_count--;
 
->>>>>>> 939289d01dd5e3b7b84d69114ffce970476206de
     /* Place the stored off status code in the newly unblocked pcb’s v0 register.*/
     //blocked_process->p_s.reg_v0 = write ? dev_addr->transm_status : dev_addr->recv_status;
     blocked_process->p_s.reg_v0 = 0;
