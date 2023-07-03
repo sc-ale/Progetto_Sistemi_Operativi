@@ -127,8 +127,6 @@ void update_PC_SYS_bloccanti()
 {
     bios_State->pc_epc += WORD_SIZE; /* word_size è 4, definito in arch.h */
     current_process->p_s = *bios_State;
-    aaaTest_variable = current_process->p_s.reg_v0;
-    aaaBreakTest();
 }
 
 
@@ -292,8 +290,6 @@ void SYS_Verhogen(int *semaddr)
         /* risvegliare il primo processo che si era bloccato su una P */
         pcb_t *wakedProc = removeBlocked(semaddr);
         insertProcQ(&readyQ, wakedProc); 
-        aaaTest_variable = wakedProc->p_s.reg_v0;
-        aaaBreakTest();
     }
     else
     {
@@ -406,7 +402,7 @@ void SYS_Clockwait()
 
     /* Setta il valore del semaforo a 0 */
     sem_interval_timer = 0;
-
+    soft_block_count++;
     scheduling();
 }
 

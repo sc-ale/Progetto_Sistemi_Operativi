@@ -33,6 +33,7 @@ void scheduling(){
         //setSTATUS((IECON | IMON) & (~TEBITON));
         /*Sez: 3.2 Invece che disattivare il plt ci carichiamo un valore molto grande*/
         setTIMER(NEVER);
+        is_waiting = true;
         /* fare qualcosa con il PLT*/
         WAIT();
         //quando esce dal wait dove va?
