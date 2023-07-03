@@ -444,7 +444,7 @@ void p2() {
     int   i;              /* just to waste time  */
     cpu_t now1, now2;     /* times of day        */
     cpu_t cpu_t1, cpu_t2; /* cpu time used       */
-    aaaSiumTest();
+    //aaaSiumTest();
     SYSCALL(PASSEREN, (int)&sem_startp2, 0, 0); /* P(sem_startp2)   */
     aaaP2Test();
     print("p2 starts\n");
@@ -533,6 +533,7 @@ void p3() {
     if (cpu_t2 - cpu_t1 < (MINCLOCKLOOP / (*((cpu_t *)TIMESCALEADDR)))) {
         print("error: p3 - CPU time incorrectly maintained\n");
     } else {
+        aaaSiumTest();
         print("p3 - CPU time correctly maintained\n");
     }
 
