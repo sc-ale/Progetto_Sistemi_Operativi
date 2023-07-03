@@ -13,6 +13,7 @@ void *memcpy(void *dest, const void *src, unsigned int n)
     }
     //Questo return l'ho aggiunto per togliere il warning(non dovrebbe creare problemi
     // la funzione memcpy dovrebbe ritornare la locazione di memoria dove ha copiato)
+    aaa_fine_memcpy();
     return dest;
 } 
 

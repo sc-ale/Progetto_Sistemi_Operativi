@@ -89,5 +89,6 @@ int main() {
 
 void aaaBreakTest(){}
 void aaa_readyQ_vuota(){}
+void aaa_fine_memcpy(){}
 
 #endif

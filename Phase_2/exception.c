@@ -217,10 +217,10 @@ void kill_process(pcb_t *ptrn)
 {
     outChild(ptrn);
     /* uccido ptrn */
-    list_del(&ptrn->p_list);
+    //list_del(&ptrn->p_list);
     /* forse dobbiamo eliminare il processo dalla ahs (?) */
     if (ptrn->p_semAdd != NULL)
-    {
+    {   
         outBlocked(ptrn);
         //ptrn->p_semAdd = NULL;
     }
