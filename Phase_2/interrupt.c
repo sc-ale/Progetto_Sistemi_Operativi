@@ -230,8 +230,8 @@ void terminal_interrupt_handler(){
         DevNo += 8;
         write = true;
     } else if((dev_addr->recv_status & BYTE1MASK) == OKCHARTRANS){
-        dev_addr->recv_command = ACK;
         device_response = dev_addr->recv_status;
+        dev_addr->recv_command = ACK;
     } else{
         aaaBreakTest();
     }
