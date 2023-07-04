@@ -64,4 +64,7 @@ pcb_t *outChild(pcb_t *);
 /* Rimuove il primo figlio del PCB puntato da p. Se p non ha figli, restituisce NULL */
 pcb_t *removeChild(pcb_t *);
 
+/* Ritorna il puntatore al PCB con p_pid == pid che si trova nella lista head */
+pcb_t *getProcByPid(int, struct list_head*);
+
 #endif

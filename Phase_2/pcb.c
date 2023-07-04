@@ -145,3 +145,20 @@ pcb_t *removeChild(pcb_t *p)
         pcb_t *primoFiglio = list_first_entry(&p->p_child, pcb_t, p_child);        
         return outChild(primoFiglio);
 }
+
+pcb_t *getProcByPid(int pid, struct list_head* head) {
+        struct list_head *curr1, *curr2 = NULL;
+        struct pcb_t* temp = NULL;
+        struct pcb_t* Proc2Delete = NULL;
+
+        list_for_each_safe(curr1, curr2, head)
+        {
+                temp = list_entry(curr1, struct pcb_t, p_list);
+                if (temp->p_pid == pid) {
+                        /* il processo si trova in head */
+                        Proc2Delete = temp;
+                        break;
+                }   
+        }
+        return Proc2Delete;   
+}

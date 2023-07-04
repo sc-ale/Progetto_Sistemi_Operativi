@@ -120,3 +120,27 @@ pcb_t* headBlocked(int *semAdd)
 
     return NULL;
 }
+
+
+pcb_t* getProcByPid_inSem(int pid) {
+    struct list_head *curr1, *curr2 = NULL;
+    struct pcb_t *temp = NULL;
+    int bkt;
+    semd_t* semdP = NULL;
+    pcb_t* Proc2Delete = NULL;
+
+    hash_for_each(semd_h, bkt, semdP, s_link) {
+        /* semdP è il cursore per scorrere i semafori */
+        list_for_each_safe(curr1, curr2, &semdP->s_procq) {
+            /* scorro tra i processi bloccati sui semafori */
+            temp = list_entry(curr1, struct pcb_t, p_list);
+                if (temp->p_pid == pid) {
+                    /* il processo si trova nella readyQ */
+                    Proc2Delete = temp;
+                    break;
+                }   
+        }
+    }
+
+    return Proc2Delete;
+}

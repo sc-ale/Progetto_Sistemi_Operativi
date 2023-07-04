@@ -176,12 +176,16 @@ void SYS_terminate_process(int pid)
         Proc2Delete = current_process;
     }
     else
-    {
-        for (int i = 0; i < MAXPROC; i++)
-        {
-            if (pcbFree_table[i].p_pid == pid)
-            {
-                Proc2Delete = &pcbFree_table[i];
+    {   
+        /* verifico che il processo con p_pid == pid sia nella readyQ o su un semaforo*/
+        Proc2Delete = getProcByPid(pid, &readyQ);
+        if (Proc2Delete == NULL) {
+            /* non è in readyQ, quindi deve essere su qualche semaforo */
+            Proc2Delete = getProcByPid_inSem(pid);
+
+            if (Proc2Delete == NULL) {
+                /* errore */
+                aaa_pid_errato();
             }
         }
     }
@@ -190,7 +194,7 @@ void SYS_terminate_process(int pid)
     scheduling();
 }
 
-/*Uccide un processo e tutta la sua progenie (NON I FRATELLI DEL PROCESSO CHIAMATO) */
+/* Uccide un processo e tutta la sua progenie (NON I FRATELLI DEL PROCESSO CHIAMATO) */
 void terminate_family(pcb_t *ptrn)
 {
     /* se ha dei figli richiama la funzione stessa */
@@ -201,32 +205,26 @@ void terminate_family(pcb_t *ptrn)
         struct list_head *head = &figlioPtrn->p_sib;
         list_for_each_safe(pos, current, head)
         {
+            /* richiamo la funzione per i fratelli del figlio di ptrn */
             pcb_t *temp = list_entry(pos, struct pcb_t, p_sib);
             terminate_family(temp);
         }
     }
 
-    /* richiamo la funzione per i fratelli di ptrn */
-
     kill_process(ptrn);
-    /* penso che dobbiamo controllare se tra i processi che eliminiamo
-     ci sono dei processi bloccati e in quel caso diminuire il soft_block_count */
 }
 
 void kill_process(pcb_t *ptrn)
 {
     outChild(ptrn);
-    /* uccido ptrn */
-    //list_del(&ptrn->p_list);
-    /* forse dobbiamo eliminare il processo dalla ahs (?) */
     if (ptrn->p_semAdd != NULL)
     {   
+        /* processo bloccato su un semaforo */
         outBlocked(ptrn);
-        //ptrn->p_semAdd = NULL;
+        soft_block_count--;
     }
     ptrn->p_pid = 0;
     freePcb(ptrn);
-
     process_count--;
 }
 

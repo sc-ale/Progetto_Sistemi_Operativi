@@ -90,5 +90,5 @@ int main() {
 void aaaBreakTest(){}
 void aaa_readyQ_vuota(){}
 void aaa_fine_memcpy(){}
-
+void aaa_pid_errato(){}
 #endif
