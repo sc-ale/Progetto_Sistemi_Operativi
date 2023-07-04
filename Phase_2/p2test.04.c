@@ -123,6 +123,7 @@ extern void p5mm();
 
 void aaaSiumTest(){};
 void aaaP2Test(){};
+void aaaClockWait(){};
 int aaaIOValues;
 
 /* a procedure to print on terminal 0 */
@@ -518,8 +519,9 @@ void p3() {
     /* now let's check to see if we're really charge for CPU
        time correctly */
     cpu_t1 = SYSCALL(GETTIME, 0, 0, 0);
-
+    aaaSiumTest();
     for (i = 0; i < CLOCKLOOP; i++) {
+        aaaClockWait();
         SYSCALL(CLOCKWAIT, 0, 0, 0);
     }
 
