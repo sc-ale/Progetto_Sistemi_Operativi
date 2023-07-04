@@ -135,7 +135,7 @@ pcb_t* getProcByPid_inSem(int pid) {
             /* scorro tra i processi bloccati sui semafori */
             temp = list_entry(curr1, struct pcb_t, p_list);
                 if (temp->p_pid == pid) {
-                    /* il processo si trova nella readyQ */
+                    /* il processo e' bloccato su semdP */
                     Proc2Delete = temp;
                     break;
                 }   
