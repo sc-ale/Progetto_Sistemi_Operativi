@@ -364,22 +364,17 @@ void test() {
 
     /* create process p2 */
     p2pid = SYSCALL(CREATEPROCESS, (int)&p2state, (int)NULL, (int)NULL); /* start p2     */
-    aaaSiumTest();
     print("p2 was started\n");
 
     SYSCALL(VERHOGEN, (int)&sem_startp2, 0, 0); /* V(sem_startp2)   */
     
-    aaaSiumTest();
-    
     SYSCALL(VERHOGEN, (int)&sem_endp2, 0, 0); /* V(sem_endp2) (blocking V!)     */
-    
-    aaaSiumTest();
 
     /* make sure we really blocked */
     if (p1p2synch == 0) {
         print("error: p1/p2 synchronization bad\n");
     }
-    aaaSiumTest();
+
     p3pid = SYSCALL(CREATEPROCESS, (int)&p3state, (int)NULL, (int)NULL); /* start p3     */
 
     print("p3 is started\n");
@@ -444,7 +439,7 @@ void p2() {
     int   i;              /* just to waste time  */
     cpu_t now1, now2;     /* times of day        */
     cpu_t cpu_t1, cpu_t2; /* cpu time used       */
-    //aaaSiumTest();
+
     SYSCALL(PASSEREN, (int)&sem_startp2, 0, 0); /* P(sem_startp2)   */
     aaaP2Test();
     print("p2 starts\n");
