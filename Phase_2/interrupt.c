@@ -3,7 +3,7 @@
 
 #include "interrupt.h"
 
-
+int was_waiting;
 
 void *memcpy(void *dest, const void *src, unsigned int n)
 {
@@ -48,6 +48,8 @@ The interrupt exception handler’s first step is to determine which device
  perform a number of tasks.*/
 void interrupt_handler()
 {
+    was_waiting = is_waiting;
+    is_waiting = false;
     /* sezione 3.6.1 a 3.6.3*/
     switch (Get_Interrupt_Line_Max_Prio())
     {
@@ -114,17 +116,20 @@ void IT_interrupt_handler(){
     /*Acknowledge the interrupt by loading the Interval Timer with a new value: 100 milliseconds.*/
     LDIT(PSECOND);
 
-    /*Unblock ALL pcbs blocked on the Pseudo-clock semaphore. Hence, the semantics of this semaphore are a bit different than traditional synchronization semaphores*/
-    while(headBlocked(&sem_interval_timer)!=NULL){
-        pcb_t* wakedProc = removeBlocked(&sem_interval_timer);
-        insertProcQ(&readyQ, wakedProc); 
-        soft_block_count--;
-    }
+    if(sem_interval_timer == 0){
+        /*Unblock ALL pcbs blocked on the Pseudo-clock semaphore. Hence, the semantics of this semaphore are a bit different than traditional synchronization semaphores*/
+        while(headBlocked(&sem_interval_timer)!=NULL){
+            pcb_t* wakedProc = removeBlocked(&sem_interval_timer);
+            insertProcQ(&readyQ, wakedProc); 
+            soft_block_count--;
+        }
 
-    sem_interval_timer = 0;
+        sem_interval_timer = 1;
+    }
+    
     /*Return control to the Current Process: Perform a LDST on the saved exception state*/
 
-    if (current_process == NULL) {
+    if (was_waiting) {
         scheduling();
     }
     else {
@@ -266,21 +271,10 @@ void terminal_interrupt_handler(){
     /* Return control to the Current Process: Perform a LDST on the saved
         exception state (located at the start of the BIOS Data Page */
     
-    if(is_waiting){
-        is_waiting = false;
+    if(was_waiting){
         scheduling();
     } else {
-        is_waiting = false;
         LDST(bios_State);
-    }
-}
-
-void V_all(){
-    if(sem_interval_timer == 1) {
-         /* chiamata allo scheduler*/
-        scheduling();
-    } else {
-        sem_interval_timer = 1;
     }
 }
 

@@ -10,6 +10,7 @@ extern void SYS_Verhogen(int*);
 
 extern unsigned int aaaTest_variable;
 
+
 void *memcpy(void *, const void *, unsigned int );
 
 /* Restituisce la linea con interrupt in attesa con massima priorità. 
@@ -34,7 +35,6 @@ void general_interrupt_handler(int );
 
 void terminal_interrupt_handler();
 
-void V_all();
 
 
 

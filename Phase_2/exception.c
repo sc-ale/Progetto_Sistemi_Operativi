@@ -369,7 +369,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         SYS_Passeren(&sem_terminal[devNo]);
         break;
     default:
-        soft_block_count-=1;
+        soft_block_count--;
         bios_State->reg_v0 = -1;
         break;
     }
@@ -399,7 +399,6 @@ void SYS_Clockwait()
 
     /* Setta il valore del semaforo a 0 */
     sem_interval_timer = 0;
-    soft_block_count++;
     scheduling();
 }
 
