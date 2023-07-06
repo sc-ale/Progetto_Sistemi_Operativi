@@ -116,16 +116,13 @@ void IT_interrupt_handler(){
     /*Acknowledge the interrupt by loading the Interval Timer with a new value: 100 milliseconds.*/
     LDIT(PSECOND);
 
-    if(sem_interval_timer == 0){
         /*Unblock ALL pcbs blocked on the Pseudo-clock semaphore. Hence, the semantics of this semaphore are a bit different than traditional synchronization semaphores*/
-        while(headBlocked(&sem_interval_timer)!=NULL){
-            pcb_t* wakedProc = removeBlocked(&sem_interval_timer);
-            insertProcQ(&readyQ, wakedProc); 
-            soft_block_count--;
-        }
-
-        sem_interval_timer = 1;
+    while(headBlocked(&sem_interval_timer)!=NULL){
+        insertProcQ(&readyQ, removeBlocked(&sem_interval_timer)); 
+        soft_block_count--;
     }
+
+    sem_interval_timer = 0;
     
     /*Return control to the Current Process: Perform a LDST on the saved exception state*/
 
@@ -250,7 +247,6 @@ void terminal_interrupt_handler(){
         device_response = dev_addr->recv_status;
         dev_addr->recv_command = ACK;
     } else{
-        aaaBreakTest();
     }
 
     /* Perform a V operation on the Nucleus maintained semaphore associ-

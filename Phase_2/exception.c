@@ -135,7 +135,7 @@ void update_PC_SYS_bloccanti()
  è il pid creato altrimenti è -1. supportp e’ un puntatore alla struttura di supporto del processo.
  Ns descrive il namespace di un determinato tipo da associare al processo, senza specificare
 il namespace (NULL) verra’ ereditato quello del padre.*/
-void SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns)
+int SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns)
 {
     pcb_t *newProc = allocPcb();
 
@@ -155,13 +155,15 @@ void SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns)
         newProc->p_pid = pid_start + 1; /* assegniamo il pid */
         newProc->p_time = 0;
 
-        process_count = +1; /* stiamo aggiunge un nuovo processo tra quelli attivi ? */
+        process_count++; /* stiamo aggiunge un nuovo processo tra quelli attivi ? */
 
         bios_State->reg_v0 = newProc->p_pid;
+        return newProc->p_pid;
     }
     else
     { /* non ci sono pcb liberi */
         bios_State->reg_v0 = -1;
+        return 0;
     }
 }
 
@@ -233,6 +235,7 @@ void kill_process(pcb_t *ptrn)
  L’indirizzo della variabile agisce da identificatore per il semaforo */
 void SYS_Passeren(int *semaddr)
 {
+    
     /* dobbiamo usare la hash dei semafori attivi */
     // int pid_current = current_process->p_pid;
     if (*semaddr == 0)

@@ -24,18 +24,16 @@ void scheduling(){
     }
     else if(process_count>0 && soft_block_count>0)
     {
-        aaa_readyQ_vuota();
         /* the Scheduler must first set the Status register
             to enable interrupts and either disable the PLT
         The first interrupt that occurs after entering a 
         Wait State should not be for the PLT. */
-        //setSTATUS((getSTATUS() ^ TEBITON) | IEPON);
-        //setSTATUS((IECON | IMON) & (~TEBITON));
-        /*Sez: 3.2 Invece che disattivare il plt ci carichiamo un valore molto grande*/
-        setTIMER(NEVER);
+        setSTATUS((IECON | IMON) & (~TEBITON));
+        //setTIMER(NEVER);
         is_waiting = true;
         /* fare qualcosa con il PLT*/
         WAIT();
+        aaa_readyQ_vuota();
         //quando esce dal wait dove va?
     }
     else if (process_count>0 && soft_block_count==0)

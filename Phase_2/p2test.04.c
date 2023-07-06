@@ -363,6 +363,7 @@ void test() {
     ns2_b_state.pc_epc = ns2_b_state.reg_t9 = (memaddr)ns_p_new_ns;
     ns2_b_state.status                      = ns2_b_state.status | IEPBITON | CAUSEINTMASK | TEBITON;
 
+
     /* create process p2 */
     p2pid = SYSCALL(CREATEPROCESS, (int)&p2state, (int)NULL, (int)NULL); /* start p2     */
     print("p2 was started\n");
@@ -521,7 +522,6 @@ void p3() {
     cpu_t1 = SYSCALL(GETTIME, 0, 0, 0);
     aaaSiumTest();
     for (i = 0; i < CLOCKLOOP; i++) {
-        aaaClockWait();
         SYSCALL(CLOCKWAIT, 0, 0, 0);
     }
 
@@ -857,6 +857,7 @@ void hp_p1() {
 
 
 void hp_p2() {
+    aaaClockWait();
     print("hp_p2 starts\n");
 
     for (int i = 0; i < 10; i++) {
