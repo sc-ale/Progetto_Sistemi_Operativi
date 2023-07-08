@@ -91,4 +91,7 @@ void aaaBreakTest(){}
 void aaa_readyQ_vuota(){}
 void aaa_fine_memcpy(){}
 void aaa_pid_errato(){}
+void aaa_dopoWAIT(){}
+void aaa_liberaSem(){}
+void aaa_semGiaAssociato(){}
 #endif

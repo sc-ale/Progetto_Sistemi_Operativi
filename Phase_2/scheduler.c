@@ -33,7 +33,7 @@ void scheduling(){
         is_waiting = true;
         /* fare qualcosa con il PLT*/
         WAIT();
-        aaa_readyQ_vuota();
+        aaa_dopoWAIT();
         //quando esce dal wait dove va?
     }
     else if (process_count>0 && soft_block_count==0)

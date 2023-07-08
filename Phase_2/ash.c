@@ -45,6 +45,8 @@ int insertBlocked(int* semAdd, pcb_t* p)
             hash_add(semd_h, &newSemd->s_link, (u32)newSemd->s_key);
             return FALSE;
         }
+    } else{
+        aaa_semGiaAssociato();
     }
     return TRUE;
 }
@@ -78,6 +80,7 @@ pcb_t* outBlocked(pcb_t *p)
                 list_del_init(&eliminato->p_list);
                 if (list_empty(&semdP->s_procq))
                 {
+                    aaa_liberaSem();   
                     /* la coda dei semafori bloccati è vuota quindi inseriamo semdP in semdFree_h */
                     hash_del(&semdP->s_link);
                     list_add(&semdP->s_freelink,&semdFree_h);
