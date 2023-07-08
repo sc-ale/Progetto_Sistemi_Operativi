@@ -171,7 +171,7 @@ int SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns)
  (e figli dei figli...) se pid è 0 allora termina il processo corrente */
 void SYS_terminate_process(int pid)
 {
-    aaaBreakTest();
+    //aaaBreakTest();
     pcb_t *Proc2Delete;
     if (pid == 0)
     {
@@ -244,14 +244,16 @@ void SYS_Passeren(int *semaddr)
         /* aggiungere current_process nella coda dei
          processi bloccati da una P e sospenderlo*/
         //int inserimento_avvenuto =  Questa variabile non la usiamo?
-        
+        aaaBreakTest();
+        aaaTest_variable = current_process->p_semAdd;
         if (insertBlocked(semaddr, current_process) == TRUE) {
-            aaaBreakTest();
+            aaa_InsertMale();
+            aaaTest_variable = current_process->p_semAdd;
         }
 
         
         /* se inserimento_avvenuto è 1 allora non è stato possibile allocare 
-         un nuovo SEMD perché la semdFree_h è vuota */
+         un nuovo SEMD perché la semdFree_h è vuota o perché current process ha già un sem */
         
         /* chiamata allo scheduler, non so si può far direttamente così */
         scheduling();
