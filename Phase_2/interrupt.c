@@ -92,6 +92,13 @@ void interrupt_handler()
         break;
     }
    
+    if (was_waiting) {
+        scheduling();
+    }
+    else {;
+        LDST(bios_State);
+    }
+
 }
 
 //3.6.2
@@ -101,8 +108,7 @@ void PLT_interrupt_handler() {
     setTIMER(TIMESLICE);
 
     /* Copy the processor state at the time of the exception (located at the start of the BIOS Data Page [Section ??-pops]) into the Current Pro- cess’s pcb (p_s). */
-    state_t *exc_state = (state_t*) BIOSDATAPAGE;
-    current_process->p_s = *exc_state;
+    current_process->p_s = *bios_State;
 
     /* Place the Current Process on the Ready Queue; transitioning the Current Process from the “running” state to the “ready” state. */
     insertProcQ(&readyQ, current_process);
@@ -126,13 +132,7 @@ void IT_interrupt_handler(){
     
     /*Return control to the Current Process: Perform a LDST on the saved exception state*/
 
-    if (was_waiting) {
-        scheduling();
-    }
-    else {
-        state_t *exc_state = (state_t*)BIOSDATAPAGE;
-        LDST(exc_state);
-    }
+
         
 }
 
@@ -219,8 +219,7 @@ void general_interrupt_handler(int IntLineNo)
 
     /* Return control to the Current Process: Perform a LDST on the saved
         exception state (located at the start of the BIOS Data Page */
-    state_t *prev_state = (state_t*)BIOSDATAPAGE;
-    LDST(prev_state);
+    LDST(bios_State);
 }
 
 void terminal_interrupt_handler(){
@@ -266,12 +265,5 @@ void terminal_interrupt_handler(){
     /* InsertProcQ lo fa già nella Verhogen */
     /* Return control to the Current Process: Perform a LDST on the saved
         exception state (located at the start of the BIOS Data Page */
-    
-    if(was_waiting){
-        scheduling();
-    } else {
-        LDST(bios_State);
-    }
 }
-
 #endif
