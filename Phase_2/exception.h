@@ -14,6 +14,7 @@ int pid_start = 0;
 
 unsigned int aaaTest_variable = 0;
 unsigned int* aaaTest_Supremo = NULL;
+unsigned int aaa_val_di_Test_variabile = 0;
 
 void foobar();
 
@@ -29,7 +30,9 @@ int SYS_create_process(state_t *, support_t *, nsd_t *);
 
 void SYS_terminate_process(int );
 
-void terminate_family(pcb_t *);
+void terminate_family(int);
+
+pcb_t* getProcByPid(int);
 
 void kill_process(pcb_t *);
 

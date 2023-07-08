@@ -171,54 +171,45 @@ int SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns)
  (e figli dei figli...) se pid è 0 allora termina il processo corrente */
 void SYS_terminate_process(int pid)
 {
-    //aaaBreakTest();
-    pcb_t *Proc2Delete;
-    if (pid == 0)
-    {
-        Proc2Delete = current_process;
-    }
-    else
-    {   
-        /* verifico che il processo con p_pid == pid sia nella readyQ o su un semaforo*/
-        Proc2Delete = getProcByPid(pid, &readyQ);
-        if (Proc2Delete == NULL) {
-            /* non è in readyQ, quindi deve essere su qualche semaforo */
-            Proc2Delete = getProcByPid_inSem(pid);
-
-            if (Proc2Delete == NULL) {
-                /* errore */
-                aaa_pid_errato();
-            }
-        }
-    }
-
-    terminate_family(Proc2Delete);
+    terminate_family(pid);
     scheduling();
 }
 
+
+/* ritorna il pcb con pid dato */
+pcb_t* getProcByPid(int pid) {
+    pcb_t* proc2rtrn = NULL;
+    /* verifico che il processo con p_pid == pid sia nella readyQ o su un semaforo*/
+    if( (proc2rtrn = getProcInHead(pid, &readyQ)) == NULL) {
+        /* non è in readyQ, quindi deve essere su qualche semaforo */
+        proc2rtrn = getProcByPidOnSem(pid);
+    }
+    if (proc2rtrn == NULL)  /* errore */
+        aaa_pid_errato();
+
+    return proc2rtrn;
+}
+
 /* Uccide un processo e tutta la sua progenie (NON I FRATELLI DEL PROCESSO CHIAMATO) */
-void terminate_family(pcb_t *ptrn)
+void terminate_family(int pid)
 {
-    /* se ha dei figli richiama la funzione stessa */
-    if (!emptyChild(ptrn))
+    pcb_t*Proc2Delete = (pid == 0 || current_process->p_pid == pid) ? current_process: getProcByPid(pid);
+    outChild(Proc2Delete); /* Proc2delete staccato dal padre */
+    
+    while (!emptyChild(Proc2Delete))
     {
-        struct list_head *pos, *current = NULL;
-        pcb_t *figlioPtrn = list_first_entry(&ptrn->p_child, pcb_t, p_child);
-        struct list_head *head = &figlioPtrn->p_sib;
-        list_for_each_safe(pos, current, head)
-        {
-            /* richiamo la funzione per i fratelli del figlio di ptrn */
-            pcb_t *temp = list_entry(pos, struct pcb_t, p_sib);
-            terminate_family(temp);
-        }
+        /* se ha dei figli richiama la funzione stessa */
+        pcb_t *firstChild = list_first_entry(&Proc2Delete->p_child, struct pcb_t, p_child);
+        removeChild(Proc2Delete);
+        terminate_family(firstChild->p_pid);
     }
 
-    kill_process(ptrn);
+    kill_process(Proc2Delete);
 }
 
 void kill_process(pcb_t *ptrn)
 {
-    outChild(ptrn);
+    process_count--;
     if (ptrn->p_semAdd != NULL)
     {   
         /* processo bloccato su un semaforo */
@@ -227,7 +218,6 @@ void kill_process(pcb_t *ptrn)
     }
     ptrn->p_pid = 0;
     freePcb(ptrn);
-    process_count--;
 }
 
 /* Operazione di richiesta di un semaforo binario.
@@ -247,8 +237,9 @@ void SYS_Passeren(int *semaddr)
         aaaBreakTest();
         aaaTest_variable = current_process->p_semAdd;
         if (insertBlocked(semaddr, current_process) == TRUE) {
-            aaa_InsertMale();
+            aaa_InsertMalePAS();
             aaaTest_variable = current_process->p_semAdd;
+            aaa_val_di_Test_variabile = *(current_process->p_semAdd);
         }
 
         
@@ -279,8 +270,13 @@ void SYS_Verhogen(int *semaddr)
         update_PC_SYS_bloccanti();
         /* aggiungere current_process nella coda dei
          processi bloccati da una V e sospenderlo*/
-        //int inserimento_avvenuto = 
-        insertBlocked(semaddr, current_process);
+        
+        aaaBreakTest();
+        aaaTest_variable = current_process->p_semAdd;
+        if (insertBlocked(semaddr, current_process) == TRUE) {
+            aaa_InsertMaleVER();
+            aaaTest_variable = current_process->p_semAdd;
+        }
         /* se inserimento_avvenuto è 1 allora non è stato possibile allocare un nuovo SEMD perché la semdFree_h è vuota */
 
         /* chiamata allo scheduler, non so si può far direttamente così */

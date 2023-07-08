@@ -94,5 +94,6 @@ void aaa_pid_errato(){}
 void aaa_dopoWAIT(){}
 void aaa_liberaSem(){}
 void aaa_semGiaAssociato(){}
-void aaa_InsertMale(){}
+void aaa_InsertMaleVER(){}
+void aaa_InsertMalePAS(){}
 #endif

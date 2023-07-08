@@ -146,19 +146,13 @@ pcb_t *removeChild(pcb_t *p)
         return outChild(primoFiglio);
 }
 
-pcb_t *getProcByPid(int pid, struct list_head* head) {
-        struct list_head *curr1, *curr2 = NULL;
-        struct pcb_t* temp = NULL;
-        struct pcb_t* Proc2Delete = NULL;
-
-        list_for_each_safe(curr1, curr2, head)
-        {
-                temp = list_entry(curr1, struct pcb_t, p_list);
-                if (temp->p_pid == pid) {
-                        /* il processo si trova in head */
-                        Proc2Delete = temp;
+pcb_t *getProcInHead(int pid, struct list_head* head) {
+        pcb_t* curr, *proc2rtrn = NULL;
+        list_for_each_entry(curr, head, p_list){
+                if (curr->p_pid == pid) {
+                        proc2rtrn = curr;
                         break;
-                }   
+                }
         }
-        return Proc2Delete;   
+        return proc2rtrn;
 }

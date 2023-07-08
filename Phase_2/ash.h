@@ -46,5 +46,5 @@ pcb_t* headBlocked(int *);
  * Restituisce (senza rimuovere) il puntatore al PCB che si trova nella hash table con il pid dato.
  * Se non esiste ritorna NULL
  */
-pcb_t* getProcByPid_inSem(int);
+pcb_t* getProcByPidOnSem(int);
 #endif

@@ -65,6 +65,6 @@ pcb_t *outChild(pcb_t *);
 pcb_t *removeChild(pcb_t *);
 
 /* Ritorna il puntatore al PCB con p_pid == pid che si trova nella lista head */
-pcb_t *getProcByPid(int, struct list_head*);
+pcb_t *getProcInHead(int, struct list_head*);
 
 #endif
