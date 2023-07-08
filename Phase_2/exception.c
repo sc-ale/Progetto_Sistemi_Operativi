@@ -179,7 +179,7 @@ void terminate_family(int pid)
     
     while (!emptyChild(Proc2Delete))
     {
-        /* se ha dei figli richiama la funzione stessa */
+        /* se ha dei figli richiama la terminate_family */
         pcb_t *firstChild = list_first_entry(&Proc2Delete->p_child, struct pcb_t, p_child);
         removeChild(Proc2Delete);
         terminate_family(firstChild->p_pid);
