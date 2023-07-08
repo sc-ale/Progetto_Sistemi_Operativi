@@ -25,7 +25,7 @@ void update_PC_SYS_non_bloccanti();
 
 void update_PC_SYS_bloccanti();
 
-int SYS_create_process(state_t *, support_t *, nsd_t *);
+void SYS_create_process(state_t *, support_t *, nsd_t *);
 
 void SYS_terminate_process(int );
 

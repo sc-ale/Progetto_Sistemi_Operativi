@@ -56,13 +56,8 @@ void passup_ordie(int INDEX)
 
 /* Per le sys 3, 5, 7 servono delle operazioni in più, sezione 3.5.13 */
 void syscall_handler()
-{
-    /* save exception state at the start of the BIOS DATA PAGE */
-    /* NON assegnare il bios data page al current process, devono essere distinti,
-    accediamo al bios data page SOLO per vedere quale eccezione è*/
-
-    //(int)bios_State->reg_a0
- // Da riguardare (toglie il warning)
+{   
+    bios_State->pc_epc += WORDLEN;  //evita i loop nelle syscall
 
     switch (bios_State->reg_a0)
     {
@@ -110,24 +105,12 @@ void syscall_handler()
     default:
         break;
     }
-    /* non veranno eseguite se prima sono state seguite delle sys bloccanti */
-    update_PC_SYS_non_bloccanti();
-}
-
-/* sezione 3.5.12 
- aggiornamento del PC per evitare di andare in loop sulla stessa sys */
-void update_PC_SYS_non_bloccanti(){
-    bios_State->pc_epc += WORD_SIZE;
+    /* non verrà eseguito se prima sono state seguite delle sys bloccanti */
     LDST(bios_State);
 }
 
 /* operazioni comuni per le sys bloccanti, l'inserimento nella ASL del current
  process viene fatto all'interno delle sys*/
-void update_PC_SYS_bloccanti()
-{
-    bios_State->pc_epc += WORD_SIZE; /* word_size è 4, definito in arch.h */
-    current_process->p_s = *bios_State;
-}
 
 
 /* Crea un nuovo processo come figlio del chiamante. Il primo parametro contiene lo stato
@@ -135,10 +118,10 @@ void update_PC_SYS_bloccanti()
  è il pid creato altrimenti è -1. supportp e’ un puntatore alla struttura di supporto del processo.
  Ns descrive il namespace di un determinato tipo da associare al processo, senza specificare
 il namespace (NULL) verra’ ereditato quello del padre.*/
-int SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns)
+void SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns)
 {
     pcb_t *newProc = allocPcb();
-
+    pid_start++;
     if (newProc != NULL)
     {
         /* newProc sarà il figlio di current_process e sarà disponibile nella readyQ*/
@@ -152,18 +135,16 @@ int SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns)
             newProc->namespaces[0] = current_process->namespaces[0]; // da riguardare per i namespace, l'indice non sappiamo qual è
         }
 
-        newProc->p_pid = pid_start + 1; /* assegniamo il pid */
+        newProc->p_pid = pid_start; /* assegniamo il pid */
         newProc->p_time = 0;
 
         process_count++; /* stiamo aggiunge un nuovo processo tra quelli attivi ? */
 
         bios_State->reg_v0 = newProc->p_pid;
-        return newProc->p_pid;
     }
     else
     { /* non ci sono pcb liberi */
         bios_State->reg_v0 = -1;
-        return 0;
     }
 }
 
@@ -193,7 +174,13 @@ void SYS_terminate_process(int pid)
     }
 
     terminate_family(Proc2Delete);
-    scheduling();
+
+    if(current_process==Proc2Delete) {
+        scheduling();
+    }
+    else {
+        LDST(bios_State);
+    }
 }
 
 /* Uccide un processo e tutta la sua progenie (NON I FRATELLI DEL PROCESSO CHIAMATO) */
@@ -240,7 +227,6 @@ void SYS_Passeren(int *semaddr)
     // int pid_current = current_process->p_pid;
     if (*semaddr == 0)
     {
-        update_PC_SYS_bloccanti();
         /* aggiungere current_process nella coda dei
          processi bloccati da una P e sospenderlo*/
         //int inserimento_avvenuto =  Questa variabile non la usiamo?
@@ -255,7 +241,7 @@ void SYS_Passeren(int *semaddr)
         /* se inserimento_avvenuto è 1 allora non è stato possibile allocare 
          un nuovo SEMD perché la semdFree_h è vuota o perché current process ha già un sem */
         
-        /* chiamata allo scheduler, non so si può far direttamente così */
+        current_process->p_s = *bios_State;
         scheduling();
     }
     else if (headBlocked(semaddr) != NULL)
@@ -266,7 +252,7 @@ void SYS_Passeren(int *semaddr)
     }
     else
     {
-        *semaddr-=1;
+        *semaddr=0;
     }
 }
 
@@ -276,7 +262,6 @@ void SYS_Verhogen(int *semaddr)
     //int pid_current = current_process->p_pid;
     if (*semaddr == 1)
     {
-        update_PC_SYS_bloccanti();
         /* aggiungere current_process nella coda dei
          processi bloccati da una V e sospenderlo*/
         //int inserimento_avvenuto = 
@@ -284,6 +269,7 @@ void SYS_Verhogen(int *semaddr)
         /* se inserimento_avvenuto è 1 allora non è stato possibile allocare un nuovo SEMD perché la semdFree_h è vuota */
 
         /* chiamata allo scheduler, non so si può far direttamente così */
+        current_process->p_s = *bios_State;
         scheduling();
     }
     else if (headBlocked(semaddr) != NULL)
@@ -294,7 +280,7 @@ void SYS_Verhogen(int *semaddr)
     }
     else
     {
-        *semaddr+=1;
+        *semaddr=1;
     }
 }
 
@@ -394,16 +380,14 @@ Equivalente a una Passeren sul semaforo dell’Interval Timer.
 */
 void SYS_Clockwait()
 {
-    /* System call bloccante*/
-    update_PC_SYS_bloccanti();
-
+    if(sem_interval_timer == 0) {
     /* aggiungere current_process nella coda dei processi bloccati da una P e sospenderlo*/
     insertBlocked(&sem_interval_timer, current_process);
     soft_block_count++;
+    }
     /* se inserimento_avvenuto è 1 allora non è stato possibile allocare un nuovo SEMD perché la semdFree_h è vuota */
 
-    /* Setta il valore del semaforo a 0 */
-    sem_interval_timer = 0;
+    current_process->p_s = *bios_State;
     scheduling();
 }
 
