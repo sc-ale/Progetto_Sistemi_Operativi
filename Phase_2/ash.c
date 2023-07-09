@@ -84,8 +84,8 @@ pcb_t* outBlocked(pcb_t *p)
                     /* la coda dei semafori bloccati è vuota quindi inseriamo semdP in semdFree_h */
                     hash_del(&semdP->s_link);
                     list_add(&semdP->s_freelink,&semdFree_h);
-                    p->p_semAdd = NULL;
                 }
+                p->p_semAdd = NULL;
                 return p;
             }
         }

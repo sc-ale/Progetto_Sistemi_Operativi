@@ -28,9 +28,9 @@ void scheduling(){
             to enable interrupts and either disable the PLT
         The first interrupt that occurs after entering a 
         Wait State should not be for the PLT. */
+        is_waiting = true;
         setSTATUS((IECON | IMON) & (~TEBITON));
         //setTIMER(NEVER);
-        is_waiting = true;
         /* fare qualcosa con il PLT*/
         WAIT();
         aaa_dopoWAIT();

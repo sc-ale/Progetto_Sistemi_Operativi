@@ -266,6 +266,7 @@ void SYS_Verhogen(int *semaddr)
     { /*Se la coda dei processi bloccati non è vuota*/
         /* risvegliare il primo processo che si era bloccato su una P */
         pcb_t *wakedProc = removeBlocked(semaddr);
+        aaaTest_variable = wakedProc;
         insertProcQ(&readyQ, wakedProc); 
     }
     else

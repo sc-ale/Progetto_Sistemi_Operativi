@@ -143,6 +143,7 @@ void print(char *msg) {
         }
         s++;
     }
+    aaaSiumTest();
     SYSCALL(VERHOGEN, (int)&sem_term_mut, 0, 0); /* V(sem_term_mut) */
 }
 
@@ -443,9 +444,9 @@ void p2() {
     cpu_t cpu_t1, cpu_t2; /* cpu time used       */
 
     SYSCALL(PASSEREN, (int)&sem_startp2, 0, 0); /* P(sem_startp2)   */
-    aaaP2Test();
+
     print("p2 starts\n");
-    aaaP2Test();
+
     int pid = SYSCALL(GETPROCESSID, 0, 0, 0);
     if (pid != p2pid) {
         print("Inconsistent process id for p2!\n");
@@ -520,7 +521,7 @@ void p3() {
     /* now let's check to see if we're really charge for CPU
        time correctly */
     cpu_t1 = SYSCALL(GETTIME, 0, 0, 0);
-    aaaSiumTest();
+    
     for (i = 0; i < CLOCKLOOP; i++) {
         SYSCALL(CLOCKWAIT, 0, 0, 0);
     }
@@ -530,7 +531,6 @@ void p3() {
     if (cpu_t2 - cpu_t1 < (MINCLOCKLOOP / (*((cpu_t *)TIMESCALEADDR)))) {
         print("error: p3 - CPU time incorrectly maintained\n");
     } else {
-        aaaSiumTest();
         print("p3 - CPU time correctly maintained\n");
     }
 
