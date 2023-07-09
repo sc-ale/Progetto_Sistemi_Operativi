@@ -85,7 +85,7 @@ void interrupt_handler()
     
     /* Terminal devices*/
     case TERMINT:
-        terminal_interrupt_handler(TERMINT); /* passare la interrupt line*/
+        terminal_interrupt_handler(); /* passare la interrupt line*/
         break;
 
     default:
@@ -245,7 +245,6 @@ void terminal_interrupt_handler(){
     } else if((dev_addr->recv_status & BYTE1MASK) == OKCHARTRANS){
         device_response = dev_addr->recv_status;
         dev_addr->recv_command = ACK;
-    } else{
     }
 
     /* Perform a V operation on the Nucleus maintained semaphore associ-

@@ -4,6 +4,9 @@
 #include <umps3/umps/arch.h>
 #include "interrupt.h"
 
+#define UPDATE_PC bios_State->pc_epc += WORDLEN;
+#define SAVESTATE current_process->p_s = *bios_State
+#define UPDATE_BIOSSTATE_REGV0(T) bios_State->reg_v0 = T;  
 
 pcb_t pcbFree_table[MAXPROC];
 state_t *bios_State;
@@ -17,6 +20,8 @@ unsigned int* aaaTest_Supremo = NULL;
 unsigned int aaa_val_di_Test_variabile = 0;
 
 void foobar();
+
+void updateCPUtime();
 
 void passup_ordie(int );
 
@@ -41,6 +46,8 @@ void SYS_Passeren(int *);
 void SYS_Verhogen(int *);
 
 void SYS_Doio(int *, int *);
+
+void OPERAZIONICOMUNIDOIO123();
 
 void SYS_Get_CPU_Time();
 

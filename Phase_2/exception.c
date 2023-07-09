@@ -5,9 +5,7 @@
 /* CONTROLLARE LA SEZIONE 3.5.12 */
 void foobar()
 {
-    cpu_t momento_attuale;
-    STCK(momento_attuale);
-    current_process->p_time += momento_attuale - current_process->istante_Lancio_Blocco;
+    updateCPUtime();
     bios_State = (state_t*) BIOSDATAPAGE;
     /* fornisce il codice del tipo di eccezione avvenuta */
     switch (CAUSE_GET_EXCCODE(bios_State->cause))
@@ -15,21 +13,13 @@ void foobar()
     case 0:
         interrupt_handler();
         break;
-    case 1:
-    case 2:
-    case 3:
+    case 1 ... 3:
         passup_ordie(PGFAULTEXCEPT);
         break;
-    case 4:
-    case 5:
-    case 6:
-    case 7:
+    case 4 ... 7:
         passup_ordie(GENERALEXCEPT);
         break;
-    case 9:
-    case 10:
-    case 11:
-    case 12:
+    case 9 ... 12:
         passup_ordie(GENERALEXCEPT);
         break;
     case 8:
@@ -38,6 +28,12 @@ void foobar()
         /* (?) uccidere il processo chiamante (?)*/
         break;
     }
+}
+
+void updateCPUtime(){
+    cpu_t momento_attuale;
+    STCK(momento_attuale);
+    current_process->p_time += momento_attuale - current_process->istante_Lancio_Blocco;
 }
 
 /*siccome perTLB , ProgramTrap e SYSCALL > 11 bisogna effettuare PASS UP OR DIE avrebbe senso creare una funzione*/
@@ -57,7 +53,7 @@ void passup_ordie(int INDEX)
 /* Per le sys 3, 5, 7 servono delle operazioni in più, sezione 3.5.13 */
 void syscall_handler()
 {   
-    bios_State->pc_epc += WORDLEN;  //evita i loop nelle syscall
+    UPDATE_PC;  //evita i loop nelle syscall
 
     switch (bios_State->reg_a0)
     {
@@ -140,11 +136,11 @@ void SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns)
 
         process_count++; /* stiamo aggiunge un nuovo processo tra quelli attivi ? */
 
-        bios_State->reg_v0 = newProc->p_pid;
+        UPDATE_BIOSSTATE_REGV0(newProc->p_pid);
     }
     else
     { /* non ci sono pcb liberi */
-        bios_State->reg_v0 = -1;
+        UPDATE_BIOSSTATE_REGV0(-1);
     }
 }
 
@@ -226,7 +222,7 @@ void SYS_Passeren(int *semaddr)
         /* se inserimento_avvenuto è 1 allora non è stato possibile allocare 
          un nuovo SEMD perché la semdFree_h è vuota o perché current process ha già un sem */
         
-        current_process->p_s = *bios_State;
+        SAVESTATE;
         scheduling();
     }
     else if (headBlocked(semaddr) != NULL)
@@ -259,7 +255,7 @@ void SYS_Verhogen(int *semaddr)
         /* se inserimento_avvenuto è 1 allora non è stato possibile allocare un nuovo SEMD perché la semdFree_h è vuota */
 
         /* chiamata allo scheduler, non so si può far direttamente così */
-        current_process->p_s = *bios_State;
+        SAVESTATE;
         scheduling();
     }
     else if (headBlocked(semaddr) != NULL)
@@ -273,6 +269,17 @@ void SYS_Verhogen(int *semaddr)
     {
         *semaddr=1;
     }
+}
+
+void OPERAZIONICOMUNIDOIO123(int *cmdAddr, int *cmdValues, int *sem, int devreg) {
+    int devNo;
+    for(int i=0; i<4; i++){
+        cmdAddr[i] = cmdValues[i];
+    }
+    /*Calcola il device giusto e esegui una P sul suo semaforo*/
+    devNo = devreg % 8;
+    UPDATE_BIOSSTATE_REGV0(0);
+    SYS_Passeren(&sem[devNo]);
 }
 
 /* Effettua un’operazione di I/O. CmdValues e’ un vettore di 2 interi
@@ -300,41 +307,19 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
     {
     case 0:
         aaaCASO_0_test();
-        /*Copia i valori di cmdValues nel registro del device*/
-        for(int i=0; i<4; i++){
-            cmdAddr[i] = cmdValues[i];
-        }
-        /*Calcola il device giusto e esegui una P sul suo semaforo*/
-        devNo = devreg % 8;
-        bios_State->reg_v0 = 0;
-        SYS_Passeren(&sem_disk[devNo]);
+        OPERAZIONICOMUNIDOIO123(cmdAddr, cmdValues, sem_disk, devreg);
         break;
     case 1:
         aaaCASO_1_test();
-        for(int i=0; i<4; i++){
-            cmdAddr[i] = cmdValues[i];
-        }
-        devNo = devreg % 8;
-        bios_State->reg_v0 = 0;
-        SYS_Passeren(&sem_tape[devNo]);
+        OPERAZIONICOMUNIDOIO123(cmdAddr, cmdValues, sem_tape, devreg);
         break;
     case 2: 
         aaaCASO_2_test();
-        for(int i=0; i<4; i++){
-            cmdAddr[i] = cmdValues[i];
-        }
-        devNo = devreg % 8;
-        bios_State->reg_v0 = 0;
-        SYS_Passeren(&sem_network[devNo]);
+        OPERAZIONICOMUNIDOIO123(cmdAddr, cmdValues, sem_network, devreg);
         break;
     case 3:
         aaaCASO_3_test();
-        for(int i=0; i<4; i++){
-            cmdAddr[i] = cmdValues[i];
-        }
-        devNo = devreg % 8;
-        bios_State->reg_v0 = 0;
-        SYS_Passeren(&sem_printer[devNo]);
+        OPERAZIONICOMUNIDOIO123(cmdAddr, cmdValues, sem_printer, devreg);;
         break;
     case 4:
         aaaCASO_4_test();
@@ -347,12 +332,12 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
         }
         //is_terminal = true;
         devNo = *cmdAddr%16 == 0 ? devreg%8 : (devreg%8)+8;
-        bios_State->reg_v0 = 0;
+        UPDATE_BIOSSTATE_REGV0(0);
         SYS_Passeren(&sem_terminal[devNo]);
         break;
     default:
         soft_block_count--;
-        bios_State->reg_v0 = -1;
+        UPDATE_BIOSSTATE_REGV0(-1);
         break;
     }
 }
@@ -362,7 +347,7 @@ void SYS_Get_CPU_Time()
 {
     /* Hence SYS6 should return the value in the Current Process’s p_time PLUS
      the amount of CPU time used during the current quantum/time slice.*/
-    bios_State->reg_v0 = current_process->p_time;
+    UPDATE_BIOSSTATE_REGV0(current_process->p_time);
 }
 
 /*
@@ -378,7 +363,7 @@ void SYS_Clockwait()
     }
     /* se inserimento_avvenuto è 1 allora non è stato possibile allocare un nuovo SEMD perché la semdFree_h è vuota */
 
-    current_process->p_s = *bios_State;
+    SAVESTATE;
     scheduling();
 }
 
@@ -386,13 +371,7 @@ void SYS_Clockwait()
  ovvero il campo p_supportStruct del pcb_t.*/
 support_t* SYS_Get_Support_Data()
 {
-    if(current_process->p_supportStruct == NULL) {
-        return NULL;
-    }
-    else {
-        return current_process->p_supportStruct;
-    }
-
+    return current_process->p_supportStruct;
 }
 
 /* Restituisce l’identificatore del processo invocante se parent == 0,
@@ -403,15 +382,18 @@ void SYS_Get_Process_Id(int parent)
 {
     if (parent == 0)
     {
-        bios_State->reg_v0 = current_process->p_pid;
+        UPDATE_BIOSSTATE_REGV0(current_process->p_pid);
     }
     else
     { /* dobbiamo restituire il pid del padre, se si trovano nello stesso namespace */
         /* assumiamo che il processo corrente abbia un padre (?) */
+        // NON CREDO SI POSSA FARE QUESTA ASSUNZIONE
+
         nsd_t *parent_pid = getNamespace(current_process->p_parent, current_process->namespaces[0]->n_type);
 
         /* se current_process e il processo padre non sono nello stesso namespace restituisci 0 */
-        bios_State->reg_v0 = (parent_pid == NULL) ? 0 : current_process->p_pid;
+        int pid2save = (parent_pid == NULL) ? 0 : current_process->p_pid;
+        UPDATE_BIOSSTATE_REGV0(pid2save);
     }
 }
 
@@ -434,7 +416,7 @@ void SYS_Get_Children(int *children, int size)
             num++;
         }
     }
-    bios_State->reg_v0 = num;
+    UPDATE_BIOSSTATE_REGV0(num);
 }
 
 /* Per determinare se il processo corrente stava eseguento in kernel o user mode,
