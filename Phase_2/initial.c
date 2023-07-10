@@ -70,6 +70,7 @@ int main() {
     primoProc->p_time = 0;
     primoProc->p_semAdd = NULL;
     primoProc->p_supportStruct = NULL;
+    primoProc->p_pid = 1;
 
     // Sezione 2.3 di uMPS3 spiega questo registro, non ho trovato macro o altro
     // l'unica soluzione mi sembra assegnarli in modo diretto ma guardateci anche voi

@@ -25,7 +25,6 @@ void foobar()
     case 8:
         syscall_handler();
     default:
-        /* (?) uccidere il processo chiamante (?)*/
         break;
     }
 }
@@ -99,6 +98,7 @@ void syscall_handler()
     case GETCHILDREN:
         SYS_Get_Children((int*)bios_State->reg_a1, (int)bios_State->reg_a2);
     default:
+        passup_ordie(GENERALEXCEPT);
         break;
     }
     /* non verrà eseguito se prima sono state seguite delle sys bloccanti */
