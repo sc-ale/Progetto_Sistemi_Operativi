@@ -372,7 +372,8 @@ void SYS_Clockwait()
  ovvero il campo p_supportStruct del pcb_t.*/
 support_t* SYS_Get_Support_Data()
 {
-    return current_process->p_supportStruct;
+    UPDATE_BIOSSTATE_REGV0(current_process->p_supportStruct);
+    //return current_process->p_supportStruct;
 }
 
 /* Restituisce l’identificatore del processo invocante se parent == 0,
