@@ -44,9 +44,9 @@ void passup_ordie(int INDEX)
         SYS_terminate_process(0);
     }
     else {
-        context_t exceptContext = current_process->p_supportStruct->sup_exceptContext[INDEX];
         current_process->p_supportStruct->sup_exceptState[INDEX] = *(state_t*) BIOSDATAPAGE;
-        LDCXT(exceptContext.stackPtr,exceptContext.status,exceptContext.pc);
+        context_t exceptContext = current_process->p_supportStruct->sup_exceptContext[INDEX];
+        LDCXT(exceptContext.stackPtr, exceptContext.status, exceptContext.pc);
     }
 }
 
@@ -76,7 +76,6 @@ void syscall_handler()
 
     case DOIO:
         SYS_Doio((int*)bios_State->reg_a1, (int*)bios_State->reg_a2);
-       
         break;
 
     case GETTIME:
@@ -99,6 +98,7 @@ void syscall_handler()
     case GETCHILDREN:
         SYS_Get_Children((int*)bios_State->reg_a1, (int)bios_State->reg_a2);
     default:
+        passup_ordie(GENERALEXCEPT);
         break;
     }
     /* non verrà eseguito se prima sono state seguite delle sys bloccanti */
@@ -118,23 +118,24 @@ void SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns)
 {
     pcb_t *newProc = allocPcb();
     pid_start++;
+
     if (newProc != NULL)
     {
+        process_count++; /* stiamo aggiunge un nuovo processo tra quelli attivi */
+
         /* newProc sarà il figlio di current_process e sarà disponibile nella readyQ*/
         insertChild(current_process, newProc);
         insertProcQ(&readyQ, newProc);
+        
         newProc->p_s = *statep;
         newProc->p_supportStruct = supportp;
+        newProc->p_pid = pid_start; /* assegniamo il pid */
+        newProc->p_time = 0;
 
         if (!addNamespace(newProc, ns))
         {                                                            /* deve ereditare il ns dal padre */
             newProc->namespaces[0] = current_process->namespaces[0]; // da riguardare per i namespace, l'indice non sappiamo qual è
         }
-
-        newProc->p_pid = pid_start; /* assegniamo il pid */
-        newProc->p_time = 0;
-
-        process_count++; /* stiamo aggiunge un nuovo processo tra quelli attivi ? */
 
         UPDATE_BIOSSTATE_REGV0(newProc->p_pid);
     }
