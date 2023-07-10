@@ -45,7 +45,7 @@ void passup_ordie(int INDEX)
     }
     else {
         context_t exceptContext = current_process->p_supportStruct->sup_exceptContext[INDEX];
-        current_process->p_supportStruct->sup_exceptState[INDEX].status  = (memaddr) BIOSDATAPAGE;
+        current_process->p_supportStruct->sup_exceptState[INDEX] = *(state_t*) BIOSDATAPAGE;
         LDCXT(exceptContext.stackPtr,exceptContext.status,exceptContext.pc);
     }
 }
