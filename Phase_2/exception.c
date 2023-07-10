@@ -99,6 +99,7 @@ void syscall_handler()
     case GETCHILDREN:
         SYS_Get_Children((int*)bios_State->reg_a1, (int)bios_State->reg_a2);
     default:
+        passup_ordie(GENERALEXCEPT);
         break;
     }
     /* non verrà eseguito se prima sono state seguite delle sys bloccanti */
@@ -390,10 +391,13 @@ void SYS_Get_Process_Id(int parent)
         /* assumiamo che il processo corrente abbia un padre (?) */
         // NON CREDO SI POSSA FARE QUESTA ASSUNZIONE
 
-        nsd_t *parent_pid = getNamespace(current_process->p_parent, current_process->namespaces[0]->n_type);
-
+        nsd_t *parent_namespace = getNamespace(current_process->p_parent, current_process->namespaces[0]->n_type);
+        aaaTest_variable = parent_namespace;
+        aaa_val_di_Test_variabile = &parent_namespace;
         /* se current_process e il processo padre non sono nello stesso namespace restituisci 0 */
-        int pid2save = (parent_pid == NULL) ? 0 : current_process->p_pid;
+        int pid2save = (parent_namespace != getNamespace(current_process, current_process->namespaces[0]->n_type)) ? 0 : current_process->p_parent->p_pid;
+        aaaBreakTest();
+        aaaTest_variable = pid2save;
         UPDATE_BIOSSTATE_REGV0(pid2save);
     }
 }
