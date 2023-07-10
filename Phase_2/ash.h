@@ -47,4 +47,9 @@ pcb_t* headBlocked(int *);
  * Se non esiste ritorna NULL
  */
 pcb_t* getProcByPidOnSem(int);
+
+
+/* Funzione per rimuovere semaforo dalla ASH se non ha piu' processi bloccati su di esso*/
+void removeEmptySemd(semd_t*);
+
 #endif

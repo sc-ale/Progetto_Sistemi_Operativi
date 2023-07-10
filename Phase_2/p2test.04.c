@@ -133,7 +133,9 @@ void print(char *msg) {
     devregtr *command = base + 2;
     devregtr  status;
 
+    aaaClockWait();
     SYSCALL(PASSEREN, (int)&sem_term_mut, 0, 0); /* P(sem_term_mut) */
+    aaaP2Test();
     while (*s != EOS) {
         devregtr value[2] = {0, PRINTCHR | (((devregtr)*s) << 8)};
         status        = SYSCALL(DOIO, (int)command, (int)value, 0);
@@ -857,7 +859,6 @@ void hp_p1() {
 
 
 void hp_p2() {
-    aaaClockWait();
     print("hp_p2 starts\n");
 
     for (int i = 0; i < 10; i++) {
