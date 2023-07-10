@@ -15,17 +15,13 @@ void initNamespaces()
     {
         INIT_LIST_HEAD(&type_nsFree_h[i]);
         INIT_LIST_HEAD(&type_nsList_h[i]);
-    }
 
-    /* aggiungo gli NSD alla free list */
-    for(i=0;i<MAXPROC;i++)
-    {   
-        for(j=0;j<NS_TYPE_MAX;j++) 
+        /* aggiungo gli NSD alla free list */
+        for(j=0;j<MAXPROC;j++) 
         {
-            list_add(&type_nsd[i][j].n_link,&type_nsFree_h[j]);
+            list_add(&type_nsd[i][j].n_link,&type_nsFree_h[i]);
         }
     }
-
 }
 
 
@@ -66,10 +62,10 @@ nsd_t *allocNamespace(int type){
     }
 
     /* assegna a un puntatore il namespace da restituire */
-    nsd_t *new_nsd = list_first_entry(type_nsFree_h, nsd_t, n_link);
+    nsd_t *new_nsd = list_first_entry(&type_nsFree_h[type], nsd_t, n_link);
 
     /* rimuove il namespace dalla lista dei liberi e lo aggiunge alla lista utilizzati */
-    list_del_init(&new_nsd->n_link);
+    list_del(&type_nsFree_h[type]);
     list_add(&new_nsd->n_link, &type_nsList_h[type]);
     return new_nsd;
 }
@@ -78,6 +74,6 @@ nsd_t *allocNamespace(int type){
 
 void freeNamespace(nsd_t *ns){
     /* rimuove ns dalla lista degli utilizzati e lo aggiunge alla lista dei liberi */
-    list_del_init(&ns->n_link);
+    list_del(&ns->n_link);
     list_add(&ns->n_link, &type_nsFree_h[ns->n_type]);
 }

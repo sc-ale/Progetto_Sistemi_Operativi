@@ -125,6 +125,7 @@ void aaaSiumTest(){};
 void aaaP2Test(){};
 void aaaClockWait(){};
 void aaa_NS(){};
+aaa_p11_start(){};
 int aaaIOValues;
 
 /* a procedure to print on terminal 0 */
@@ -958,7 +959,7 @@ void p11() {
     int children_pids[NS_MAXCHILDREN];
     nsd_t *ns2 = NULL;
     int found[2] = {};
-
+    aaa_p11_start();
     print("p11 starts\n");
 
     ns2 = allocNamespace(NS_PID);
