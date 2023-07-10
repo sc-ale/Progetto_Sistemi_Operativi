@@ -133,8 +133,12 @@ void SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns)
         newProc->p_time = 0;
 
         if (!addNamespace(newProc, ns))
-        {                                                            /* deve ereditare il ns dal padre */
-            newProc->namespaces[0] = current_process->namespaces[0]; // da riguardare per i namespace, l'indice non sappiamo qual è
+        {                                       
+            /* deve ereditare il ns dal padre */
+            for (int i=0; i<NS_TYPE_MAX; i++) {
+                nsd_t* tmpNs = getNamespace(current_process, i);
+                addNamespace(newProc, tmpNs);
+            }
         }
 
         UPDATE_BIOSSTATE_REGV0(newProc->p_pid);
