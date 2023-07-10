@@ -52,6 +52,9 @@ void passup_ordie(int INDEX)
 /* Per le sys 3, 5, 7 servono delle operazioni in più, sezione 3.5.13 */
 void syscall_handler()
 {   
+    if(!Check_Kernel_mode()) {
+        passup_ordie(GENERALEXCEPT);
+    }
     UPDATE_PC;  //evita i loop nelle syscall
 
     switch (bios_State->reg_a0)
@@ -83,7 +86,6 @@ void syscall_handler()
 
     case CLOCKWAIT:
         SYS_Clockwait();
-       
         break;
 
     case GETSUPPORTPTR:
@@ -218,6 +220,10 @@ void terminate_family(int pid)
     kill_process(Proc2Delete);
 }
 
+bool is_sem_device_or_int(memaddr addSem) {
+    return (addSem == sem_disk || addSem == sem_interval_timer || addSem == sem_network || addSem == sem_printer || addSem == sem_tape || addSem == sem_terminal);
+}
+
 void kill_process(pcb_t *ptrn)
 {
     process_count--;
@@ -226,7 +232,7 @@ void kill_process(pcb_t *ptrn)
         int * tmpSem = ptrn->p_semAdd;  
         /* processo bloccato su un semaforo */
         outBlocked(ptrn);
-        if (tmpSem == sem_disk || tmpSem == sem_interval_timer || tmpSem == sem_network || tmpSem == sem_printer || tmpSem == sem_tape || tmpSem == sem_terminal) {
+        if (is_sem_device_or_int((memaddr)tmpSem)) {
             soft_block_count--;
         }
     }
@@ -406,7 +412,7 @@ void SYS_Clockwait()
 
 /* Restituisce un puntatore alla struttura di supporto del processo corrente,
  ovvero il campo p_supportStruct del pcb_t.*/
-support_t* SYS_Get_Support_Data()
+void SYS_Get_Support_Data()
 {
     UPDATE_BIOSSTATE_REGV0(current_process->p_supportStruct);
     //return current_process->p_supportStruct;

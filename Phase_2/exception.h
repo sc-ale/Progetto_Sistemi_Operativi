@@ -6,7 +6,7 @@
 
 #define UPDATE_PC bios_State->pc_epc += WORDLEN;
 #define SAVESTATE current_process->p_s = *bios_State
-#define UPDATE_BIOSSTATE_REGV0(T) bios_State->reg_v0 = T;  
+#define UPDATE_BIOSSTATE_REGV0(T) bios_State->reg_v0 = (unsigned int)T;  
 
 pcb_t pcbFree_table[MAXPROC];
 state_t *bios_State;
@@ -57,7 +57,7 @@ void SYS_Get_CPU_Time();
 
 void SYS_Clockwait();
 
-support_t* SYS_Get_Support_Data();
+void SYS_Get_Support_Data();
 
 void SYS_Get_Process_Id(int );
 

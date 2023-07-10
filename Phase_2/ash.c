@@ -56,9 +56,7 @@ int insertBlocked(int* semAdd, pcb_t* p)
 pcb_t* outBlocked(pcb_t *p)
 {
     semd_t *semdP=NULL;
-    struct list_head *corrente, *temp = NULL;
     int bkt;
-    semd_t *semTemp=NULL;
     pcb_t *eliminato = NULL;
 
     hash_for_each(semd_h, bkt, semdP, s_link) {

@@ -124,6 +124,7 @@ extern void p5mm();
 void aaaSiumTest(){};
 void aaaP2Test(){};
 void aaaClockWait(){};
+void aaa_NS(){};
 int aaaIOValues;
 
 /* a procedure to print on terminal 0 */
@@ -144,8 +145,9 @@ void print(char *msg) {
         }
         s++;
     }
-    aaaSiumTest();
+    //aaaSiumTest();
     SYSCALL(VERHOGEN, (int)&sem_term_mut, 0, 0); /* V(sem_term_mut) */
+    aaaSiumTest();
 }
 
 
@@ -875,6 +877,8 @@ void hp_p2() {
 /* Namespace management */
 
 void ns_p_parent_ns() {
+    aaa_NS();
+    
     int *sem_ns = NULL;
     int *sem_child_ns = NULL;
     int pid = 0;
