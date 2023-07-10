@@ -40,6 +40,7 @@ void terminate_family(int);
 
 void terminate_family2(int);
 
+bool is_sem_device_or_int(int*);
 
 pcb_t* getProcByPid(int);
 

@@ -165,6 +165,7 @@ pcb_t* getProcByPid(int pid) {
     /* verifico che il processo con p_pid == pid sia nella readyQ o su un semaforo*/
     if( (proc2rtrn = getProcInHead(pid, &readyQ)) == NULL) {
         /* non è in readyQ, quindi deve essere su qualche semaforo */
+        aaa_procSEM();
         proc2rtrn = getProcByPidOnSem(pid);
     }
     if (proc2rtrn == NULL)  /* errore */
@@ -175,7 +176,7 @@ pcb_t* getProcByPid(int pid) {
 
 /* funzione di fre, per vedere se il problema è qui
     - NON CE NE SONO
- 
+*/
 void terminate_family2(int pid) {
     process_count--;                                                                   
     pcb_t* proc = (pid==0||pid==current_process->p_pid)?current_process:getProcByPid(pid);
@@ -183,7 +184,7 @@ void terminate_family2(int pid) {
     if(proc->p_semAdd!=NULL){                                                                   
         int * tmpSem = proc->p_semAdd;                                                          
         outBlocked(proc);                                                       
-        if (tmpSem == sem_disk || tmpSem == sem_interval_timer || tmpSem == sem_network || tmpSem == sem_printer || tmpSem == sem_tape || tmpSem == sem_terminal) {
+        if (is_sem_device_or_int(tmpSem)) {
             soft_block_count--;
         }
     }else if (proc!=current_process){                                          
@@ -200,7 +201,7 @@ void terminate_family2(int pid) {
         scheduling();
     }                           
 }
-*/
+
 
 /* Uccide un processo e tutta la sua progenie (NON I FRATELLI DEL PROCESSO CHIAMATO) */
 void terminate_family(int pid)
@@ -220,8 +221,8 @@ void terminate_family(int pid)
     kill_process(Proc2Delete);
 }
 
-bool is_sem_device_or_int(memaddr addSem) {
-    return (addSem == sem_disk || addSem == sem_interval_timer || addSem == sem_network || addSem == sem_printer || addSem == sem_tape || addSem == sem_terminal);
+bool is_sem_device_or_int(int* addSem) {
+    return (addSem == &sem_interval_timer || addSem == sem_disk || addSem == sem_network || addSem == sem_printer || addSem == sem_tape || addSem == sem_terminal);
 }
 
 void kill_process(pcb_t *ptrn)
@@ -232,7 +233,7 @@ void kill_process(pcb_t *ptrn)
         int * tmpSem = ptrn->p_semAdd;  
         /* processo bloccato su un semaforo */
         outBlocked(ptrn);
-        if (is_sem_device_or_int((memaddr)tmpSem)) {
+        if (is_sem_device_or_int(tmpSem)) {
             soft_block_count--;
         }
     }

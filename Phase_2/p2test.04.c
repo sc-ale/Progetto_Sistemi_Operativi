@@ -915,6 +915,7 @@ void ns_p_parent_ns() {
 }
 
 void ns_p_new_ns() {
+    aaa_NS();
     int *sem_ns = NULL;
     int *sem_child_ns = NULL;
     int pid = 0;

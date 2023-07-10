@@ -95,4 +95,5 @@ void aaa_liberaSem(){}
 void aaa_semGiaAssociato(){}
 void aaa_InsertMaleVER(){}
 void aaa_InsertMalePAS(){}
+void aaa_procSEM(){}
 #endif
