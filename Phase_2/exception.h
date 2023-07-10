@@ -21,6 +21,7 @@ unsigned int aaa_val_di_Test_variabile = 0;
 
 void foobar();
 
+
 void updateCPUtime();
 
 void passup_ordie(int );
@@ -36,6 +37,9 @@ void SYS_create_process(state_t *, support_t *, nsd_t *);
 void SYS_terminate_process(int );
 
 void terminate_family(int);
+
+void terminate_family2(int);
+
 
 pcb_t* getProcByPid(int);
 

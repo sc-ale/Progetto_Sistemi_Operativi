@@ -27,6 +27,7 @@ int insertBlocked(int* semAdd, pcb_t* p)
             if(corrente->s_key == semAdd) {
                 /*  aggiungiamo p al semaforo corrente, questo if viene effettuato 
                     se esiste già un altro processo associato al semaforo semAdd */
+                p->p_semAdd = semAdd;
                 insertProcQ(&corrente->s_procq, p);
                 return FALSE;
             }
