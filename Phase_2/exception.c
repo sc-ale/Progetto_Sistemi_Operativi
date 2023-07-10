@@ -170,6 +170,7 @@ pcb_t* getProcByPid(int pid) {
 /* Uccide un processo e tutta la sua progenie (NON I FRATELLI DEL PROCESSO CHIAMATO) */
 void terminate_family(int pid)
 {
+    aaa_InsertMalePAS();
     pcb_t*Proc2Delete = (pid == 0 || current_process->p_pid == pid) ? current_process: getProcByPid(pid);
     outChild(Proc2Delete); /* Proc2delete staccato dal padre */
     
