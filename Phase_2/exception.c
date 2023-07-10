@@ -167,32 +167,34 @@ pcb_t* getProcByPid(int pid) {
     return proc2rtrn;
 }
 
-/* funzione di fre, per vedere se il problema è qui */
+/* funzione di fre, per vedere se il problema è qui
+    - NON CE NE SONO
+ 
 void terminate_family2(int pid) {
     process_count--;                                                                   
     pcb_t* proc = (pid==0||pid==current_process->p_pid)?current_process:getProcByPid(pid);
-    outChild(proc);                                                                             /* the process is separated from its parent */    
-    if(proc->p_semAdd!=NULL){                                                                   /* Case 1: the process is blocked on a semaphore */
+    outChild(proc);                                                                         
+    if(proc->p_semAdd!=NULL){                                                                   
         int * tmpSem = proc->p_semAdd;                                                          
         outBlocked(proc);                                                       
         if (tmpSem == sem_disk || tmpSem == sem_interval_timer || tmpSem == sem_network || tmpSem == sem_printer || tmpSem == sem_tape || tmpSem == sem_terminal) {
             soft_block_count--;
         }
-    }else if (proc!=current_process){                                                            /* Case 2: process in readyQueue */
+    }else if (proc!=current_process){                                          
         outProcQ(&readyQ, proc);                                                            
     }
 
-    while(!emptyChild(proc)){                                                                   /* recursively terminate every child (and its subtree) */
+    while(!emptyChild(proc)){                                                                  
         pcb_t* firstChild = list_first_entry(&proc->p_child,struct pcb_t,p_child);          
-        removeChild(proc);                                                                      /* remove the first child and eventually move the next one in its place */
+        removeChild(proc);                                                                      
         terminate_family2(firstChild->p_pid);                                                
     }
-    freePcb(proc);                                                                              /* finally delete the process */
-    if(current_process==proc){                                                                   /* no process to return control to */
+    freePcb(proc);                                                                     
+    if(current_process==proc){                                                                   
         scheduling();
     }                           
 }
-
+*/
 
 /* Uccide un processo e tutta la sua progenie (NON I FRATELLI DEL PROCESSO CHIAMATO) */
 void terminate_family(int pid)
