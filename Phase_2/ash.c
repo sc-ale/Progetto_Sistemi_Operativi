@@ -59,39 +59,28 @@ pcb_t* outBlocked(pcb_t *p)
     struct list_head *corrente, *temp = NULL;
     int bkt;
     semd_t *semTemp=NULL;
+    pcb_t *eliminato = NULL;
 
     hash_for_each(semd_h, bkt, semdP, s_link) {
         /* se entriamo nel ciclo semdP punta al semaforo che blocca il processo p */
         if(semdP->s_key == p->p_semAdd){
-            semTemp = semdP;
+            eliminato = outProcQ(&semdP->s_procq,p);
+            eliminato->p_semAdd = NULL;
+            removeEmptySemd(semdP);
             break;
         }
     }
 
-    semdP = semTemp;
-    if(semdP!=NULL){
+    return eliminato;
+}
 
-        list_for_each_safe(corrente, temp, &semdP->s_procq) 
-        {
-            pcb_t *eliminato = list_entry(corrente, pcb_t, p_list);
 
-            if(eliminato==p) 
-            {
-                /* trovato il processo da eliminare */
-                list_del_init(&eliminato->p_list);
-                if (list_empty(&semdP->s_procq))
-                {
-                    aaa_liberaSem();   
-                    /* la coda dei semafori bloccati è vuota quindi inseriamo semdP in semdFree_h */
-                    hash_del(&semdP->s_link);
-                    list_add(&semdP->s_freelink,&semdFree_h);
-                }
-                p->p_semAdd = NULL;
-                return p;
-            }
-        }
+
+void removeEmptySemd(semd_t* s) {
+    if(emptyProcQ(&s->s_procq)) {
+        hash_del(&s->s_link);
+        list_add(&s->s_freelink,&semdFree_h);
     }
-    return NULL;
 }
 
 

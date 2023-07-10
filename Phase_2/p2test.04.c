@@ -133,6 +133,7 @@ void print(char *msg) {
     devregtr *command = base + 2;
     devregtr  status;
 
+    aaaP2Test();
     SYSCALL(PASSEREN, (int)&sem_term_mut, 0, 0); /* P(sem_term_mut) */
     while (*s != EOS) {
         devregtr value[2] = {0, PRINTCHR | (((devregtr)*s) << 8)};
@@ -850,6 +851,9 @@ void p10() {
 void hp_p1() {
     print("hp_p1 starts\n");
 
+
+
+    aaaClockWait();
     SYSCALL(TERMPROCESS, 0, 0, 0);
     print("Error: hp_p1 didn't die!\n");
     PANIC();
@@ -857,7 +861,6 @@ void hp_p1() {
 
 
 void hp_p2() {
-    aaaClockWait();
     print("hp_p2 starts\n");
 
     for (int i = 0; i < 10; i++) {
