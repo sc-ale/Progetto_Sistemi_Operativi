@@ -25,7 +25,6 @@ void foobar()
     case 8:
         syscall_handler();
     default:
-        /* (?) uccidere il processo chiamante (?)*/
         break;
     }
 }
@@ -409,7 +408,8 @@ void SYS_Clockwait()
  ovvero il campo p_supportStruct del pcb_t.*/
 support_t* SYS_Get_Support_Data()
 {
-    return current_process->p_supportStruct;
+    UPDATE_BIOSSTATE_REGV0(current_process->p_supportStruct);
+    //return current_process->p_supportStruct;
 }
 
 /* Restituisce l’identificatore del processo invocante se parent == 0,
@@ -427,10 +427,13 @@ void SYS_Get_Process_Id(int parent)
         /* assumiamo che il processo corrente abbia un padre (?) */
         // NON CREDO SI POSSA FARE QUESTA ASSUNZIONE
 
-        nsd_t *parent_pid = getNamespace(current_process->p_parent, current_process->namespaces[0]->n_type);
-
+        nsd_t *parent_namespace = getNamespace(current_process->p_parent, current_process->namespaces[0]->n_type);
+        aaaTest_variable = parent_namespace;
+        aaa_val_di_Test_variabile = &parent_namespace;
         /* se current_process e il processo padre non sono nello stesso namespace restituisci 0 */
-        int pid2save = (parent_pid == NULL) ? 0 : current_process->p_pid;
+        int pid2save = (parent_namespace != getNamespace(current_process, current_process->namespaces[0]->n_type)) ? 0 : current_process->p_parent->p_pid;
+        aaaBreakTest();
+        aaaTest_variable = pid2save;
         UPDATE_BIOSSTATE_REGV0(pid2save);
     }
 }

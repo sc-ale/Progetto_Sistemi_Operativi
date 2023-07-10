@@ -13,7 +13,7 @@ state_t *bios_State;
 
 /* come process id usiamo un intero che aumenta
     e basta (no caso reincarazione)*/
-int pid_start = 0;
+int pid_start = 1;
 
 unsigned int aaaTest_variable = 0;
 unsigned int* aaaTest_Supremo = NULL;
