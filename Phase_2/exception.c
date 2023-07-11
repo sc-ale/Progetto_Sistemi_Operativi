@@ -155,7 +155,7 @@ void SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns)
  (e figli dei figli...) se pid è 0 allora termina il processo corrente */
 void SYS_terminate_process(int pid)
 {
-    terminate_family(pid);
+    terminate_family2(pid);
     scheduling();
 }
 
