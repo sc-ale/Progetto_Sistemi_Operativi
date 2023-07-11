@@ -19,7 +19,6 @@ void scheduling(){
     }
     else if(process_count==0)
     {
-        aaa_readyQ_vuota();
         HALT();
     }
     else if(process_count>0 && soft_block_count>0)
@@ -33,7 +32,6 @@ void scheduling(){
         //setTIMER(NEVER);
         /* fare qualcosa con il PLT*/
         WAIT();
-        aaa_dopoWAIT();
         //quando esce dal wait dove va?
     }
     else if (process_count>0 && soft_block_count==0)

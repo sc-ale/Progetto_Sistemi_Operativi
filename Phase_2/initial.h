@@ -11,15 +11,8 @@
 
 extern void uTLB_RefillHandler();
 extern void test();
-extern void addokbuf();
-extern void adderrbuf();
-
 extern void scheduling();
 extern void foobar();
-
-void aaaBreakTest();
-void aaa_readyQ_vuota();
-extern unsigned int* aaaTest_Supremo;
 
 
 #endif 

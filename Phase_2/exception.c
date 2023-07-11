@@ -166,12 +166,8 @@ pcb_t* getProcByPid(int pid) {
     /* verifico che il processo con p_pid == pid sia nella readyQ o su un semaforo*/
     if( (proc2rtrn = getProcInHead(pid, &readyQ)) == NULL) {
         /* non è in readyQ, quindi deve essere su qualche semaforo */
-        aaa_procSEM();
         proc2rtrn = getProcByPidOnSem(pid);
     }
-    if (proc2rtrn == NULL)  /* errore */
-        aaa_pid_errato();
-
     return proc2rtrn;
 }
 
@@ -207,7 +203,6 @@ void terminate_family2(int pid) {
 /* Uccide un processo e tutta la sua progenie (NON I FRATELLI DEL PROCESSO CHIAMATO) */
 void terminate_family(int pid)
 {
-    aaa_InsertMalePAS();
     pcb_t*Proc2Delete = (pid == 0 || current_process->p_pid == pid) ? current_process: getProcByPid(pid);
     outChild(Proc2Delete); /* Proc2delete staccato dal padre */
     
@@ -255,14 +250,8 @@ void SYS_Passeren(int *semaddr)
         /* aggiungere current_process nella coda dei
          processi bloccati da una P e sospenderlo*/
         //int inserimento_avvenuto =  Questa variabile non la usiamo?
-        aaaBreakTest();
-        aaaTest_variable = current_process->p_semAdd;
-        if (insertBlocked(semaddr, current_process) == TRUE) {
-            aaa_InsertMalePAS();
-            aaaTest_variable = current_process->p_semAdd;
-            aaa_val_di_Test_variabile = *(current_process->p_semAdd);
-        }
 
+        insertBlocked(semaddr, current_process);
         
         /* se inserimento_avvenuto è 1 allora non è stato possibile allocare 
          un nuovo SEMD perché la semdFree_h è vuota o perché current process ha già un sem */
@@ -290,13 +279,8 @@ void SYS_Verhogen(int *semaddr)
     {
         /* aggiungere current_process nella coda dei
          processi bloccati da una V e sospenderlo*/
-        
-        aaaBreakTest();
-        aaaTest_variable = current_process->p_semAdd;
-        if (insertBlocked(semaddr, current_process) == TRUE) {
-            aaa_InsertMaleVER();
-            aaaTest_variable = current_process->p_semAdd;
-        }
+
+        insertBlocked(semaddr, current_process);
         /* se inserimento_avvenuto è 1 allora non è stato possibile allocare un nuovo SEMD perché la semdFree_h è vuota */
 
         /* chiamata allo scheduler, non so si può far direttamente così */
@@ -307,7 +291,6 @@ void SYS_Verhogen(int *semaddr)
     { /*Se la coda dei processi bloccati non è vuota*/
         /* risvegliare il primo processo che si era bloccato su una P */
         pcb_t *wakedProc = removeBlocked(semaddr);
-        aaaTest_variable = wakedProc;
         insertProcQ(&readyQ, wakedProc); 
     }
     else
@@ -351,23 +334,18 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
     switch (devreg / 8)
     {
     case 0:
-        aaaCASO_0_test();
         OPERAZIONICOMUNIDOIO123(cmdAddr, cmdValues, sem_disk, devreg);
         break;
     case 1:
-        aaaCASO_1_test();
         OPERAZIONICOMUNIDOIO123(cmdAddr, cmdValues, sem_tape, devreg);
         break;
     case 2: 
-        aaaCASO_2_test();
         OPERAZIONICOMUNIDOIO123(cmdAddr, cmdValues, sem_network, devreg);
         break;
     case 3:
-        aaaCASO_3_test();
         OPERAZIONICOMUNIDOIO123(cmdAddr, cmdValues, sem_printer, devreg);;
         break;
     case 4:
-        aaaCASO_4_test();
         /*I registri dei terminali sono divisi in due (ricezione / trasmissione), 
             facendo l'indirizzo modulo 16 capiamo se siamo all'inizio del registro 
             (e quindi ricezione)
@@ -436,12 +414,8 @@ void SYS_Get_Process_Id(int parent)
         // NON CREDO SI POSSA FARE QUESTA ASSUNZIONE
 
         nsd_t *parentNs = getNamespace(current_process->p_parent, NS_PID);
-        aaaTest_variable = parentNs;
-        aaa_val_di_Test_variabile = &parentNs;
         /* se current_process e il processo padre non sono nello stesso namespace restituisci 0 */
         int pid2save = (parentNs != getNamespace(current_process, NS_PID)) ? 0 : current_process->p_parent->p_pid;
-        aaaBreakTest();
-        aaaTest_variable = pid2save;
         UPDATE_BIOSSTATE_REGV0(pid2save);
     }
 }

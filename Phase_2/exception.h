@@ -15,12 +15,7 @@ state_t *bios_State;
     e basta (no caso reincarazione)*/
 int pid_start = 1;
 
-unsigned int aaaTest_variable = 0;
-unsigned int* aaaTest_Supremo = NULL;
-unsigned int aaa_val_di_Test_variabile = 0;
-
 void foobar();
-
 
 void updateCPUtime();
 
@@ -67,14 +62,6 @@ void SYS_Get_Children(int *, int );
 int Check_Kernel_mode();
 
 void P_always(int *);
-
-
-/* funzioni per test */
-void aaaCASO_0_test(){}
-void aaaCASO_1_test(){}
-void aaaCASO_2_test(){}
-void aaaCASO_3_test(){}
-void aaaCASO_4_test(){}
 
 
 #endif

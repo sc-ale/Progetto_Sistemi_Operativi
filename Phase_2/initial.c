@@ -28,7 +28,6 @@ int main() {
     passUpVect->exception_handler = (memaddr) foobar;
     passUpVect->exception_stackPtr = (memaddr) KERNELSTACK; 
 
-    aaaTest_Supremo = (memaddr)0x1000025c;
     is_waiting = false;
 
 /* inizializzazione strutture dati prima fase */
@@ -86,14 +85,4 @@ int main() {
     return 0;
 }
 
-void aaaBreakTest(){}
-void aaa_readyQ_vuota(){}
-void aaa_fine_memcpy(){}
-void aaa_pid_errato(){}
-void aaa_dopoWAIT(){}
-void aaa_liberaSem(){}
-void aaa_semGiaAssociato(){}
-void aaa_InsertMaleVER(){}
-void aaa_InsertMalePAS(){}
-void aaa_procSEM(){}
 #endif

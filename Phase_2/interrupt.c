@@ -5,6 +5,7 @@
 
 int was_waiting;
 
+/* serve per copiare, ad esempio, strutture dati */
 void *memcpy(void *dest, const void *src, unsigned int n)
 {
     for (unsigned int i = 0; i < n; i++)
@@ -13,7 +14,6 @@ void *memcpy(void *dest, const void *src, unsigned int n)
     }
     //Questo return l'ho aggiunto per togliere il warning(non dovrebbe creare problemi
     // la funzione memcpy dovrebbe ritornare la locazione di memoria dove ha copiato)
-    aaa_fine_memcpy();
     return dest;
 } 
 
