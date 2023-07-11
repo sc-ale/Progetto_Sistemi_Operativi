@@ -52,71 +52,68 @@ void passup_ordie(int INDEX)
 /* Per le sys 3, 5, 7 servono delle operazioni in più, sezione 3.5.13 */
 void syscall_handler()
 {   
+    UPDATE_PC;  //evita i loop nelle syscall
     if(!Check_Kernel_mode()) {
         passup_ordie(GENERALEXCEPT);
     }
-    UPDATE_PC;  //evita i loop nelle syscall
+    else {
+        switch (bios_State->reg_a0)
+        {
+        case CREATEPROCESS:
+            SYS_create_process((state_t*)bios_State->reg_a1, (support_t*)bios_State->reg_a2, (nsd_t*)bios_State->reg_a3);
+            break;
 
-    switch (bios_State->reg_a0)
-    {
-    case CREATEPROCESS:
-        SYS_create_process((state_t*)bios_State->reg_a1, (support_t*)bios_State->reg_a2, (nsd_t*)bios_State->reg_a3);
-        break;
+        case TERMPROCESS:
+            SYS_terminate_process((int)bios_State->reg_a1);
+            break;
 
-    case TERMPROCESS:
-        SYS_terminate_process((int)bios_State->reg_a1);
-        break;
+        case PASSEREN:
+            SYS_Passeren((int*)bios_State->reg_a1);
+            break;
 
-    case PASSEREN:
-        SYS_Passeren((int*)bios_State->reg_a1);
-        break;
+        case VERHOGEN:
+            SYS_Verhogen((int*)bios_State->reg_a1);
+            break;
 
-    case VERHOGEN:
-        SYS_Verhogen((int*)bios_State->reg_a1);
-        break;
+        case DOIO:
+            SYS_Doio((int*)bios_State->reg_a1, (int*)bios_State->reg_a2);
+            break;
 
-    case DOIO:
-        SYS_Doio((int*)bios_State->reg_a1, (int*)bios_State->reg_a2);
-        break;
+        case GETTIME:
+            SYS_Get_CPU_Time();
+            break;
 
-    case GETTIME:
-        SYS_Get_CPU_Time();
-        break;
+        case CLOCKWAIT:
+            SYS_Clockwait();
+            break;
 
-    case CLOCKWAIT:
-        SYS_Clockwait();
-        break;
+        case GETSUPPORTPTR:
+            SYS_Get_Support_Data();
+            break;
 
-    case GETSUPPORTPTR:
-        SYS_Get_Support_Data();
-        break;
+        case GETPROCESSID:
+            SYS_Get_Process_Id((int)bios_State->reg_a1);
+            break;
 
-    case GETPROCESSID:
-        SYS_Get_Process_Id((int)bios_State->reg_a1);
-        break;
+        case GETCHILDREN:
+            SYS_Get_Children((int*)bios_State->reg_a1, (int)bios_State->reg_a2);
+            break;
 
-    case GETCHILDREN:
-        SYS_Get_Children((int*)bios_State->reg_a1, (int)bios_State->reg_a2);
-        break;
-
-    default:
-        passup_ordie(GENERALEXCEPT);
-        break;
+        default:
+            passup_ordie(GENERALEXCEPT);
+            break;
+        }
+        /* non verrà eseguito se prima sono state seguite delle sys bloccanti */
+        LDST(bios_State);
     }
-    /* non verrà eseguito se prima sono state seguite delle sys bloccanti */
-    LDST(bios_State);
 }
-
-/* operazioni comuni per le sys bloccanti, l'inserimento nella ASL del current
- process viene fatto all'interno delle sys*/
-
 
 /* Crea un nuovo processo come figlio del chiamante. Il primo parametro contiene lo stato
  che deve avere il processo. Se la system call ha successo il valore di ritorno (nel registro reg_v0)
  è il pid creato altrimenti è -1. supportp e’ un puntatore alla struttura di supporto del processo.
  Ns descrive il namespace di un determinato tipo da associare al processo, senza specificare
 il namespace (NULL) verra’ ereditato quello del padre.*/
-void SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns)
+static void SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns)
 {
     pcb_t *newProc = allocPcb();
     pid_start++;
@@ -153,9 +150,9 @@ void SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns)
 
 /* Termina il processo con identificativo pid e tutti suoi figli
  (e figli dei figli...) se pid è 0 allora termina il processo corrente */
-void SYS_terminate_process(int pid)
+static void SYS_terminate_process(int pid)
 {
-    terminate_family(pid);
+    terminate_family2(pid);
     scheduling();
 }
 
@@ -184,7 +181,7 @@ void terminate_family2(int pid) {
         if (is_sem_device_or_int(tmpSem)) {
             soft_block_count--;
         }
-    }else if (proc!=current_process){                                          
+    } else if (proc!=current_process){                                          
         outProcQ(&readyQ, proc);                                                            
     }
 
@@ -240,7 +237,7 @@ void kill_process(pcb_t *ptrn)
 /* Operazione di richiesta di un semaforo binario.
  Il valore del semaforo è memorizzato nella variabile di tipo intero passata per indirizzo.
  L’indirizzo della variabile agisce da identificatore per il semaforo */
-void SYS_Passeren(int *semaddr)
+static void SYS_Passeren(int *semaddr)
 {
     
     /* dobbiamo usare la hash dei semafori attivi */
@@ -323,7 +320,7 @@ void OPERAZIONICOMUNIDOIO123(int *cmdAddr, int *cmdValues, int *sem, int devreg)
 At the completion of the I-O operation the device register values are
 copied back in the cmdValues array
 */
-void SYS_Doio(int *cmdAddr, int *cmdValues)
+static void SYS_Doio(int *cmdAddr, int *cmdValues)
 {
     /* chiamare update_PC_SYS_non_bloccanti(); */
         /* Mappa i registri dei device da 0 a 39*/
@@ -366,7 +363,7 @@ void SYS_Doio(int *cmdAddr, int *cmdValues)
 }
 
 /* Restituisce il tempo di utilizzo del processore del processo in esecuzione*/
-void SYS_Get_CPU_Time()
+static void SYS_Get_CPU_Time()
 {
     /* Hence SYS6 should return the value in the Current Process’s p_time PLUS
      the amount of CPU time used during the current quantum/time slice.*/
@@ -377,12 +374,12 @@ void SYS_Get_CPU_Time()
 Equivalente a una Passeren sul semaforo dell’Interval Timer.
 – Blocca il processo invocante fino al prossimo tick del dispositivo.
 */
-void SYS_Clockwait()
+static void SYS_Clockwait()
 {
     if(sem_interval_timer == 0) {
-    /* aggiungere current_process nella coda dei processi bloccati da una P e sospenderlo*/
-    insertBlocked(&sem_interval_timer, current_process);
-    soft_block_count++;
+        /* aggiungere current_process nella coda dei processi bloccati da una P e sospenderlo*/
+        insertBlocked(&sem_interval_timer, current_process);
+        soft_block_count++;
     }
     /* se inserimento_avvenuto è 1 allora non è stato possibile allocare un nuovo SEMD perché la semdFree_h è vuota */
 
@@ -392,7 +389,7 @@ void SYS_Clockwait()
 
 /* Restituisce un puntatore alla struttura di supporto del processo corrente,
  ovvero il campo p_supportStruct del pcb_t.*/
-void SYS_Get_Support_Data()
+static void SYS_Get_Support_Data()
 {
     UPDATE_BIOSSTATE_REGV0(current_process->p_supportStruct);
     //return current_process->p_supportStruct;
@@ -402,7 +399,7 @@ void SYS_Get_Support_Data()
  quello del genitore del processo invocante altrimenti.
  Se il parent non e’ nello stesso PID namespace del processo figlio,
  questa funzione ritorna 0 (se richiesto il pid del padre)! */
-void SYS_Get_Process_Id(int parent)
+static void SYS_Get_Process_Id(int parent)
 {
     if (parent == 0)
     {
@@ -422,7 +419,7 @@ void SYS_Get_Process_Id(int parent)
 
 /* Ritorna il numero di pid dei figli che appartengono allo stesso ns del chiamante e
  li salva nell'array children di dimensione size */
-void SYS_Get_Children(int *children, int size)
+static void SYS_Get_Children(int *children, int size)
 {
     int num = 0;
     if(!emptyChild(current_process)) 

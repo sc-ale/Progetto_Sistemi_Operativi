@@ -9,9 +9,6 @@ extern state_t* bios_State;
 
 extern void SYS_Verhogen(int*);
 
-extern unsigned int aaaTest_variable;
-
-
 void *memcpy(void *, const void *, unsigned int );
 
 /* Restituisce la linea con interrupt in attesa con massima priorità. 

@@ -95,7 +95,7 @@ void interrupt_handler()
     if (was_waiting) {
         scheduling();
     }
-    else {;
+    else {
         LDST(bios_State);
     }
 

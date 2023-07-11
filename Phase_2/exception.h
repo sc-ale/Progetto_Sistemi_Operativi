@@ -23,13 +23,9 @@ void passup_ordie(int );
 
 void syscall_handler();
 
-void update_PC_SYS_non_bloccanti();
+static void SYS_create_process(state_t *, support_t *, nsd_t *);
 
-void update_PC_SYS_bloccanti();
-
-void SYS_create_process(state_t *, support_t *, nsd_t *);
-
-void SYS_terminate_process(int );
+static void SYS_terminate_process(int );
 
 void terminate_family(int);
 
@@ -41,27 +37,25 @@ pcb_t* getProcByPid(int);
 
 void kill_process(pcb_t *);
 
-void SYS_Passeren(int *);
+static void SYS_Passeren(int *);
 
 void SYS_Verhogen(int *);
 
-void SYS_Doio(int *, int *);
+static void SYS_Doio(int *, int *);
 
 void OPERAZIONICOMUNIDOIO123();
 
-void SYS_Get_CPU_Time();
+static void SYS_Get_CPU_Time();
 
-void SYS_Clockwait();
+static void SYS_Clockwait();
 
-void SYS_Get_Support_Data();
+static void SYS_Get_Support_Data();
 
-void SYS_Get_Process_Id(int );
+static void SYS_Get_Process_Id(int );
 
-void SYS_Get_Children(int *, int );
+static void SYS_Get_Children(int *, int );
 
 int Check_Kernel_mode();
-
-void P_always(int *);
 
 
 #endif
