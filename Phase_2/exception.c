@@ -69,7 +69,6 @@ void syscall_handler()
 
     case PASSEREN:
         SYS_Passeren((int*)bios_State->reg_a1);
-        
         break;
 
     case VERHOGEN:
@@ -98,6 +97,8 @@ void syscall_handler()
 
     case GETCHILDREN:
         SYS_Get_Children((int*)bios_State->reg_a1, (int)bios_State->reg_a2);
+        break;
+
     default:
         passup_ordie(GENERALEXCEPT);
         break;
@@ -434,37 +435,45 @@ void SYS_Get_Process_Id(int parent)
         /* assumiamo che il processo corrente abbia un padre (?) */
         // NON CREDO SI POSSA FARE QUESTA ASSUNZIONE
 
-        nsd_t *parent_namespace = getNamespace(current_process->p_parent, current_process->namespaces[0]->n_type);
-        aaaTest_variable = parent_namespace;
-        aaa_val_di_Test_variabile = &parent_namespace;
+        nsd_t *parentNs = getNamespace(current_process->p_parent, NS_PID);
+        aaaTest_variable = parentNs;
+        aaa_val_di_Test_variabile = &parentNs;
         /* se current_process e il processo padre non sono nello stesso namespace restituisci 0 */
-        int pid2save = (parent_namespace != getNamespace(current_process, current_process->namespaces[0]->n_type)) ? 0 : current_process->p_parent->p_pid;
+        int pid2save = (parentNs != getNamespace(current_process, NS_PID)) ? 0 : current_process->p_parent->p_pid;
         aaaBreakTest();
         aaaTest_variable = pid2save;
         UPDATE_BIOSSTATE_REGV0(pid2save);
     }
 }
 
-/**/
+/* Ritorna il numero di pid dei figli che appartengono allo stesso ns del chiamante e
+ li salva nell'array children di dimensione size */
 void SYS_Get_Children(int *children, int size)
 {
     int num = 0;
-    struct list_head *pos, *current = NULL;
-    int current_namespace = current_process->namespaces[0]->n_type;
-    pcb_t *first_child = list_first_entry(&(current_process->p_child), pcb_t, p_child);
-    list_for_each_safe(pos, current, &first_child->p_sib)
-    {
-        pcb_t *temp = list_entry(pos, struct pcb_t, p_sib);
-        if (current_namespace == temp->namespaces[0]->n_type)
-        {
-            if (num < size)
-            {
-                children[num] = temp->p_pid;
+    if(!emptyChild(current_process)) 
+    {                                              
+        pcb_t* firstChild = list_first_entry(&current_process->p_child,struct pcb_t,p_child);    
+        nsd_t* currNs = getNamespace(current_process, NS_PID);                               
+        if (currNs == getNamespace(firstChild, NS_PID)){                                    
+            if (num < size)                                                       
+                children[num] = firstChild->p_pid; 
+            num++;                                                                    
+        }
+        
+        /* è necessario loopare sui fratelli in modo distinto siccome 
+         firstChild è l'elemento sentinella, quindi non vede se stesso */
+        struct pcb_t* currPcb = NULL;
+        list_for_each_entry(currPcb,&firstChild->p_sib,p_sib){                        
+            if (currNs == getNamespace(currPcb, NS_PID)){   
+                if (num < size)
+                    children[num] = currPcb->p_pid;                            
+                num++;
             }
-            num++;
         }
     }
     UPDATE_BIOSSTATE_REGV0(num);
+    
 }
 
 /* Per determinare se il processo corrente stava eseguento in kernel o user mode,
