@@ -104,6 +104,9 @@ void syscall_handler()
             break;
         }
         /* non verrà eseguito se prima sono state seguite delle sys bloccanti */
+        if(getTIMER()>TIMESLICE || getTIMER()<TIMEBONUS){
+            setTIMER(TIMEBONUS);
+        }
         LDST(bios_State);
     }
 }
