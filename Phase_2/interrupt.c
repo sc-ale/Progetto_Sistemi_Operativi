@@ -60,7 +60,7 @@ void interrupt_handler() {
             general_interrupt_handler(line); 
             break;
         
-        /* Terminal devices*/
+        /* Terminal devices */
         case TERMINT:
             terminal_interrupt_handler();
             break;
