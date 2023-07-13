@@ -9,7 +9,7 @@ extern state_t* bios_State;
 
 /* Variabile locale usata per capire se c'e' un processo a cui ritornare il controllo*/
 extern bool was_waiting;
-
+extern int* deviceType2Sem(int);
 extern void SYS_Verhogen(int*);
 
 void *memcpy(void *, const void *, unsigned int );
@@ -35,8 +35,6 @@ int Get_interrupt_device(int );
 void general_interrupt_handler(int );
 
 void terminal_interrupt_handler();
-
-
 
 
 #endif

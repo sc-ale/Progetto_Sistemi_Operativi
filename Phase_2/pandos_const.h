@@ -79,7 +79,7 @@
 #define PRIVINSTR      10
 #define CAUSESHIFT     2
 
-#define INTERRUPTEXC
+#define INTERRUPTEXC   0
 #define TLBEXCEPT      1 ... 3
 #define PROGTRAP1      4 ... 7
 #define PROGTRAP2      9 ... 12 

@@ -46,12 +46,12 @@ void interrupt_handler() {
     
     switch (line) {
         /* interrupt processor Local Timer */
-        case PLTINT:
+        case 1:
             PLT_interrupt_handler();
             break;
         
         /* interrupt Interval Timer */
-        case ITINT:
+        case 2:
             IT_interrupt_handler();
             break;
 
@@ -122,13 +122,13 @@ int Get_interrupt_device(int device_type) {
 
 //3.6.1     
 void general_interrupt_handler(int device_type) {   /* vedere arch.h */
-    int DevNo = Get_interrupt_device(device_type);
+    int devNo = Get_interrupt_device(device_type);
 
     // Forse è possibile fare una funzione comune per tutti i device, passando device_type per parametro
     
     /* Save off the status code from the device’s device register. */
     /*Uso la macro per trovare l'inidirzzo di base del device con la linea di interrupt e il numero di device*/
-    dtpreg_t *dev_addr = (dtpreg_t*) DEV_REG_ADDR(device_type,DevNo);
+    dtpreg_t *dev_addr = (dtpreg_t*) DEV_REG_ADDR(device_type,devNo);
     /* Copia del device register*/
     dtpreg_t dev_reg;
     dev_reg.status = dev_addr->status;
@@ -145,28 +145,10 @@ void general_interrupt_handler(int device_type) {   /* vedere arch.h */
         its completion via a SYS5 operation.*/
 
     pcb_t *blocked_process = NULL;
-    switch(device_type){
-        case DISKINT:
-            blocked_process = headBlocked(&sem_disk[DevNo]);
-            SYS_Verhogen(&sem_disk[DevNo]);
-            break;
-        case FLASHINT:
-            blocked_process = headBlocked(&sem_tape[DevNo]);
-            SYS_Verhogen(&sem_tape[DevNo]);
-            break;
-        case NETWINT:
-            blocked_process = headBlocked(&sem_network[DevNo]);
-            SYS_Verhogen(&sem_network[DevNo]);
-            break;
-        case PRNTINT:
-            blocked_process = headBlocked(&sem_printer[DevNo]);
-            SYS_Verhogen(&sem_printer[DevNo]);
-            break;
-        case TERMINT:
-            blocked_process = headBlocked(&sem_terminal[DevNo]);
-            SYS_Verhogen(&sem_terminal[DevNo]);
-            break;
-    }
+    /* Si sottrae 3 a device_type siccome questo assume i valori da 3 a 7 */
+    int* sem2use = deviceType2Sem(device_type-3);
+    blocked_process = headBlocked(&sem2use[devNo]);
+    SYS_Verhogen(&sem2use[devNo]);
 
     /* Place the stored off status code in the newly unblocked pcb’s v0 register.*/
     blocked_process->p_s.reg_v0=dev_reg.status;

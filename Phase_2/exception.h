@@ -7,6 +7,7 @@
 #define UPDATE_PC bios_State->pc_epc += WORDLEN;
 #define SAVESTATE current_process->p_s = *bios_State
 #define UPDATE_BIOSSTATE_REGV0(T) bios_State->reg_v0 = (unsigned int)T;  
+#define IS_SEM_DEVICE_OR_INT(T) (T == &sem_interval_timer || T == sem_disk || T == sem_network || T == sem_printer || T == sem_tape || T == sem_terminal)
 
 pcb_t pcbFree_table[MAXPROC];
 state_t *bios_State;
@@ -31,7 +32,7 @@ void terminate_family(int);
 
 void terminate_family2(int);
 
-bool is_sem_device_or_int(int*);
+int* deviceType2Sem(int);
 
 pcb_t* getProcByPid(int);
 
@@ -43,7 +44,7 @@ void SYS_Verhogen(int *);
 
 static void SYS_Doio(int *, int *);
 
-void OPERAZIONICOMUNIDOIO123();
+void general_Doio(int *, int *, int, int);
 
 static void SYS_Get_CPU_Time();
 

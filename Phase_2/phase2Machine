@@ -4,7 +4,7 @@
         "load-core-file": true
     },
     "bootstrap-rom": "/usr/share/umps3/coreboot.rom.umps",
-    "clock-rate": 1,
+    "clock-rate": 65,
     "devices": {
         "terminal0": {
             "enabled": true,

@@ -8,7 +8,7 @@ void exception_handler() {
     bios_State = (state_t*) BIOSDATAPAGE;
     /* fornisce il codice del tipo di eccezione avvenuta */
     switch (CAUSE_GET_EXCCODE(bios_State->cause)) {
-        case IOINTERRUPTS:
+        case INTERRUPTEXC:
             interrupt_handler();
             break;
         case TLBEXCEPT:
@@ -99,8 +99,8 @@ void syscall_handler() {
                 passup_ordie(GENERALEXCEPT);
                 break;
         }
-        /* non verrà eseguito se prima sono state seguite delle sys bloccanti */
-
+        
+        /* Il seguente codice non verrà eseguito se prima sono state seguite delle sys bloccanti */
         if (getTIMER()>TIMESLICE || getTIMER()<TIMEBONUS) { 
             /* Se il PLT è scaduto o sta per scadere carica un breve tempo aggiuntivo */
             setTIMER(TIMEBONUS);
@@ -184,9 +184,6 @@ void terminate_family(int pid) {
     kill_process(Proc2Delete);
 }
 
-bool is_sem_device_or_int(int* addSem) {
-    return (addSem == &sem_interval_timer || addSem == sem_disk || addSem == sem_network || addSem == sem_printer || addSem == sem_tape || addSem == sem_terminal);
-}
 
 void kill_process(pcb_t *ptrn) {
     process_count--;
@@ -194,7 +191,7 @@ void kill_process(pcb_t *ptrn) {
         int * tmpSem = ptrn->p_semAdd;  
         /* processo bloccato su un semaforo */
         outBlocked(ptrn);
-        if (is_sem_device_or_int(tmpSem)) {
+        if (IS_SEM_DEVICE_OR_INT(tmpSem)) {
             soft_block_count--;
         }
     } else if (ptrn!=current_process) {
@@ -209,7 +206,6 @@ void kill_process(pcb_t *ptrn) {
  Il valore del semaforo è memorizzato nella variabile di tipo intero passata per indirizzo.
  L’indirizzo della variabile agisce da identificatore per il semaforo */
 static void SYS_Passeren(int *semaddr) {
-    
     if (*semaddr == 0) {
         /* Inserimento di current_process nella coda del semaforo semaddr */
         insertBlocked(semaddr, current_process);
@@ -226,7 +222,6 @@ static void SYS_Passeren(int *semaddr) {
 
 /* Operazione di rilascio di un semaforo binario la cui chiave è il valore puntato da semaddr */
 void SYS_Verhogen(int *semaddr) {
-
     if (*semaddr == 1) {
         /* Inserimento di current_process nella coda del semaforo semaddr */
         insertBlocked(semaddr, current_process);
@@ -239,17 +234,6 @@ void SYS_Verhogen(int *semaddr) {
     } else {
         *semaddr=1;
     }
-}
-
-void general_Doio(int *cmdAddr, int *cmdValues, int *sem, int devReg) {
-    int devNo;
-    for (int i=0; i<4; i++){
-        cmdAddr[i] = cmdValues[i];
-    }
-    /*Calcola il device giusto e esegui una P sul suo semaforo*/
-    devNo = devReg % 8;
-    UPDATE_BIOSSTATE_REGV0(0);
-    SYS_Passeren(&sem[devNo]);
 }
 
 /* Effettua un’operazione di I/O. CmdValues e’ un vettore di 2 interi
@@ -268,40 +252,64 @@ copied back in the cmdValues array
 static void SYS_Doio(int *cmdAddr, int *cmdValues) {
     /* Mappa i registri dei device da 0 a 39*/
     int devReg = ((memaddr)cmdAddr - DEV_REG_START) / DEV_REG_SIZE;
+    int typeDevice = devReg/8;
+    
     soft_block_count++;
     current_process->IOvalues = cmdValues;
-    /* Selezione del tipo di device */
-    switch (devReg / 8)
-    {
-    case 0:
-        general_Doio(cmdAddr, cmdValues, sem_disk, devReg);
-        break;
-    case 1:
-        general_Doio(cmdAddr, cmdValues, sem_tape, devReg);
-        break;
-    case 2: 
-        general_Doio(cmdAddr, cmdValues, sem_network, devReg);
-        break;
-    case 3:
-        general_Doio(cmdAddr, cmdValues, sem_printer, devReg);
-        break;
-    case 4:
 
-        for (int i=0; i<2; i++){
-            cmdAddr[i] = cmdValues[i];
-        }
-
-        /* Selezione del terminale specifico - da 0 a 7 ricezione, da 8 a 15 trasmissione */
-        int devNo = (*cmdAddr%16 == 0) ? devReg%8 : (devReg%8)+8;
-        UPDATE_BIOSSTATE_REGV0(0);
-        SYS_Passeren(&sem_terminal[devNo]);
-        break;
-    default:
+    if (typeDevice<0 || typeDevice>4) {
         soft_block_count--;
         UPDATE_BIOSSTATE_REGV0(-1);
-        break;
+    } else {
+        general_Doio(cmdAddr, cmdValues, devReg, typeDevice);
     }
 }
+
+void general_Doio(int *cmdAddr, int *cmdValues, int devReg, int typeDevice) {
+    int *sem2use = deviceType2Sem(typeDevice);
+    int iterMax = (typeDevice == 4) ? 2:4;
+
+    for (int i=0; i<iterMax; i++){
+        cmdAddr[i] = cmdValues[i];
+    }
+    /* Calcola il device specifico */
+    int devNo;
+    if (typeDevice == 4) {
+        /* Il device è un terminale */
+        devNo = (*cmdAddr%16 == 0) ? devReg%8 : (devReg&8)+8;
+    } else {
+        devNo = devReg % 8;
+    }
+    UPDATE_BIOSSTATE_REGV0(0);
+    SYS_Passeren(&sem2use[devNo]);
+}
+
+int* deviceType2Sem(int type) {
+    int *sem2rtrn;
+    /* Selezione del tipo di device */
+    switch (type) {
+        case 0:
+            sem2rtrn = sem_disk;
+            break;
+        case 1:
+            sem2rtrn = sem_tape;
+            break;
+        case 2:
+            sem2rtrn = sem_network;
+            break;
+        case 3:
+            sem2rtrn = sem_printer;
+            break;
+        case 4:
+            sem2rtrn = sem_terminal;
+            break;
+        default:
+            sem2rtrn = NULL;
+            break;
+    }
+    return sem2rtrn;
+}
+
 
 /* Restituisce il tempo di utilizzo del processore del processo in esecuzione*/
 static void SYS_Get_CPU_Time() {
