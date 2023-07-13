@@ -15,7 +15,7 @@ state_t *bios_State;
     e basta (no caso reincarazione)*/
 int pid_start = 1;
 
-void foobar();
+void exception_handler();
 
 void updateCPUtime();
 
@@ -56,6 +56,5 @@ static void SYS_Get_Process_Id(int );
 static void SYS_Get_Children(int *, int );
 
 int Check_Kernel_mode();
-
-
+bool  was_waiting;
 #endif

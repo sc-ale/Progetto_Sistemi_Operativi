@@ -27,15 +27,7 @@ void initNamespaces()
 nsd_t *getNamespace(pcb_t *p, int type)
 {   
     /* verifica che il tipo assegnato sia valido */
-    /*
     return (p==NULL || type<0 || type > NS_TYPE_LAST) ? NULL : p->namespaces[type];
-    */
-   for (int i=0; i<NS_TYPE_MAX; i++){
-    	if (p->namespaces[i]->n_type==type){
-    	    return p->namespaces[i];	
-    	}
-    }
-    return NULL;
 }
 
 int addNamespace(pcb_t *p, nsd_t *ns)

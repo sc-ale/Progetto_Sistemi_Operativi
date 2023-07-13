@@ -3,41 +3,32 @@
 
 #include "interrupt.h"
 
-int was_waiting;
-
 /* serve per copiare, ad esempio, strutture dati */
-void *memcpy(void *dest, const void *src, unsigned int n)
-{
-    for (unsigned int i = 0; i < n; i++)
-    {
+void *memcpy(void *dest, const void *src, unsigned int n) {
+    for (unsigned int i = 0; i < n; i++) {
         ((char*)dest)[i] = ((char*)src)[i];
     }
-    //Questo return l'ho aggiunto per togliere il warning(non dovrebbe creare problemi
-    // la funzione memcpy dovrebbe ritornare la locazione di memoria dove ha copiato)
     return dest;
 } 
 
 /* Restituisce la linea con interrupt in attesa con massima priorità. 
 (Se nessuna linea è attiva ritorna 8 ma assumiamo che quando venga
  chiamata ci sia almeno una linea attiva) */
-int Get_Interrupt_Line_Max_Prio (){
+int Get_Interrupt_Line () {
     unsigned int interrupt_pending = bios_State->cause & CAUSE_IP_MASK;
-    /* così abbiamo solo i bit attivi da 8 a 15 del cause register */
+    /* Maschera i bit lasciando attivi quelli da 8 a 15 del cause register */
+    unsigned int linea = 0;
     unsigned int intpeg_linee[8];
-    for (int i=0; i<8; i++) {
+    /* Ignora l'8 bit del cause register */
+    for (int i=1; i<8; i++) {
         unsigned mask = ((1<<1)-1)<<(i+8);
         intpeg_linee[i] = mask & interrupt_pending;
-    }
-    /* intpeg_linee[i] indica se la linea i-esima è attiva */
-    
-    int linea=1; /* questo perché ignoriamo la linea 0*/
-    while(linea<8) {
-        if(intpeg_linee[linea]!=0) { 
+        /* intpeg_linee[i] indica se la linea i-esima è attiva */
+        if(intpeg_linee[i]!=0) {
+            linea = i;
             break;
         }
-        linea++;
     }
-    /* ritorniamo la quale linea è attiva */
     return linea;
 }
 
@@ -46,56 +37,42 @@ The interrupt exception handler’s first step is to determine which device
  or timer with an outstanding interrupt is the highest priority.
  Depending on the device, the interrupt exception handler will 
  perform a number of tasks.*/
-void interrupt_handler()
-{
+void interrupt_handler() {
+    /* Usiamo was_waiting per memorizzare se e' presente un processo a cui tornare il controllo */
     was_waiting = is_waiting;
     is_waiting = false;
-    /* sezione 3.6.1 a 3.6.3*/
-    switch (Get_Interrupt_Line_Max_Prio())
-    {
-    /* interrupt processor Local Timer */
-    case 1:
-        PLT_interrupt_handler();
-        break;
-    
-    /* interrupt Interval Timer */
-    case 2:
-        IT_interrupt_handler();
-        break;
 
-    /* Disk devices */
-    case DISKINT:
-        general_interrupt_handler(DISKINT); /* passare la interrupt line*/
-        break;
+    int line = Get_Interrupt_Line();
     
-    /* Flash devices */
-    case FLASHINT:
-        general_interrupt_handler(FLASHINT); /* passare la interrupt line*/
-        break;
-    
-    /* Network devices*/
-    case NETWINT:
-        general_interrupt_handler(NETWINT); /* passare la interrupt line*/
-        break;
+    switch (line) {
+        /* interrupt processor Local Timer */
+        case PLTINT:
+            PLT_interrupt_handler();
+            break;
+        
+        /* interrupt Interval Timer */
+        case ITINT:
+            IT_interrupt_handler();
+            break;
 
-    /* Printer devices */
-    case PRNTINT:
-        general_interrupt_handler(PRNTINT); /* passare la interrupt line*/
-        break;
-    
-    /* Terminal devices*/
-    case TERMINT:
-        terminal_interrupt_handler(); /* passare la interrupt line*/
-        break;
+        /* All devices except terminal */
+        case DISKINT ... PRNTINT:
+            general_interrupt_handler(line); 
+            break;
+        
+        /* Terminal devices*/
+        case TERMINT:
+            terminal_interrupt_handler();
+            break;
 
-    default:
-        break;
+        default:
+            break;
     }
    
+    /* Verifica se c'e' un processo a cui tornare il controllo, altrimenti chiama lo scheduler */
     if (was_waiting) {
         scheduling();
-    }
-    else {
+    } else {
         LDST(bios_State);
     }
 
@@ -103,76 +80,55 @@ void interrupt_handler()
 
 //3.6.2
 void PLT_interrupt_handler() {
-    /* Bisogna controllare che il PLT è attivo*/
-    /*Acknowledge the PLT interrupt by loading the timer with a new value.*/
+    /* ACK & LOAD del PLT */
     setTIMER(TIMESLICE);
 
-    /* Copy the processor state at the time of the exception (located at the start of the BIOS Data Page [Section ??-pops]) into the Current Pro- cess’s pcb (p_s). */
     current_process->p_s = *bios_State;
-
-    /* Place the Current Process on the Ready Queue; transitioning the Current Process from the “running” state to the “ready” state. */
     insertProcQ(&readyQ, current_process);
 
-    /*Call the scheduler*/
     scheduling();
 }
 
 //3.6.3
-void IT_interrupt_handler(){
-    /*Acknowledge the interrupt by loading the Interval Timer with a new value: 100 milliseconds.*/
+void IT_interrupt_handler() {
+    /* ACK & LOAD dell'IT */
     LDIT(PSECOND);
 
-        /*Unblock ALL pcbs blocked on the Pseudo-clock semaphore. Hence, the semantics of this semaphore are a bit different than traditional synchronization semaphores*/
-    while(headBlocked(&sem_interval_timer)!=NULL){
+    /* Sblocca tutti i processi bloccati sul semaforo dell'interval timer */
+    while (headBlocked(&sem_interval_timer)!=NULL) {
         insertProcQ(&readyQ, removeBlocked(&sem_interval_timer)); 
         soft_block_count--;
     }
-
-    sem_interval_timer = 0;
-    
-    /*Return control to the Current Process: Perform a LDST on the saved exception state*/
-
-
-        
 }
 
 /* ritorna la linea del device il cui interrupt è attivo */
-int Get_interrupt_device(int IntLineNo)
-{
-    /* Calculate the address for this device’s device register */
-    unsigned int *interrupt_dev_bit_map = (unsigned int*)CDEV_BITMAP_ADDR(IntLineNo);
-
-    // 1000 0050
-    /*+indirizzo diverso in base al tipo di device */
+int Get_interrupt_device(int device_type) {
+    /* Calcola l'indirizzo specifico del tipo di device */
+    unsigned int *interrupt_dev_bit_map = (unsigned int*)CDEV_BITMAP_ADDR(device_type);
 
     unsigned int int_linee[8];
+    int linea=0;
+
     for (int i=0; i<8; i++) {
         unsigned mask = ((1<<1)-1)<<i;
         int_linee[i] = mask & *interrupt_dev_bit_map;
-    }
-    
-    /* int_linee[i] indica se la linea i-esima è attiva */
-    int linea=0;
-    while(linea<8) {
         if(int_linee[linea]!=0) { 
+            linea = i;
             break;
         }
-        linea++;
     }
-    
-return linea;
+    return linea;
 }
 
 //3.6.1     
-void general_interrupt_handler(int IntLineNo)
-{   /* vedere arch.h */
-    int DevNo = Get_interrupt_device(IntLineNo);
+void general_interrupt_handler(int device_type) {   /* vedere arch.h */
+    int DevNo = Get_interrupt_device(device_type);
 
-    // Forse è possibile fare una funzione comune per tutti i device, passando IntLineNo per parametro
+    // Forse è possibile fare una funzione comune per tutti i device, passando device_type per parametro
     
     /* Save off the status code from the device’s device register. */
     /*Uso la macro per trovare l'inidirzzo di base del device con la linea di interrupt e il numero di device*/
-    dtpreg_t *dev_addr = (dtpreg_t*) DEV_REG_ADDR(IntLineNo,DevNo);
+    dtpreg_t *dev_addr = (dtpreg_t*) DEV_REG_ADDR(device_type,DevNo);
     /* Copia del device register*/
     dtpreg_t dev_reg;
     dev_reg.status = dev_addr->status;
@@ -189,7 +145,7 @@ void general_interrupt_handler(int IntLineNo)
         its completion via a SYS5 operation.*/
 
     pcb_t *blocked_process = NULL;
-    switch(IntLineNo){
+    switch(device_type){
         case DISKINT:
             blocked_process = headBlocked(&sem_disk[DevNo]);
             SYS_Verhogen(&sem_disk[DevNo]);

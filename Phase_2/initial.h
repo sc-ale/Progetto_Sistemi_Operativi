@@ -12,7 +12,7 @@
 extern void uTLB_RefillHandler();
 extern void test();
 extern void scheduling();
-extern void foobar();
+extern void exception_handler();
 
 
 #endif 

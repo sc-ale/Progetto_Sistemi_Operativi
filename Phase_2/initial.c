@@ -25,7 +25,7 @@ int main() {
     passupvector_t *passUpVect = (passupvector_t*) PASSUPVECTOR;
     passUpVect->tlb_refill_handler = (memaddr) uTLB_RefillHandler;
     passUpVect->tlb_refill_stackPtr = (memaddr) KERNELSTACK;
-    passUpVect->exception_handler = (memaddr) foobar;
+    passUpVect->exception_handler = (memaddr) exception_handler;
     passUpVect->exception_stackPtr = (memaddr) KERNELSTACK; 
 
     is_waiting = false;
