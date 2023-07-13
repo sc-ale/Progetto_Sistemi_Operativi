@@ -45,12 +45,12 @@ void interrupt_handler() {
     int line = Get_Interrupt_Line();
     
     switch (line) {
-        /* interrupt processor Local Timer */
+        /* Interrupt processor Local Timer */
         case 1:
             PLT_interrupt_handler();
             break;
         
-        /* interrupt Interval Timer */
+        /* Interrupt Interval Timer */
         case 2:
             IT_interrupt_handler();
             break;
@@ -203,4 +203,5 @@ void terminal_interrupt_handler(){
     /* Return control to the Current Process: Perform a LDST on the saved
         exception state (located at the start of the BIOS Data Page */
 }
+
 #endif

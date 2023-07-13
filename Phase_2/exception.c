@@ -159,9 +159,9 @@ static void SYS_terminate_process(int pid) {
 /* ritorna il pcb con pid dato */
 pcb_t* getProcByPid(int pid) {
     pcb_t* proc2rtrn = NULL;
-    /* verifico che il processo con p_pid == pid sia nella readyQ o su un semaforo */
+    /* Verifico che il processo con p_pid == pid sia nella readyQ o su un semaforo */
     if ((proc2rtrn = getProcInHead(pid, &readyQ)) == NULL) {
-        /* non è in readyQ, quindi deve essere su qualche semaforo */
+        /* Non è in readyQ, quindi deve essere su qualche semaforo */
         proc2rtrn = getProcByPidOnSem(pid);
     }
     return proc2rtrn;
@@ -189,13 +189,13 @@ void kill_process(pcb_t *ptrn) {
     process_count--;
     if (ptrn->p_semAdd != NULL) {   
         int * tmpSem = ptrn->p_semAdd;  
-        /* processo bloccato su un semaforo */
+        /* Processo bloccato su un semaforo */
         outBlocked(ptrn);
         if (IS_SEM_DEVICE_OR_INT(tmpSem)) {
             soft_block_count--;
         }
     } else if (ptrn!=current_process) {
-        /* processo bloccato nella readyQ */                                          
+        /* Processo nella readyQ */                                          
         outProcQ(&readyQ, ptrn);                                                            
     }
     ptrn->p_pid = 0;
@@ -250,7 +250,7 @@ At the completion of the I-O operation the device register values are
 copied back in the cmdValues array
 */
 static void SYS_Doio(int *cmdAddr, int *cmdValues) {
-    /* Mappa i registri dei device da 0 a 39*/
+    /* devReg mappa i registri dei device da 0 a 39 */
     int devReg = ((memaddr)cmdAddr - DEV_REG_START) / DEV_REG_SIZE;
     int typeDevice = devReg/8;
     
