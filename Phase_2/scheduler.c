@@ -1,42 +1,27 @@
 #ifndef SCHEDULER_C 
 #define SCHEDULER_C
-
 #include "scheduler.h"
-// necessario controllare se l'interrupt è stato chiamata durante
-// l'esecuzione di un processo o durante una wait
 
-void scheduling(){
-    /* readyQ non vuota */
-    if (!emptyProcQ(&readyQ))
-    {
+void scheduling() {
+    if (!emptyProcQ(&readyQ)) {
+        /* C'e' almeno un processo pronto ad essere eseguito */
         current_process = removeProcQ(&readyQ);
         setTIMER(TIMESLICE);
 
+        /* Salvataggio del momento in cui viene lanciato */
         STCK(current_process->istante_Lancio_Blocco); 
-        /* per salvarsi il momento in cui viene lanciato */
-        
+        /* Caricamento del processo */
         LDST((STATE_PTR)&current_process->p_s);
-    }
-    else if(process_count==0)
-    {
+    } else if (process_count==0) {
         HALT();
-    }
-    else if(process_count>0 && soft_block_count>0)
-    {
-        /* the Scheduler must first set the Status register
-            to enable interrupts and either disable the PLT
-        The first interrupt that occurs after entering a 
-        Wait State should not be for the PLT. */
+    } else if (process_count>0 && soft_block_count>0) {
         is_waiting = true;
+        /* Disattivazione dell'interrupt del PLT */
         setSTATUS((IECON | IMON) & (~TEBITON));
-        //setTIMER(NEVER);
-        /* fare qualcosa con il PLT*/
         WAIT();
-        //quando esce dal wait dove va?
-    }
-    else if (process_count>0 && soft_block_count==0)
-    {
+    } else if (process_count>0 && soft_block_count==0) {
         PANIC();
     }
 }
+
 #endif
