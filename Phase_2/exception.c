@@ -101,10 +101,6 @@ void syscall_handler() {
         }
         
         /* Il seguente codice non verrà eseguito se prima sono state seguite delle sys bloccanti */
-        if (getTIMER()>TIMESLICE || getTIMER()<TIMEBONUS) { 
-            /* Se il PLT è scaduto o sta per scadere carica un breve tempo aggiuntivo */
-            setTIMER(TIMEBONUS);
-        }
         LDST(bios_State);
     }
 }
