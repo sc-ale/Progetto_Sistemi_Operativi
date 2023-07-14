@@ -2,24 +2,28 @@
 #define EXCEPTION_C
 #include "exception.h"
 
-/* CONTROLLARE LA SEZIONE 3.5.12 */
 void exception_handler() {
     updateCPUtime();
     bios_State = (state_t*) BIOSDATAPAGE;
     /* fornisce il codice del tipo di eccezione avvenuta */
     switch (CAUSE_GET_EXCCODE(bios_State->cause)) {
+
         case INTERRUPTEXC:
             interrupt_handler();
             break;
+
         case TLBEXCEPT:
             passup_ordie(PGFAULTEXCEPT);
             break;
+        
         case PROGTRAP1:
             passup_ordie(GENERALEXCEPT);
             break;
+        
         case SYSEXCEPTION:
             syscall_handler();
             break;
+        
         case PROGTRAP2:
             passup_ordie(GENERALEXCEPT);
             break;
@@ -35,8 +39,6 @@ void updateCPUtime(){
     current_process->p_time += (momento_attuale - current_process->istante_Lancio_Blocco);
 }
 
-/*siccome perTLB , ProgramTrap e SYSCALL > 11 bisogna effettuare PASS UP OR DIE avrebbe senso creare una funzione*/
-// DA RIGUARDARE 3.7
 void passup_ordie(int INDEX) {
     if (current_process->p_supportStruct == NULL) {
         SYS_terminate_process(0);
@@ -47,9 +49,8 @@ void passup_ordie(int INDEX) {
     }
 }
 
-/* Per le sys 3, 5, 7 servono delle operazioni in più, sezione 3.5.13 */
 void syscall_handler() {   
-    UPDATE_PC;  //evita i loop nelle syscall
+    UPDATE_PC;
     if (!Check_Kernel_mode()) {
         passup_ordie(GENERALEXCEPT);
     } else {
@@ -64,35 +65,35 @@ void syscall_handler() {
                 break;
 
             case PASSEREN:
-                SYS_Passeren((int*)bios_State->reg_a1);
+                SYS_passeren((int*)bios_State->reg_a1);
                 break;
 
             case VERHOGEN:
-                SYS_Verhogen((int*)bios_State->reg_a1);
+                SYS_verhogen((int*)bios_State->reg_a1);
                 break;
 
             case DOIO:
-                SYS_Doio((int*)bios_State->reg_a1, (int*)bios_State->reg_a2);
+                SYS_doio((int*)bios_State->reg_a1, (int*)bios_State->reg_a2);
                 break;
 
             case GETTIME:
-                SYS_Get_CPU_Time();
+                SYS_get_CPU_time();
                 break;
 
             case CLOCKWAIT:
-                SYS_Clockwait();
+                SYS_clockwait();
                 break;
 
             case GETSUPPORTPTR:
-                SYS_Get_Support_Data();
+                SYS_get_support_data();
                 break;
 
             case GETPROCESSID:
-                SYS_Get_Process_Id((int)bios_State->reg_a1);
+                SYS_get_process_id((int)bios_State->reg_a1);
                 break;
 
             case GETCHILDREN:
-                SYS_Get_Children((int*)bios_State->reg_a1, (int)bios_State->reg_a2);
+                SYS_get_children((int*)bios_State->reg_a1, (int)bios_State->reg_a2);
                 break;
 
             default:
@@ -105,11 +106,7 @@ void syscall_handler() {
     }
 }
 
-/* Crea un nuovo processo come figlio del chiamante. Il primo parametro contiene lo stato
- che deve avere il processo. Se la system call ha successo il valore di ritorno (nel registro reg_v0)
- è il pid creato altrimenti è -1. supportp e’ un puntatore alla struttura di supporto del processo.
- Ns descrive il namespace di un determinato tipo da associare al processo, senza specificare
-il namespace (NULL) verra’ ereditato quello del padre.*/
+
 static void SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns) {
 
     pcb_t *newProc = allocPcb();
@@ -144,15 +141,13 @@ static void SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns) 
     }
 }
 
-/* Termina il processo con identificativo pid e tutti suoi figli
- (e figli dei figli...) se pid è 0 allora termina il processo corrente */
+
 static void SYS_terminate_process(int pid) {
     terminate_family(pid);
     scheduling();
 }
 
 
-/* ritorna il pcb con pid dato */
 pcb_t* getProcByPid(int pid) {
     pcb_t* proc2rtrn = NULL;
     /* Verifico che il processo con p_pid == pid sia nella readyQ o su un semaforo */
@@ -164,7 +159,6 @@ pcb_t* getProcByPid(int pid) {
 }
 
 
-/* Uccide un processo e tutta la sua progenie (NON I FRATELLI DEL PROCESSO CHIAMATO) */
 void terminate_family(int pid) {
     pcb_t*Proc2Delete = (pid == 0 || current_process->p_pid == pid) ? current_process : getProcByPid(pid);
     /* Proc2delete staccato dal padre */
@@ -198,10 +192,8 @@ void kill_process(pcb_t *ptrn) {
     freePcb(ptrn);
 }
 
-/* Operazione di richiesta di un semaforo binario.
- Il valore del semaforo è memorizzato nella variabile di tipo intero passata per indirizzo.
- L’indirizzo della variabile agisce da identificatore per il semaforo */
-static void SYS_Passeren(int *semaddr) {
+
+static void SYS_passeren(int *semaddr) {
     if (*semaddr == 0) {
         /* Inserimento di current_process nella coda del semaforo semaddr */
         insertBlocked(semaddr, current_process);
@@ -216,8 +208,8 @@ static void SYS_Passeren(int *semaddr) {
     }
 }
 
-/* Operazione di rilascio di un semaforo binario la cui chiave è il valore puntato da semaddr */
-void SYS_Verhogen(int *semaddr) {
+
+void SYS_verhogen(int *semaddr) {
     if (*semaddr == 1) {
         /* Inserimento di current_process nella coda del semaforo semaddr */
         insertBlocked(semaddr, current_process);
@@ -232,20 +224,8 @@ void SYS_Verhogen(int *semaddr) {
     }
 }
 
-/* Effettua un’operazione di I/O. CmdValues e’ un vettore di 2 interi
- (per I terminali) o 4 interi (altri device).
-– La system call carica I registri di device con i valori di CmdValues
-    scrivendo il comando cmdValue nei registri cmdAddr e seguenti,
-    e mette in pausa il processo chiamante fino a quando non si e’ conclusa.
-– L’operazione è bloccante, quindi il chiamante viene sospeso sino
-    alla conclusione del comando. Il valore ritornato deve essere
-    zero se ha successo, -1 in caso di errore. Il contenuto del registro di
-    status del dispositivo potra’ essere letto nel corrispondente elemento
-    di cmdValues.
-At the completion of the I-O operation the device register values are
-copied back in the cmdValues array
-*/
-static void SYS_Doio(int *cmdAddr, int *cmdValues) {
+
+static void SYS_doio(int *cmdAddr, int *cmdValues) {
     /* devReg mappa i registri dei device da 0 a 39 */
     int devReg = ((memaddr)cmdAddr - DEV_REG_START) / DEV_REG_SIZE;
     int typeDevice = devReg/8;
@@ -257,11 +237,12 @@ static void SYS_Doio(int *cmdAddr, int *cmdValues) {
         soft_block_count--;
         UPDATE_BIOSSTATE_REGV0(-1);
     } else {
-        general_Doio(cmdAddr, cmdValues, devReg, typeDevice);
+        general_doio(cmdAddr, cmdValues, devReg, typeDevice);
     }
 }
 
-void general_Doio(int *cmdAddr, int *cmdValues, int devReg, int typeDevice) {
+
+void general_doio(int *cmdAddr, int *cmdValues, int devReg, int typeDevice) {
     int *sem2use = deviceType2Sem(typeDevice);
     int iterMax = (typeDevice == 4) ? 2:4;
 
@@ -277,8 +258,9 @@ void general_Doio(int *cmdAddr, int *cmdValues, int devReg, int typeDevice) {
         devNo = devReg % 8;
     }
     UPDATE_BIOSSTATE_REGV0(0);
-    SYS_Passeren(&sem2use[devNo]);
+    SYS_passeren(&sem2use[devNo]);
 }
+
 
 int* deviceType2Sem(int type) {
     int *sem2rtrn;
@@ -307,16 +289,12 @@ int* deviceType2Sem(int type) {
 }
 
 
-/* Restituisce il tempo di utilizzo del processore del processo in esecuzione*/
-static void SYS_Get_CPU_Time() {
+static void SYS_get_CPU_time() {
     UPDATE_BIOSSTATE_REGV0(current_process->p_time);
 }
 
-/*
-Equivalente a una Passeren sul semaforo dell’Interval Timer.
-– Blocca il processo invocante fino al prossimo tick del dispositivo.
-*/
-static void SYS_Clockwait() {
+
+static void SYS_clockwait() {
     /* Inserimento di current_process nella coda dei processi bloccati sull'interval timer */
     insertBlocked(&sem_interval_timer, current_process);
     soft_block_count++;
@@ -324,17 +302,13 @@ static void SYS_Clockwait() {
     scheduling();
 }
 
-/* Restituisce un puntatore alla struttura di supporto del processo corrente,
- ovvero il campo p_supportStruct del pcb_t.*/
-static void SYS_Get_Support_Data() {
+
+static void SYS_get_support_data() {
     UPDATE_BIOSSTATE_REGV0(current_process->p_supportStruct);
 }
 
-/* Restituisce l’identificatore del processo invocante se parent == 0,
- quello del genitore del processo invocante altrimenti.
- Se il parent non e’ nello stesso PID namespace del processo figlio,
- questa funzione ritorna 0 (se richiesto il pid del padre)! */
-static void SYS_Get_Process_Id(int parent) {
+
+static void SYS_get_process_id(int parent) {
     if (parent == 0) {
         UPDATE_BIOSSTATE_REGV0(current_process->p_pid);
     } else {
@@ -345,9 +319,8 @@ static void SYS_Get_Process_Id(int parent) {
     }
 }
 
-/* Ritorna il numero di pid dei figli che appartengono allo stesso ns del chiamante e
- li salva nell'array children di dimensione size */
-static void SYS_Get_Children(int *children, int size) {
+
+static void SYS_get_children(int *children, int size) {
     int num = 0;
     if (!emptyChild(current_process)) {
         /* Controllo sul primo figlio */                                              
@@ -374,16 +347,17 @@ static void SYS_Get_Children(int *children, int size) {
     UPDATE_BIOSSTATE_REGV0(num);
 }
 
-/* Per determinare se il processo corrente stava eseguento in kernel o user mode,
- dobbiamo esaminare lo Status register in the saved exception state.
- In particolare, dobbiamo esaminare la versione precedente del KU bit (KUp) siccome
- sarà avvenuta una stack push sul KU/IE stacks in the statusa register prima
- che lo stato di eccezione fosse salvato*/
- /* 0 kernel mode 1 user */
-int Check_Kernel_mode() {
+
+bool Check_Kernel_mode() {
+/* To determine if the Current Process was executing in kernel-mode or user-mode,
+ one examines the Status register in the saved exception state. In particular,
+ examine the previous version of the KU bit (KUp) since the processor’s exception
+ handling circuitry will have performed a stack push on the KU/IE stacks in the
+ Status register before the exception state was saved */
     unsigned mask;
     mask = ((1 << 1) - 1) << STATUS_KUp_BIT;
     unsigned int bit_kernel = bios_State->status & mask;
+    /* 0 kernel mode 1 user */
     return (bit_kernel == 0) ? TRUE : FALSE;
 }
 

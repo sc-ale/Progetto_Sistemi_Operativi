@@ -16,6 +16,7 @@ void scheduling() {
         HALT();
     } else if (process_count>0 && soft_block_count>0) {
         is_waiting = true;
+        
         /* Disattivazione dell'interrupt del PLT */
         setSTATUS((IECON | IMON) & (~TEBITON));
         WAIT();

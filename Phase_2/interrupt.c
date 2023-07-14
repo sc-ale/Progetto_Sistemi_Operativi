@@ -3,7 +3,6 @@
 
 #include "interrupt.h"
 
-/* serve per copiare, ad esempio, strutture dati */
 void *memcpy(void *dest, const void *src, unsigned int n) {
     for (unsigned int i = 0; i < n; i++) {
         ((char*)dest)[i] = ((char*)src)[i];
@@ -11,10 +10,8 @@ void *memcpy(void *dest, const void *src, unsigned int n) {
     return dest;
 } 
 
-/* Restituisce la linea con interrupt in attesa con massima priorità. 
-(Se nessuna linea è attiva ritorna 8 ma assumiamo che quando venga
- chiamata ci sia almeno una linea attiva) */
-int Get_Interrupt_Line () {
+
+int get_interrupt_line () {
     unsigned int interrupt_pending = bios_State->cause & CAUSE_IP_MASK;
     /* Maschera i bit lasciando attivi quelli da 8 a 15 del cause register */
     unsigned int linea = 0;
@@ -28,30 +25,28 @@ int Get_Interrupt_Line () {
             linea = i;
             break;
         }
-    }
+    } 
+    /* Se nessuna linea è attiva ritorna 8 ma assumiamo che 
+     quando chiamata ci sia almeno una linea attiva */
     return linea;
 }
 
-/*
-The interrupt exception handler’s first step is to determine which device
- or timer with an outstanding interrupt is the highest priority.
- Depending on the device, the interrupt exception handler will 
- perform a number of tasks.*/
+
 void interrupt_handler() {
     /* Usiamo was_waiting per memorizzare se e' presente un processo a cui tornare il controllo */
     was_waiting = is_waiting;
     is_waiting = false;
 
-    int line = Get_Interrupt_Line();
+    int line = get_interrupt_line();
     
     switch (line) {
         /* Interrupt processor Local Timer */
-        case 1:
+        case PLTINT:
             PLT_interrupt_handler();
             break;
         
         /* Interrupt Interval Timer */
-        case 2:
+        case ITINT:
             IT_interrupt_handler();
             break;
 
@@ -78,7 +73,7 @@ void interrupt_handler() {
 
 }
 
-//3.6.2
+
 void PLT_interrupt_handler() {
     /* ACK & LOAD del PLT */
     setTIMER(TIMESLICE);
@@ -89,7 +84,7 @@ void PLT_interrupt_handler() {
     scheduling();
 }
 
-//3.6.3
+
 void IT_interrupt_handler() {
     /* ACK & LOAD dell'IT */
     LDIT(PSECOND);
@@ -101,8 +96,8 @@ void IT_interrupt_handler() {
     }
 }
 
-/* ritorna la linea del device il cui interrupt è attivo */
-int Get_interrupt_device(int device_type) {
+
+int get_interrupt_device(int device_type) {
     /* Calcola l'indirizzo specifico del tipo di device */
     unsigned int *interrupt_dev_bit_map = (unsigned int*)CDEV_BITMAP_ADDR(device_type);
 
@@ -120,9 +115,9 @@ int Get_interrupt_device(int device_type) {
     return linea;
 }
 
-//3.6.1     
+
 void general_interrupt_handler(int device_type) {   /* vedere arch.h */
-    int devNo = Get_interrupt_device(device_type);
+    int devNo = get_interrupt_device(device_type);
 
     // Forse è possibile fare una funzione comune per tutti i device, passando device_type per parametro
     
@@ -148,7 +143,7 @@ void general_interrupt_handler(int device_type) {   /* vedere arch.h */
     /* Si sottrae 3 a device_type siccome questo assume i valori da 3 a 7 */
     int* sem2use = deviceType2Sem(device_type-3);
     blocked_process = headBlocked(&sem2use[devNo]);
-    SYS_Verhogen(&sem2use[devNo]);
+    SYS_verhogen(&sem2use[devNo]);
 
     /* Place the stored off status code in the newly unblocked pcb’s v0 register.*/
     blocked_process->p_s.reg_v0=dev_reg.status;
@@ -161,7 +156,7 @@ void general_interrupt_handler(int device_type) {   /* vedere arch.h */
 }
 
 void terminal_interrupt_handler(){
-    int DevNo = Get_interrupt_device(TERMINT);
+    int DevNo = get_interrupt_device(TERMINT);
    
     /* Save off the status code from the device’s device register. */
     /*Uso la macro per trovare l'inidirzzo di base del device con la linea di interrupt e il numero di device*/
@@ -190,7 +185,7 @@ void terminal_interrupt_handler(){
         (pcb) which initiated this I/O operation and then requested to wait for
         its completion via a SYS5 operation.*/
     pcb_t *blocked_process = headBlocked(&sem_terminal[DevNo]);
-    SYS_Verhogen(blocked_process->p_semAdd);
+    SYS_verhogen(blocked_process->p_semAdd);
     soft_block_count--;
 
     /* Place the stored off status code in the newly unblocked pcb’s v0 register.*/
