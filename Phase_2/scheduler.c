@@ -10,6 +10,7 @@ void scheduling() {
 
         /* Salvataggio del momento in cui viene lanciato */
         STCK(current_process->startNstop); 
+        
         /* Caricamento del processo */
         LDST((STATE_PTR)&current_process->p_s);
     } else if (process_count==0) {

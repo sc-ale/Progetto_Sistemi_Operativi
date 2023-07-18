@@ -71,7 +71,6 @@ void interrupt_handler() {
     } else {
         LDST(bios_State);
     }
-
 }
 
 
@@ -140,16 +139,19 @@ void general_interrupt_handler(int device_type) {
     *blocked_process->IOvalues = dev_reg.status;
 }
 
+
 void terminal_interrupt_handler(){
     /* Calcola l'indirizzo del device register utilizzando la linea di interrupt e il numero di device */
     int devNo = get_interrupt_device(TERMINT);
     termreg_t *dev_addr = (termreg_t*) DEV_REG_ADDR(TERMINT,devNo);
+
     /* Verifca quale opearazione ha eseguito controllando lo status in trasmissione o recezione */
     unsigned int device_response;
     if((dev_addr->transm_status & BYTE1MASK) == OKCHARTRANS){
         /* Salva lo stato del device in trasmissione e da l'acknowledgment */
         device_response = dev_addr->transm_status;
         dev_addr->transm_command = ACK;
+        
         /* Aumenta devNo per accedere al semaforo di devNo riservato alla trasmissione */
         devNo += 8;
     } else if((dev_addr->recv_status & BYTE1MASK) == OKCHARTRANS){

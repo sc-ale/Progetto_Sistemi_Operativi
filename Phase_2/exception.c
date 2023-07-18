@@ -121,7 +121,7 @@ static void SYS_create_process(state_t *statep, support_t *supportp, nsd_t *ns) 
         insertChild(current_process, newProc);
         insertProcQ(&readyQ, newProc);
         
-        /* Inizializzazione campi nuovo processo */
+        /* -- Inizializzazione campi nuovo processo -- */
         newProc->p_s = *statep;
         newProc->p_supportStruct = supportp;
         newProc->p_pid = pid_start;
@@ -150,8 +150,8 @@ static void SYS_terminate_process(int pid) {
 
 
 pcb_t* getProcByPid(int pid) {
-    pcb_t* proc2rtrn = NULL;
     /* Verifico che il processo con p_pid == pid sia nella readyQ o su un semaforo */
+    pcb_t* proc2rtrn = NULL;
     if ((proc2rtrn = getProcInHead(pid, &readyQ)) == NULL) {
         /* Non è in readyQ, quindi deve essere su qualche semaforo */
         proc2rtrn = getProcByPidOnSem(pid);
