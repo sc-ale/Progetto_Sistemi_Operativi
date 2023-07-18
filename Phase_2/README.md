@@ -14,7 +14,7 @@ Le funzionalità che deve gestire sono:
 
 I file principali della fase 2 sono divisi come segue:
 
-### INITIAL : 
+### initial.c : 
 
 - Inizializza le variabili globali del nucleo e le varie strutture dati
 
@@ -22,20 +22,23 @@ I file principali della fase 2 sono divisi come segue:
 
 - Invoca lo scheduler
 
-### SCHEDULER :
+### scheduler.c :
 
 Il ruolo dello scheduler e’ di decidere quale processo deve entrare in esecuzione
 
-### EXCEPTION :
+### exception.c :
 
 Gestisce le eccezioni del sistema, identificando il tipo di eccezione avvenuta e richiamando l'handler appropriato per gestire l'eccezione specifica tra cui:
 
 - Interrupt
+
 - TLB Trap
+
 - Program Trap
+
 - Syscall
 
-### INTERRUPT :
+### interrupt.c :
 
 Si occupa di determinare l'interrupt facendo distinzione tra:
 
@@ -45,7 +48,7 @@ Si occupa di determinare l'interrupt facendo distinzione tra:
 
 - Device interrupt
 
-
+E successivamente le affida ai vari gestori di interrupt.
 
 
 ## Scelte progettuali e Robe aggiunte
@@ -70,4 +73,17 @@ interrupt generale/terminale
 calcolo device address
 
 
+## Compilazione 
+                                            
+Per compilare il progetto bisogna utilizzare il comando  
+
+```
+make
+```
+e per eliminare i file creati con make si utilizza 
+```
+make clean
+```
+
+I file di umps sono situati nella cartella "machine". Nel caso si volesse realizzare una nuova configurazione su umps3 bisognerà selezionare la directory di "machine".
 
