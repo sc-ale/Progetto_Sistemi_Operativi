@@ -41,7 +41,7 @@ I file principali della fase 2 sono divisi come segue:
 
 ## Scelte progettuali
 
-Variabili aggiunte
+### Variabili aggiuntive
 
 - __IOValues__:
     tra i parametri della system call DoIO l'utente passa l'indirizzo di un array dentro il quale scrive i comandi da dare al device, al completamento dell'operazione lo status del device va copiato in questo array.  
@@ -59,22 +59,26 @@ Variabili aggiunte
     Utilizziamo la variabile is_waiting per stabilire quale delle due operazioni si debba effettuare.  
     Prima di entrare nello stato WAIT lo scheduler imposta is_waiting a true. Quando la gestione di un interrupt termina, se is_waiting è true allora la variabile viene settata a false e viene invocato lo scheduler, altrimenti si esegue un LDST sul processo che era in esecuzione.  
 
-Semaforo per i terminali
+### Semaforo per i terminali
 
-- Mentre per gli altri dispositivi utilizziamo un array di 8 semafori (uno per ogni device), per i terminali abbiamo scelto di utilizzare un array di 16 semafori utilizzando i primi 8 (da 0 a 7) per la ricezione e gli ultimi 8 (da 8 a 15) per la trasmissione. In questo modo ciascun device n avrà i suoi rispettivi semafori alle posizioni n e n+8.
+Mentre per gli altri dispositivi utilizziamo un array di semafori di dimensione 8 (uno per ogni device), per i terminali abbiamo scelto di utilizzare un array di semafori di dimensione 16, considerando i primi 8 (da 0 a 7) per la ricezione e gli ultimi 8 (da 8 a 15) per la trasmissione.  
+In questo modo ciascun device _n_ avrà i suoi rispettivi semafori alle posizioni _n_ e _n_ + 8.
 
-Interrupt handler per i device
+### Interrupt handler per i device
 
-- Data la diversità dei terminali dagli altri tipi di device abbiamo deciso di utilizzare due funzioni diverse per gestire i relativi interrupt: terminal_interrupt_handler per gli interrupt dei terminali e general_interrupt_handler per tutti gli altri device.
+Data la diversità dei terminali dagli altri tipi di device abbiamo deciso di  utilizzare due funzioni distinte per gestire i relativi interrupt:  
+- terminal_interrupt_handler per i terminali
+- general_interrupt_handler per tutti gli altri device
 
-Calcolo device address
+### Calcolo device address
 
-- Quando gestiamo la chiamata di una SYSCall DoIO per stabilire quale device l'utente sta richiedendo lo calcoliamo a partire dall'address fornito in input. 
-    ```C
-        int devReg = ((memaddr)cmdAddr - DEV_REG_START) / DEV_REG_SIZE;
-        int typeDevice = devReg/8;
-    ```
-- Sottraendo l'indirizzo di partenza dei device register e dividendo per 16 (dimensione di ogni device register) otteniamo un valore compreso tra 0 e 39 (8 device di 5 tipi quindi 40 device in tutto).
+Nella SYSCall DoIO, per stabilire quale device l'utente sta richiedendo lo calcoliamo a partire dall'address fornito in input.  
+   
+```C
+int devReg = ((memaddr)cmdAddr - DEV_REG_START) / DEV_REG_SIZE;
+int typeDevice = devReg/8;
+```
+Sottraendo l'indirizzo di partenza dei device register e dividendo per 16 (dimensione di ogni device register) otteniamo un valore compreso tra 0 e 39 ( 8 device di 5 tipi, quindi 40 device in tutto).  
 Dividendo per 8 stabiliamo quale tipo di device stiamo cercando (da 0 a 4 rispettivamente disk, tape, network, printer e terminal).
 
 ## Compilazione 
