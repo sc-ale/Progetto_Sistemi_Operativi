@@ -18,7 +18,7 @@ int get_interrupt_line () {
     unsigned int intpeg_linee[8];
     /* Ignora l'8 bit del cause register */
     for (int i=1; i<8; i++) {
-        unsigned mask = ((1<<1)-1)<<(i+8);
+        unsigned mask = 1<<(i+8);
         intpeg_linee[i] = mask & interrupt_pending;
         /* intpeg_linee[i] indica se la linea i-esima è attiva */
         if(intpeg_linee[i]!=0) {
@@ -105,7 +105,7 @@ int get_interrupt_device(int device_type) {
     int linea=0;
 
     for (int i=0; i<8; i++) {
-        unsigned mask = ((1<<1)-1)<<i;
+        unsigned mask = 1<<i;
         int_linee[i] = mask & *interrupt_dev_bit_map;
         if(int_linee[linea]!=0) { 
             linea = i;
@@ -116,7 +116,7 @@ int get_interrupt_device(int device_type) {
 }
 
 
-void general_interrupt_handler(int device_type) {   /* vedere arch.h */
+void general_interrupt_handler(int device_type) {
     int devNo = get_interrupt_device(device_type);
 
     // Forse è possibile fare una funzione comune per tutti i device, passando device_type per parametro
