@@ -75,15 +75,7 @@ calcolo device address
 
 ## Compilazione 
                                             
-Per compilare il progetto bisogna utilizzare il comando  
-
-```
-make
-```
-e per eliminare i file creati con make si utilizza 
-```
-make clean
-```
+Per compilare il progetto si utilizza il comando  `make`, mentre per eliminarli il comando `make clean`
 
 I file di umps sono situati nella cartella "machine". Nel caso si volesse realizzare una nuova configurazione su umps3 bisognerà selezionare la directory di "machine".
 
