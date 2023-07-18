@@ -246,14 +246,14 @@ void general_doio(int *cmdAddr, int *cmdValues, int devReg, int typeDevice) {
     int *sem2use = deviceType2Sem(typeDevice);
     int iterMax = (typeDevice == 4) ? 2:4;
 
-    for (int i=0; i<iterMax; i++){
+    for (int i=0; i<iterMax; i++) {
         cmdAddr[i] = cmdValues[i];
     }
     /* Calcola il device specifico */
     int devNo;
     if (typeDevice == 4) {
         /* Il device è un terminale */
-        devNo = (*cmdAddr%16 == 0) ? devReg%8 : (devReg&8)+8;
+        devNo = (*cmdAddr%16 == 0) ? devReg%8 : (devReg%8)+8;
     } else {
         devNo = devReg % 8;
     }
