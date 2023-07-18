@@ -349,13 +349,9 @@ static void SYS_get_children(int *children, int size) {
 
 
 bool Check_Kernel_mode() {
-/* To determine if the Current Process was executing in kernel-mode or user-mode,
- one examines the Status register in the saved exception state. In particular,
- examine the previous version of the KU bit (KUp) since the processor’s exception
- handling circuitry will have performed a stack push on the KU/IE stacks in the
- Status register before the exception state was saved */
+    /* Il processo era in kernel mode se il bit in posizione KUp è settato a 0*/
     unsigned mask;
-    mask = ((1 << 1) - 1) << STATUS_KUp_BIT;
+    mask = 1 << STATUS_KUp_BIT;
     unsigned int bit_kernel = bios_State->status & mask;
     /* 0 kernel mode 1 user */
     return (bit_kernel == 0) ? TRUE : FALSE;
