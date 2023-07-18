@@ -108,6 +108,7 @@ pcb_t* headBlocked(int *semAdd)
     return NULL;
 }
 
+
 pcb_t* getProcByPidOnSem(int pid) {
     int bkt;
     semd_t* semdP = NULL;
