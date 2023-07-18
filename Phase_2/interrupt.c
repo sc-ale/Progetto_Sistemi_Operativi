@@ -4,27 +4,6 @@
 #include "interrupt.h"
 
 
-int get_interrupt_line () {
-    unsigned int interrupt_pending = bios_State->cause & CAUSE_IP_MASK;
-    /* Maschera i bit lasciando attivi quelli da 8 a 15 del cause register */
-    unsigned int linea = 0;
-    unsigned int intpeg_linee[8];
-    /* Ignora l'8 bit del cause register */
-    for (int i=1; i<8; i++) {
-        unsigned mask = 1<<(i+8);
-        intpeg_linee[i] = mask & interrupt_pending;
-        /* intpeg_linee[i] indica se la linea i-esima è attiva */
-        if(intpeg_linee[i]!=0) {
-            linea = i;
-            break;
-        }
-    } 
-    /* Se nessuna linea è attiva ritorna 8 ma assumiamo che 
-     quando chiamata ci sia almeno una linea attiva */
-    return linea;
-}
-
-
 void interrupt_handler() {
     
     int line = get_interrupt_line();
@@ -88,25 +67,6 @@ void IT_interrupt_handler() {
 }
 
 
-int get_interrupt_device(int device_type) {
-    /* Calcola l'indirizzo specifico del tipo di device */
-    unsigned int *interrupt_dev_bit_map = (unsigned int*)CDEV_BITMAP_ADDR(device_type);
-
-    unsigned int int_linee[8];
-    int linea=0;
-
-    for (int i=0; i<8; i++) {
-        unsigned mask = 1<<i;
-        int_linee[i] = mask & *interrupt_dev_bit_map;
-        if(int_linee[linea]!=0) { 
-            linea = i;
-            break;
-        }
-    }
-    return linea;
-}
-
-
 void general_interrupt_handler(int device_type) {
     /* Calcola l'indirizzo del device register utilizzando la linea di interrupt e il numero di device */
     int devNo = get_interrupt_device(device_type);
@@ -160,5 +120,46 @@ void terminal_interrupt_handler(){
     blocked_process->p_s.reg_v0 = 0;
     *blocked_process->IOvalues = device_response;
 }
+
+
+int get_interrupt_device(int device_type) {
+    /* Calcola l'indirizzo specifico del tipo di device */
+    unsigned int *interrupt_dev_bit_map = (unsigned int*)CDEV_BITMAP_ADDR(device_type);
+
+    unsigned int int_linee[8];
+    int linea=0;
+
+    for (int i=0; i<8; i++) {
+        unsigned mask = 1<<i;
+        int_linee[i] = mask & *interrupt_dev_bit_map;
+        if(int_linee[linea]!=0) { 
+            linea = i;
+            break;
+        }
+    }
+    return linea;
+}
+
+
+int get_interrupt_line () {
+    unsigned int interrupt_pending = bios_State->cause & CAUSE_IP_MASK;
+    /* Maschera i bit lasciando attivi quelli da 8 a 15 del cause register */
+    unsigned int linea = 0;
+    unsigned int intpeg_linee[8];
+    /* Ignora l'8 bit del cause register */
+    for (int i=1; i<8; i++) {
+        unsigned mask = 1<<(i+8);
+        intpeg_linee[i] = mask & interrupt_pending;
+        /* intpeg_linee[i] indica se la linea i-esima è attiva */
+        if(intpeg_linee[i]!=0) {
+            linea = i;
+            break;
+        }
+    } 
+    /* Se nessuna linea è attiva ritorna 8 ma assumiamo che 
+     quando chiamata ci sia almeno una linea attiva */
+    return linea;
+}
+
 
 #endif
