@@ -144,9 +144,11 @@ void general_interrupt_handler(int device_type) {   /* vedere arch.h */
     int* sem2use = deviceType2Sem(device_type-3);
     blocked_process = headBlocked(&sem2use[devNo]);
     SYS_verhogen(&sem2use[devNo]);
+    soft_block_count--;
 
     /* Place the stored off status code in the newly unblocked pcb’s v0 register.*/
-    blocked_process->p_s.reg_v0=dev_reg.status;
+    blocked_process->p_s.reg_v0 = 0;
+    blocked_process->IOvalues = dev_reg.status;
     /* Insert the newly unblocked pcb on the Ready Queue, transitioning this
         process from the “blocked” state to the “ready” state*/
 
