@@ -38,7 +38,7 @@ all : ./machine/kernel.core.umps
 ./machine/kernel.core.umps : ./machine/kernel
 	umps3-elf2umps -k $<
 
-./machine/kernel : p2test.04.o crtso.o libumps.o initial.o exception.o scheduler.o interrupt.o ./phase1/pcb.o ./phase1/ash.o ./phase1/ns.o
+./machine/kernel : p2test.04.o crtso.o libumps.o initial.o exception.o scheduler.o interrupt.o ./phase1/pcb.o ./phase1/ash.o ./phase1/ns.o ./utility/memcpy.o
 	$(LD) -o $@ $^ $(LDFLAGS)
 
 clean :

@@ -11,9 +11,6 @@ extern state_t* bios_State;
 extern int* deviceType2Sem(int);
 extern void SYS_verhogen(int*);
 
-/* Serve per copiare, ad esempio, strutture dati */
-void *memcpy(void *, const void *, unsigned int );
-
 /* Restituisce la linea con interrupt in attesa con massima priorità */
 int get_interrupt_line ();
 

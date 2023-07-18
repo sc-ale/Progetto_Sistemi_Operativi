@@ -1,16 +1,16 @@
 # PANDOS PHASE 2
 
-La fase 2 del progetto è focalizzata sulla realizzazione del livello 3 del S.O. Panda+, ciò che riguarda il kernel.
+Nella seconda fase del progetto l'obiettivo è quello di realizzare il kernel del S.O. Panda+.
 Le funzionalità che deve gestire sono:
 
 - Inizializzazione del sistema
-
 - Scheduling dei processi
-
 - Gestione delle eccezioni:
-    -Interrupt
-    -Syscall
-    -Trap
+    - Interrupt
+    - Syscall
+    - Trap
+
+## DIVISIONE FILE
 
 I file principali della fase 2 sono divisi come segue:
 
@@ -18,13 +18,13 @@ I file principali della fase 2 sono divisi come segue:
 
 - Inizializza le variabili globali del nucleo e le varie strutture dati
 
-- Crea e inizializza il primo processo
+- Crea ed inizializza il primo processo
 
 - Invoca lo scheduler
 
 ### scheduler.c :
 
-Il ruolo dello scheduler e’ di decidere quale processo deve entrare in esecuzione
+Il ruolo dello scheduler e’ di gestire l'avvicendamento dei processi
 
 ### exception.c :
 

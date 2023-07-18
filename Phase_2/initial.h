@@ -14,5 +14,6 @@ extern void uTLB_RefillHandler();
 extern void test();
 extern void scheduling();
 extern void exception_handler();
+extern void *memcpy(void *, const void *, unsigned int );
 
 #endif 
