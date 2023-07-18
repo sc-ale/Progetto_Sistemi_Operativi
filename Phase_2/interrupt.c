@@ -33,10 +33,7 @@ int get_interrupt_line () {
 
 
 void interrupt_handler() {
-    /* Usiamo was_waiting per memorizzare se e' presente un processo a cui tornare il controllo */
-    bool was_waiting = is_waiting;
-    is_waiting = false;
-
+    
     int line = get_interrupt_line();
     
     switch (line) {
@@ -66,7 +63,8 @@ void interrupt_handler() {
     }
    
     /* Verifica se c'e' un processo a cui tornare il controllo, altrimenti chiama lo scheduler */
-    if (was_waiting) {
+    if (is_waiting) {
+        is_waiting = false;
         scheduling();
     } else {
         LDST(bios_State);
