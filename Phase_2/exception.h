@@ -14,21 +14,20 @@
 #define IS_SEM_DEVICE_OR_INT(T) (T == &sem_interval_timer || T == sem_disk || T == sem_network || T == sem_printer || T == sem_tape || T == sem_terminal)
 
 state_t *bios_State;
-bool  was_waiting;
 
 /* Come process id usiamo un intero che aumenta */
 int pid_start = 1;
 
-/* CONTROLLARE LA SEZIONE 3.5.12 */
+/* Seleziona quale gestore chiamare in base al tipo di eccezione */
 void exception_handler();
 
 /* Aggiorna il p_time del processo corrente */
 void updateCPUtime();
 
-// DA RIGUARDARE 3.7*/
+/* In base alla struttura di supporto, quest'ultima gestisce l'eccezione oppure uccide il processo */
 void passup_ordie(int );
 
-/* Gestisce quale sysstem call chiamare */
+/* Selezione quale system call chiamare */
 void syscall_handler();
 
 /** 
@@ -40,16 +39,16 @@ static void SYS_create_process(state_t *, support_t *, nsd_t *);
 /* Termina il processo con identificativo pid e tutti suoi figli */
 static void SYS_terminate_process(int );
 
-/* Funzioni ausiliare alla SYS_terminate_process */
+/* -- Funzioni ausiliare alla SYS_terminate_process -- */
 void terminate_family(int);
 void kill_process(pcb_t *);
 pcb_t* getProcByPid(int);
 
-/* Operazione di Passeren e Verhogen sul semaforo passato */
+/* -- Operazioni di Passeren e Verhogen sul semaforo in input -- */
 static void SYS_passeren(int *);
 void SYS_verhogen(int *);
 
-/* Effettua un'operazione di I/O */
+/* Effettua un'operazione di I/O sul device e i comandi in input */
 static void SYS_doio(int *, int *);
 
 /* Funzione ausiliaria alla SYS doio */

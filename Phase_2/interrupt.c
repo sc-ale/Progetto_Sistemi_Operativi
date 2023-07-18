@@ -34,7 +34,7 @@ int get_interrupt_line () {
 
 void interrupt_handler() {
     /* Usiamo was_waiting per memorizzare se e' presente un processo a cui tornare il controllo */
-    was_waiting = is_waiting;
+    bool was_waiting = is_waiting;
     is_waiting = false;
 
     int line = get_interrupt_line();
@@ -61,6 +61,7 @@ void interrupt_handler() {
             break;
 
         default:
+            /* Non ci sono linee di interrupt attive */
             break;
     }
    
@@ -117,28 +118,16 @@ int get_interrupt_device(int device_type) {
 
 
 void general_interrupt_handler(int device_type) {
+    /* Calcola l'indirizzo del device register utilizzando la linea di interrupt e il numero di device */
     int devNo = get_interrupt_device(device_type);
-
-    // Forse è possibile fare una funzione comune per tutti i device, passando device_type per parametro
-    
-    /* Save off the status code from the device’s device register. */
-    /*Uso la macro per trovare l'inidirzzo di base del device con la linea di interrupt e il numero di device*/
     dtpreg_t *dev_addr = (dtpreg_t*) DEV_REG_ADDR(device_type,devNo);
-    /* Copia del device register*/
     dtpreg_t dev_reg;
     dev_reg.status = dev_addr->status;
 
-    /* Acknowledge the outstanding interrupt. This is accomplished by writ-
-        ing the acknowledge command code in the interrupting device’s device
-        register. Alternatively, writing a new command in the interrupting
-        device’s device register will also acknowledge the interrupt.*/
+    /* Acknowledgment dell'interrupt */
     dev_addr->command = ACK;
 
-    /* Perform a V operation on the Nucleus maintained semaphore associ-
-        ated with this (sub)device. This operation should unblock the process
-        (pcb) which initiated this I/O operation and then requested to wait for
-        its completion via a SYS5 operation.*/
-
+    /* Sblocca il processo che ha iniziato l'operazione di I/O */
     pcb_t *blocked_process = NULL;
     /* Si sottrae 3 a device_type siccome questo assume i valori da 3 a 7 */
     int* sem2use = deviceType2Sem(device_type-3);
@@ -146,59 +135,37 @@ void general_interrupt_handler(int device_type) {
     SYS_verhogen(&sem2use[devNo]);
     soft_block_count--;
 
-    /* Place the stored off status code in the newly unblocked pcb’s v0 register.*/
+    /* Salva lo stato del device nel pcb sbloccato */
     blocked_process->p_s.reg_v0 = 0;
-    blocked_process->IOvalues = dev_reg.status;
-    /* Insert the newly unblocked pcb on the Ready Queue, transitioning this
-        process from the “blocked” state to the “ready” state*/
-
-    /* Return control to the Current Process: Perform a LDST on the saved
-        exception state (located at the start of the BIOS Data Page */
-    LDST(bios_State);
+    *blocked_process->IOvalues = dev_reg.status;
 }
 
 void terminal_interrupt_handler(){
-    int DevNo = get_interrupt_device(TERMINT);
-   
-    /* Save off the status code from the device’s device register. */
-    /*Uso la macro per trovare l'inidirzzo di base del device con la linea di interrupt e il numero di device*/
-    termreg_t *dev_addr = (termreg_t*) DEV_REG_ADDR(TERMINT,DevNo);
-    /* Acknowledge the outstanding interrupt. This is accomplished by writ-
-        ing the acknowledge command code in the interrupting device’s device
-        register. Alternatively, writing a new command in the interrupting
-        device’s device register will also acknowledge the interrupt.*/
-    /* Lo status code OKCHARTRANS (5) significa che il terminale ha generato l'interrupt per trasmettere, 
-        altrimenti l'interrupt è stato generato per ricevere*/
-    /* write utilizzato per salvare quale delle due operazioni stiamo eseguendo*/
+    /* Calcola l'indirizzo del device register utilizzando la linea di interrupt e il numero di device */
+    int devNo = get_interrupt_device(TERMINT);
+    termreg_t *dev_addr = (termreg_t*) DEV_REG_ADDR(TERMINT,devNo);
+    /* Verifca quale opearazione ha eseguito controllando lo status in trasmissione o recezione */
     unsigned int device_response;
     if((dev_addr->transm_status & BYTE1MASK) == OKCHARTRANS){
+        /* Salva lo stato del device in trasmissione e da l'acknowledgment */
         device_response = dev_addr->transm_status;
         dev_addr->transm_command = ACK;
-        /*Aumenta DevNo per accedere poi ai campi di sem_interval
-        Primi 8 in ricezione ultimi 8 in trasmissione*/
-        DevNo += 8;
+        /* Aumenta devNo per accedere al semaforo di devNo riservato alla trasmissione */
+        devNo += 8;
     } else if((dev_addr->recv_status & BYTE1MASK) == OKCHARTRANS){
+        /* Salva lo stato del device in ricezione e da l'acknowledgment */
         device_response = dev_addr->recv_status;
         dev_addr->recv_command = ACK;
     }
 
-    /* Perform a V operation on the Nucleus maintained semaphore associ-
-        ated with this (sub)device. This operation should unblock the process
-        (pcb) which initiated this I/O operation and then requested to wait for
-        its completion via a SYS5 operation.*/
-    pcb_t *blocked_process = headBlocked(&sem_terminal[DevNo]);
+    /* Sblocca il processo che ha iniziato l'operazione di I/O */
+    pcb_t *blocked_process = headBlocked(&sem_terminal[devNo]);
     SYS_verhogen(blocked_process->p_semAdd);
     soft_block_count--;
 
-    /* Place the stored off status code in the newly unblocked pcb’s v0 register.*/
-    //blocked_process->p_s.reg_v0 = write ? dev_addr->transm_status : dev_addr->recv_status;
+     /* Salva lo stato del device nel pcb sbloccato */
     blocked_process->p_s.reg_v0 = 0;
     *blocked_process->IOvalues = device_response;
-    /* Insert the newly unblocked pcb on the Ready Queue, transitioning this
-        process from the “blocked” state to the “ready” state*/
-    /* InsertProcQ lo fa già nella Verhogen */
-    /* Return control to the Current Process: Perform a LDST on the saved
-        exception state (located at the start of the BIOS Data Page */
 }
 
 #endif

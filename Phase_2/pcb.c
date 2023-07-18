@@ -34,7 +34,7 @@ pcb_t *allocPcb()
                 INIT_LIST_HEAD(&p->p_sib);
                 p->p_semAdd=NULL;
                 p->IOvalues=NULL;
-                p->istante_Lancio_Blocco=0;
+                p->startNstop=0;
                 for (int i=0;i<NS_TYPE_MAX;i++){
                         p->namespaces[i]=NULL;      
                 }

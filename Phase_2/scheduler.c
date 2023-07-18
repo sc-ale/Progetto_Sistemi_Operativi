@@ -9,7 +9,7 @@ void scheduling() {
         setTIMER(TIMESLICE);
 
         /* Salvataggio del momento in cui viene lanciato */
-        STCK(current_process->istante_Lancio_Blocco); 
+        STCK(current_process->startNstop); 
         /* Caricamento del processo */
         LDST((STATE_PTR)&current_process->p_s);
     } else if (process_count==0) {
@@ -17,7 +17,7 @@ void scheduling() {
     } else if (process_count>0 && soft_block_count>0) {
         is_waiting = true;
         
-        /* Disattivazione dell'interrupt del PLT */
+        /* Attivazione degli interrupt ad esclusione del PLT */
         setSTATUS((IECON | IMON) & (~TEBITON));
         WAIT();
     } else if (process_count>0 && soft_block_count==0) {

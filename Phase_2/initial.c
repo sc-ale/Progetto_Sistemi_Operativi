@@ -10,9 +10,9 @@ int soft_block_count;       /* numero processi bloccati per I/O o timer request*
 LIST_HEAD(readyQ);          /* lista processi ready */
 pcb_t* current_process;     /* puntatore al processo in esecuzione */
 
-bool is_waiting;            /* !!!!!!!!! DA AGGIUNGERE !!!!!!!!*/
+bool is_waiting;            /* indica se lo scheduler e' in WAIT */
 
-/* Semafori dei device e interval timer */
+/* -- Semafori dei device e interval timer -- */
 int sem_interval_timer;
 int sem_disk[8];
 int sem_tape[8];
@@ -21,7 +21,7 @@ int sem_printer[8];
 int sem_terminal[16];
 
 int main() {
-    /* Popolazione pass up vector */
+    /* -- Popolazione pass up vector -- */
     passupvector_t *passUpVect = (passupvector_t*) PASSUPVECTOR;
     passUpVect->tlb_refill_handler = (memaddr) uTLB_RefillHandler;
     passUpVect->tlb_refill_stackPtr = (memaddr) KERNELSTACK;
@@ -30,18 +30,18 @@ int main() {
 
     is_waiting = false;
 
-    /* Inizializzazione strutture dati prima fase */
+    /* -- Inizializzazione strutture dati prima fase -- */
     initPcbs();
     initASH();
     initNamespaces();
 
-    /* Inizializzazione variabili del kenel */
+    /* -- Inizializzazione variabili del kenel -- */
     mkEmptyProcQ(&readyQ);
     process_count = 0;
     soft_block_count = 0;
     current_process = NULL;
 
-    /* Inizializzazione semafori */
+    /* -- Inizializzazione semafori -- */
     sem_interval_timer=0;
 
     for(int i=0; i<8; i++) {
@@ -55,7 +55,7 @@ int main() {
     /* Load interval timer */
     LDIT(PSECOND);     
 
-    /* Creazione e inizializzazione del primo processo */
+    /* -- Creazione e inizializzazione del primo processo -- */
     pcb_t *primoProc = allocPcb();
     insertProcQ(&readyQ, primoProc);
     process_count+=1;

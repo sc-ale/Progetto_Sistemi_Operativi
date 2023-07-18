@@ -29,6 +29,7 @@ void exception_handler() {
             break;
 
         default:
+            passup_ordie(GENERALEXCEPT);
             break;
     }
 }
@@ -36,7 +37,7 @@ void exception_handler() {
 void updateCPUtime(){
     cpu_t momento_attuale;
     STCK(momento_attuale);
-    current_process->p_time += (momento_attuale - current_process->istante_Lancio_Blocco);
+    current_process->p_time += (momento_attuale - current_process->startNstop);
 }
 
 void passup_ordie(int INDEX) {
