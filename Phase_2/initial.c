@@ -28,22 +28,20 @@ int main() {
     passUpVect->exception_handler = (memaddr) exception_handler;
     passUpVect->exception_stackPtr = (memaddr) KERNELSTACK; 
 
-    is_waiting = false;
-
     /* -- Inizializzazione strutture dati prima fase -- */
     initPcbs();
     initASH();
     initNamespaces();
 
-    /* -- Inizializzazione variabili del kenel -- */
+    /* -- Inizializzazione variabili del kernel -- */
     mkEmptyProcQ(&readyQ);
     process_count = 0;
     soft_block_count = 0;
     current_process = NULL;
+    is_waiting = false;
 
     /* -- Inizializzazione semafori -- */
     sem_interval_timer=0;
-
     for(int i=0; i<8; i++) {
         sem_disk[i]=0;
         sem_tape[i]=0;
@@ -52,6 +50,7 @@ int main() {
         sem_terminal[i]=0;
         sem_terminal[8+i]=0;
     }
+
     /* Load interval timer */
     LDIT(PSECOND);     
 

@@ -4,8 +4,6 @@
 #include <umps3/umps/arch.h>
 #include "scheduler.h"
 
-#define PLTINT  1
-#define ITINT   2
 extern state_t* bios_State;
 
 extern int* deviceType2Sem(int);

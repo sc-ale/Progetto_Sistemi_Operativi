@@ -34,11 +34,13 @@ void exception_handler() {
     }
 }
 
+
 void updateCPUtime(){
     cpu_t momento_attuale;
     STCK(momento_attuale);
     current_process->p_time += (momento_attuale - current_process->startNstop);
 }
+
 
 void passup_ordie(int INDEX) {
     if (current_process->p_supportStruct == NULL) {
@@ -49,6 +51,7 @@ void passup_ordie(int INDEX) {
         LDCXT(exceptContext.stackPtr, exceptContext.status, exceptContext.pc);
     }
 }
+
 
 void syscall_handler() {   
     UPDATE_PC;
@@ -102,7 +105,7 @@ void syscall_handler() {
                 break;
         }
         
-        /* Il seguente codice non verrà eseguito se prima sono state seguite delle sys bloccanti */
+        /* Il seguente codice non verra' eseguito se prima sono state effettuate delle sys bloccanti */
         LDST(bios_State);
     }
 }
@@ -161,7 +164,7 @@ pcb_t* getProcByPid(int pid) {
 
 
 void terminate_family(int pid) {
-    pcb_t*Proc2Delete = (pid == 0 || current_process->p_pid == pid) ? current_process : getProcByPid(pid);
+    pcb_t* Proc2Delete = (pid == 0 || current_process->p_pid == pid) ? current_process : getProcByPid(pid);
     /* Proc2delete staccato dal padre */
     outChild(Proc2Delete); 
     
@@ -179,13 +182,13 @@ void terminate_family(int pid) {
 void kill_process(pcb_t *ptrn) {
     process_count--;
     if (ptrn->p_semAdd != NULL) {   
-        int * tmpSem = ptrn->p_semAdd;  
+        int* tmpSem = ptrn->p_semAdd;  
         /* Processo bloccato su un semaforo */
         outBlocked(ptrn);
         if (IS_SEM_DEVICE_OR_INT(tmpSem)) {
             soft_block_count--;
         }
-    } else if (ptrn!=current_process) {
+    } else if (ptrn != current_process) {
         /* Processo nella readyQ */                                          
         outProcQ(&readyQ, ptrn);                                                            
     }
@@ -218,7 +221,7 @@ void SYS_verhogen(int *semaddr) {
         scheduling();
     } else if (headBlocked(semaddr) != NULL) {
         /* Risveglia il primo processo bloccato su semaddr */
-        pcb_t *wakedProc = removeBlocked(semaddr);
+        pcb_t* wakedProc = removeBlocked(semaddr);
         insertProcQ(&readyQ, wakedProc); 
     } else {
         *semaddr=1;
@@ -226,7 +229,7 @@ void SYS_verhogen(int *semaddr) {
 }
 
 
-static void SYS_doio(int *cmdAddr, int *cmdValues) {
+static void SYS_doio(int* cmdAddr, int* cmdValues) {
     /* devReg mappa i registri dei device da 0 a 39 */
     int devReg = ((memaddr)cmdAddr - DEV_REG_START) / DEV_REG_SIZE;
     int typeDevice = devReg/8;
@@ -244,7 +247,7 @@ static void SYS_doio(int *cmdAddr, int *cmdValues) {
 
 
 void general_doio(int *cmdAddr, int *cmdValues, int devReg, int typeDevice) {
-    int *sem2use = deviceType2Sem(typeDevice);
+    int* sem2use = deviceType2Sem(typeDevice);
     int iterMax = (typeDevice == 4) ? 2:4;
 
     for (int i=0; i<iterMax; i++) {
@@ -256,7 +259,7 @@ void general_doio(int *cmdAddr, int *cmdValues, int devReg, int typeDevice) {
         /* Il device è un terminale */
         devNo = (*cmdAddr%16 == 0) ? devReg%8 : (devReg%8)+8;
     } else {
-        devNo = devReg % 8;
+        devNo = devReg%8;
     }
     UPDATE_BIOSSTATE_REGV0(0);
     SYS_passeren(&sem2use[devNo]);

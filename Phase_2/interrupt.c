@@ -96,7 +96,7 @@ void terminal_interrupt_handler(){
     int devNo = get_interrupt_device(TERMINT);
     termreg_t *dev_addr = (termreg_t*) DEV_REG_ADDR(TERMINT,devNo);
 
-    /* Verifca quale opearazione ha eseguito controllando lo status in trasmissione o recezione */
+    /* Verifca quale operazione ha eseguito controllando lo status in trasmissione o ricezione */
     unsigned int device_response;
     if((dev_addr->transm_status & BYTE1MASK) == OKCHARTRANS){
         /* Salva lo stato del device in trasmissione e da l'acknowledgment */
@@ -142,11 +142,12 @@ int get_interrupt_device(int device_type) {
 
 
 int get_interrupt_line () {
-    unsigned int interrupt_pending = bios_State->cause & CAUSE_IP_MASK;
     /* Maschera i bit lasciando attivi quelli da 8 a 15 del cause register */
+    unsigned int interrupt_pending = bios_State->cause & CAUSE_IP_MASK;
+    
     unsigned int linea = 0;
     unsigned int intpeg_linee[8];
-    /* Ignora l'8 bit del cause register */
+    /* Ignora l'8-ttavo bit del cause register */
     for (int i=1; i<8; i++) {
         unsigned mask = 1<<(i+8);
         intpeg_linee[i] = mask & interrupt_pending;

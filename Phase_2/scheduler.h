@@ -18,6 +18,7 @@ extern int sem_printer[8];
 extern int sem_terminal[16];
 extern bool is_waiting;
 
+/* Gestisce l'avvicendamento dei processi */
 void scheduling();
 
 #endif 

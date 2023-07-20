@@ -79,10 +79,13 @@
 #define PRIVINSTR      10
 #define CAUSESHIFT     2
 
+/* Define aggiuntive */
 #define INTERRUPTEXC   0
 #define TLBEXCEPT      1 ... 3
 #define PROGTRAP1      4 ... 7
 #define PROGTRAP2      9 ... 12 
+#define PLTINT         1
+#define ITINT          2
 
 /* EntryLO register (NDVG) constants */
 #define DIRTYON  0x00000400
