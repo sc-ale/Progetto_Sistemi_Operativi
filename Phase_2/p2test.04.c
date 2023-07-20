@@ -19,7 +19,7 @@
 #include <pandos_const.h>
 #include <pandos_types.h>
 #include <ns.h>
-#include <umps3/umps/libumps.h>
+#include <umps/libumps.h>
 
 typedef unsigned int devregtr;
 
@@ -121,12 +121,6 @@ ns_p_new_ns();
 extern void p5gen();
 extern void p5mm();
 
-void aaaSiumTest(){};
-void aaaP2Test(){};
-void aaaClockWait(){};
-void aaa_NS(){};
-aaa_p11_start(){};
-int aaaIOValues;
 
 /* a procedure to print on terminal 0 */
 void print(char *msg) {
@@ -136,19 +130,15 @@ void print(char *msg) {
     devregtr  status;
 
     SYSCALL(PASSEREN, (int)&sem_term_mut, 0, 0); /* P(sem_term_mut) */
-    aaaP2Test();
     while (*s != EOS) {
         devregtr value[2] = {0, PRINTCHR | (((devregtr)*s) << 8)};
-        status        = SYSCALL(DOIO, (int)command, (int)value, 0);
-        
+        status         = SYSCALL(DOIO, (int)command, (int)value, 0);
         if (status != 0 || (value[0] & TERMSTATMASK) != RECVD) {
             PANIC();
         }
         s++;
     }
-    //aaaSiumTest();
     SYSCALL(VERHOGEN, (int)&sem_term_mut, 0, 0); /* V(sem_term_mut) */
-    aaaSiumTest();
 }
 
 
@@ -162,89 +152,6 @@ void uTLB_RefillHandler() {
 
     LDST((state_t *)0x0FFFF000);
 }
-
-
-typedef unsigned int devreg;
-#define TRANSMITTED 5
-#define CHAROFFSET  8
-#define STATUSMASK  0xFF
-char   okbuf[2048]; /* sequence of progress messages */
-char   errbuf[128]; /* contains reason for failing */
-char  *mp = okbuf;
-
-/* This function returns the terminal transmitter status value given its address */
-devreg termstat(memaddr *stataddr) {
-    return ((*stataddr) & STATUSMASK);
-}
-
-
-unsigned int termprint(char *str, unsigned int term) {
-    memaddr     *statusp;
-    memaddr     *commandp;
-    devreg       stat;
-    devreg       cmd;
-    unsigned int error = FALSE;
-
-    if (term < DEVPERINT) {
-        /* terminal is correct */
-        /* compute device register field addresses */
-        statusp  = (devreg *)(TERM0ADDR + (term * DEVREGSIZE) + (TRANSTATUS * DEVREGLEN));
-        commandp = (devreg *)(TERM0ADDR + (term * DEVREGSIZE) + (TRANCOMMAND * DEVREGLEN));
-
-        /* test device status */
-        stat = termstat(statusp);
-        if (stat == READY || stat == TRANSMITTED) {
-            /* device is available */
-
-            /* print cycle */
-            while (*str != EOS && !error) {
-                cmd       = (*str << CHAROFFSET) | PRINTCHR;
-                *commandp = cmd;
-
-                /* busy waiting */
-                stat = termstat(statusp);
-                while (stat == BUSY)
-                    stat = termstat(statusp);
-
-                /* end of wait */
-                if (stat != TRANSMITTED)
-                    error = TRUE;
-                else
-                    /* move to next char */
-                    str++;
-            }
-        } else
-            /* device is not available */
-            error = TRUE;
-    } else
-        /* wrong terminal device number */
-        error = TRUE;
-
-    return (!error);
-}
-
-/* This function placess the specified character string in okbuf and
- *	causes the string to be written out to terminal0 */
-void addokbuf(char *strp) {
-    char *tstrp = strp;
-    while ((*mp++ = *strp++) != '\0')
-        ;
-    mp--;
-    termprint(tstrp, 0);
-}
-
-void adderrbuf(char *strp) {
-    char *ep    = errbuf;
-    char *tstrp = strp;
-
-    while ((*ep++ = *strp++) != '\0')
-        ;
-
-    termprint(tstrp, 0);
-
-    PANIC();
-}
-
 
 
 /*********************************************************************/
@@ -368,20 +275,20 @@ void test() {
     ns2_b_state.pc_epc = ns2_b_state.reg_t9 = (memaddr)ns_p_new_ns;
     ns2_b_state.status                      = ns2_b_state.status | IEPBITON | CAUSEINTMASK | TEBITON;
 
-
     /* create process p2 */
     p2pid = SYSCALL(CREATEPROCESS, (int)&p2state, (int)NULL, (int)NULL); /* start p2     */
+
     print("p2 was started\n");
 
     SYSCALL(VERHOGEN, (int)&sem_startp2, 0, 0); /* V(sem_startp2)   */
     
     SYSCALL(VERHOGEN, (int)&sem_endp2, 0, 0); /* V(sem_endp2) (blocking V!)     */
-
+    
     /* make sure we really blocked */
     if (p1p2synch == 0) {
         print("error: p1/p2 synchronization bad\n");
     }
-
+    
     p3pid = SYSCALL(CREATEPROCESS, (int)&p3state, (int)NULL, (int)NULL); /* start p3     */
 
     print("p3 is started\n");
@@ -446,9 +353,7 @@ void p2() {
     int   i;              /* just to waste time  */
     cpu_t now1, now2;     /* times of day        */
     cpu_t cpu_t1, cpu_t2; /* cpu time used       */
-
     SYSCALL(PASSEREN, (int)&sem_startp2, 0, 0); /* P(sem_startp2)   */
-
     print("p2 starts\n");
 
     int pid = SYSCALL(GETPROCESSID, 0, 0, 0);
@@ -525,7 +430,7 @@ void p3() {
     /* now let's check to see if we're really charge for CPU
        time correctly */
     cpu_t1 = SYSCALL(GETTIME, 0, 0, 0);
-    
+
     for (i = 0; i < CLOCKLOOP; i++) {
         SYSCALL(CLOCKWAIT, 0, 0, 0);
     }
@@ -854,9 +759,6 @@ void p10() {
 void hp_p1() {
     print("hp_p1 starts\n");
 
-
-
-    aaaClockWait();
     SYSCALL(TERMPROCESS, 0, 0, 0);
     print("Error: hp_p1 didn't die!\n");
     PANIC();
@@ -878,8 +780,6 @@ void hp_p2() {
 /* Namespace management */
 
 void ns_p_parent_ns() {
-    aaa_NS();
-    
     int *sem_ns = NULL;
     int *sem_child_ns = NULL;
     int pid = 0;
@@ -916,7 +816,6 @@ void ns_p_parent_ns() {
 }
 
 void ns_p_new_ns() {
-    aaa_NS();
     int *sem_ns = NULL;
     int *sem_child_ns = NULL;
     int pid = 0;
@@ -959,7 +858,7 @@ void p11() {
     int children_pids[NS_MAXCHILDREN];
     nsd_t *ns2 = NULL;
     int found[2] = {};
-    aaa_p11_start();
+
     print("p11 starts\n");
 
     ns2 = allocNamespace(NS_PID);

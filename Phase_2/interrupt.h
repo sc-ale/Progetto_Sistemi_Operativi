@@ -2,40 +2,30 @@
 #define INTERRUPT_H
 
 #include <umps3/umps/arch.h>
-
 #include "scheduler.h"
 
+#define PLTINT  1
+#define ITINT   2
 extern state_t* bios_State;
-extern void SYS_Verhogen(int*);
 
-extern unsigned int aaaTest_variable;
+extern int* deviceType2Sem(int);
+extern void SYS_verhogen(int*);
 
+/* Restituisce la linea con interrupt in attesa con massima priorità */
+int get_interrupt_line ();
 
-void *memcpy(void *, const void *, unsigned int );
-
-/* Restituisce la linea con interrupt in attesa con massima priorità. 
-(Se nessuna linea è attiva ritorna 8 ma assumiamo che quando venga
- chiamata ci sia almeno una linea attiva) */
-int Get_Interrupt_Line_Max_Prio ();
-
-/* The interrupt exception handler’s first step is to determine which device
- or timer with an outstanding interrupt is the highest priority.
- Depending on the device, the interrupt exception handler will 
- perform a number of tasks.*/
+/* Seleziona quale gestore chiamare in base alla linea di interrupt */
 void interrupt_handler();
 
+/* -- Gestori interrupt local timer e interval timer -- */
 void PLT_interrupt_handler();
-
 void IT_interrupt_handler();
 
-/* ritorna la linea del device il cui interrupt è attivo */
-int Get_interrupt_device(int ); 
+/* Ritorna la linea del device il cui interrupt è attivo */
+int get_interrupt_device(int ); 
 
+/* -- Gestori dei device -- */  
 void general_interrupt_handler(int );
-
 void terminal_interrupt_handler();
-
-
-
 
 #endif

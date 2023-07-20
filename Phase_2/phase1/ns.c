@@ -8,17 +8,16 @@ HIDDEN nsd_t type_nsd[MAXPROC][NS_TYPE_MAX];
 
 void initNamespaces()
 {
-    int i, j;
-
     /* inizializza le liste */
-    for(i=0;i<NS_TYPE_MAX;i++)
+    for(int i=0;i<NS_TYPE_MAX;i++)
     {
         INIT_LIST_HEAD(&type_nsFree_h[i]);
         INIT_LIST_HEAD(&type_nsList_h[i]);
 
         /* aggiungo gli NSD alla free list */
-        for(j=0;j<MAXPROC;j++) 
-        {
+        for(int j=0;j<MAXPROC;j++) 
+        {   
+            type_nsd[i][j].n_type = i; 
             list_add(&type_nsd[i][j].n_link,&type_nsFree_h[i]);
         }
     }
@@ -48,8 +47,9 @@ int addNamespace(pcb_t *p, nsd_t *ns)
         child->namespaces[ns->n_type] = ns;
 
         /* itera e associa ai fratelli del figlio */
-        list_for_each_entry(child, &child->p_sib, p_sib){
-            child->namespaces[ns->n_type] = ns;
+        pcb_t* curr = NULL;
+        list_for_each_entry(curr, &child->p_sib, p_sib){
+            curr->namespaces[ns->n_type] = ns;
         }
     }
     return TRUE;

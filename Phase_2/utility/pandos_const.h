@@ -79,6 +79,10 @@
 #define PRIVINSTR      10
 #define CAUSESHIFT     2
 
+#define INTERRUPTEXC   0
+#define TLBEXCEPT      1 ... 3
+#define PROGTRAP1      4 ... 7
+#define PROGTRAP2      9 ... 12 
 
 /* EntryLO register (NDVG) constants */
 #define DIRTYON  0x00000400
@@ -138,6 +142,7 @@
 #define NOPROC     -1
 #define BYTELENGTH 8
 
+#define TIMEBONUS  100
 #define PSECOND    100000
 #define TIMESLICE  5000 /* length of proc's time slice	*/
 #define NEVER      0x7FFFFFFF

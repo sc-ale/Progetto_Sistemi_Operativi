@@ -5,6 +5,7 @@
 #include <umps3/umps/cp0.h>
 #include "initial.h"
 
+/* -- Dichiarazioni di variabili e semafori globali -- */
 extern int process_count; 
 extern int soft_block_count; 
 extern struct list_head readyQ;

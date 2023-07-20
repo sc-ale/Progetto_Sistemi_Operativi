@@ -5,8 +5,6 @@ HIDDEN semd_t semd_table[MAXPROC];
 HIDDEN LIST_HEAD(semdFree_h);
 HIDDEN DECLARE_HASHTABLE(semd_h, 5);
 
-extern void aaaBreakTest();
-extern unsigned int aaaTest_variable;
 
 void initASH()
 {
@@ -46,9 +44,7 @@ int insertBlocked(int* semAdd, pcb_t* p)
             hash_add(semd_h, &newSemd->s_link, (u32)newSemd->s_key);
             return FALSE;
         }
-    } else{
-        aaa_semGiaAssociato();
-    }
+    } 
     return TRUE;
 }
 
@@ -111,6 +107,7 @@ pcb_t* headBlocked(int *semAdd)
 
     return NULL;
 }
+
 
 pcb_t* getProcByPidOnSem(int pid) {
     int bkt;
